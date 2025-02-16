@@ -1,0 +1,3 @@
+C:/Users/devkon/CLionProjects/EngineLab/cmake-build-debug/CMakeFiles/EngineLab.dir
+C:/Users/devkon/CLionProjects/EngineLab/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/devkon/CLionProjects/EngineLab/cmake-build-debug/CMakeFiles/rebuild_cache.dir
