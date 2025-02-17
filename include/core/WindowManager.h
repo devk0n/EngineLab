@@ -7,22 +7,38 @@
 
 class WindowManager {
 public:
+  // Construction & Destruction
   explicit WindowManager(std::string title);
+  ~WindowManager();
 
+  // Core Interface
   bool initialize();
-  static void pollEvents() ;
+  static void pollEvents();
   void swapBuffers() const;
-  [[nodiscard]] bool shouldClose() const;
+  bool shouldClose() const;
   void close() const;
-
-  [[nodiscard]] GLFWwindow* getNativeWindow() const { return m_window.get(); }
+  GLFWwindow* getNativeWindow() const;
 
 private:
-  std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
-  int m_width;
-  int m_height;
-  std::string m_title;
+  // Window Data
+  struct WindowData {
+    int width = 0;
+    int height = 0;
+    std::string title;
+    GLFWmonitor* primaryMonitor = nullptr;
+  };
 
+  // Initialization Helpers
+  void calculateWindowSize(const GLFWvidmode* videoMode);
+  void setOpenGLHints() const;
+  bool createWindow();
+  void centerWindow(GLFWwindow* window, const GLFWvidmode* videoMode) const;
+  bool initializeGLAD() const;
+  void logDebugInfo(const GLFWvidmode* videoMode) const;
+
+  // Member Variables
+  std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
+  WindowData m_data;
 };
 
 #endif // WINDOWMANAGER_H
