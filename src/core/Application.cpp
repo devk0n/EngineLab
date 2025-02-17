@@ -1,10 +1,10 @@
 #include "core/Application.h"
-#include "utils/Logger.h"
 #include <GLFW/glfw3.h>
+#include "utils/Logger.h"
 
 Application::Application()
     : m_initialized(false),
-      m_windowManager(std::make_unique<WindowManager>(1920, 1080, "EngineLab")),
+      m_windowManager(std::make_unique<WindowManager>(1920, 1280, "EngineLab")),
       m_camera(std::make_unique<Camera>()) {
     LOG_DEBUG("Application constructor called");
 }
@@ -16,7 +16,6 @@ Application::~Application() {
 
 bool Application::initialize() {
     LOG_INFO("Initializing application...");
-
     if (!m_windowManager->initialize()) {
         LOG_ERROR("Failed to initialize WindowManager.");
         return false;
@@ -48,8 +47,8 @@ void Application::run() {
 
     while (!m_windowManager->shouldClose()) {
         // Calculate delta time
-        float currentFrameTime = static_cast<float>(glfwGetTime());
-        float deltaTime = currentFrameTime - lastFrameTime;
+        const auto currentFrameTime = static_cast<float>(glfwGetTime());
+        const float deltaTime = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
 
         // Handle input and events
@@ -57,6 +56,7 @@ void Application::run() {
         m_inputManager->update(deltaTime);
 
         // Clear the screen
+        glClearColor(0.1, 0.1, 0.1, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Render objects
@@ -69,28 +69,28 @@ void Application::run() {
     LOG_INFO("Exiting main loop.");
 }
 
-void Application::setupInputBindings() {
-    m_inputManager->bindAction(GLFW_KEY_W, [this](float deltaTime) {
+void Application::setupInputBindings() const {
+    m_inputManager->bindAction(GLFW_KEY_W, [this](const float deltaTime) {
         m_camera->moveForward(deltaTime);
     });
 
-    m_inputManager->bindAction(GLFW_KEY_S, [this](float deltaTime) {
+    m_inputManager->bindAction(GLFW_KEY_S, [this](const float deltaTime) {
         m_camera->moveBackward(deltaTime);
     });
 
-    m_inputManager->bindAction(GLFW_KEY_A, [this](float deltaTime) {
+    m_inputManager->bindAction(GLFW_KEY_A, [this](const float deltaTime) {
         m_camera->moveLeft(deltaTime);
     });
 
-    m_inputManager->bindAction(GLFW_KEY_D, [this](float deltaTime) {
+    m_inputManager->bindAction(GLFW_KEY_D, [this](const float deltaTime) {
         m_camera->moveRight(deltaTime);
     });
 
-    m_inputManager->bindAction(GLFW_KEY_LEFT_SHIFT, [this](float deltaTime) {
+    m_inputManager->bindAction(GLFW_KEY_LEFT_SHIFT, [this](const float deltaTime) {
         m_camera->moveUp(deltaTime);
     });
 
-    m_inputManager->bindAction(GLFW_KEY_LEFT_CONTROL, [this](float deltaTime) {
+    m_inputManager->bindAction(GLFW_KEY_LEFT_CONTROL, [this](const float deltaTime) {
         m_camera->moveDown(deltaTime);
     });
 
@@ -99,12 +99,4 @@ void Application::setupInputBindings() {
         // Renderer::captureScreenshot();
         LOG_INFO("Screenshot captured!");
     });
-}
-
-float Application::calculateDeltaTime() {
-    static float lastTime = 0.0f;
-    float currentTime = static_cast<float>(glfwGetTime());
-    float deltaTime = currentTime - lastTime;
-    lastTime = currentTime;
-    return deltaTime;
 }

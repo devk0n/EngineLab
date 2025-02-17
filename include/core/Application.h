@@ -20,8 +20,7 @@ private:
   std::unique_ptr<InputManager> m_inputManager;
   std::unique_ptr<Camera> m_camera;
 
-  void setupInputBindings();
-  float calculateDeltaTime();
+  void setupInputBindings() const;
 };
 
 #endif // APPLICATION_H

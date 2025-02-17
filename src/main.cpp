@@ -1,7 +1,7 @@
 #include <cstdlib>
 
-#include "core/Application.h"
-#include "utils/Logger.h"
+#include "../include/core/Application.h"
+#include "../include/utils/Logger.h"
 
 int main() {
   // Initialize logger

@@ -70,7 +70,7 @@ find_package(OpenGL REQUIRED)
 
 # Source files
 set(SOURCES
-        main.cpp
+        src/main.cpp
 
         src/core/Application.cpp
         src/core/WindowManager.cpp
