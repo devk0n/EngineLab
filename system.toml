@@ -1,0 +1,20 @@
+# Save file for a physics scene
+[scene]
+gravity = [0.0, 0.0, -9.81]
+
+[[scene.body]]
+ID = [1]
+name = ["Arm 1"]
+position = [0.1, 0.0, 0.0] # x, y, z, position in meters
+orientation = [0.0, 0.0, 0.0] # x, y, z roatation in degrees
+mass = [8.0] # kg
+inertia =
+
+[[scene.body]]
+ID = [2]
+name = ["Arm 2"]
+position = [0.2, cosd(70) * 0.6, sind(70) * 0.6]
+orientation = [90.0, 70.0, 0.0]
+mass = [12.0]
+
+

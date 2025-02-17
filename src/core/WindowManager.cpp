@@ -3,68 +3,72 @@
 #include "core/WindowManager.h"
 #include "utils/Logger.h"
 
-WindowManager::WindowManager(const int width, const int height, std::string title)
+WindowManager::WindowManager(std::string title)
   : m_window(nullptr, glfwDestroyWindow),
-    m_width(width),
-    m_height(height),
-    m_title(std::move(title)) {
-}
-
-WindowManager::~WindowManager() {
-  LOG_DEBUG("Destroying GLFW window.");
-}
+    m_width(0),
+    m_height(0),
+    m_title(std::move(title)) {}
 
 bool WindowManager::initialize() {
-  glfwSetErrorCallback(GLFWErrorCallback);
-
   if (!glfwInit()) {
-    LOG_ERROR("Failed to initialize GLFW!");
+    LOG_ERROR("Failed to initialize GLFW");
     return false;
   }
 
+  // Get primary monitor and its video mode
+  GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
+
+  // Use 80% of monitor's dimensions as window size
+  m_width = static_cast<int>(videoMode->width * 0.8);
+  m_height = static_cast<int>(videoMode->height * 0.8);
+
+  // Ensure minimum size for small monitors
+  m_width = std::max(m_width, 800);
+  m_height = std::max(m_height, 600);
+
+  // Set OpenGL context hints
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-  GLFWwindow *rawWindow = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
+  // Create window
+  GLFWwindow* rawWindow = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
   if (!rawWindow) {
-    LOG_ERROR("Failed to create GLFW window!");
+    LOG_ERROR("Failed to create GLFW window");
+    glfwTerminate();
     return false;
   }
+
+  // Center window on screen
+  int xPos = (videoMode->width - m_width) / 2;
+  int yPos = (videoMode->height - m_height) / 2;
+  glfwSetWindowPos(rawWindow, xPos, yPos);
 
   m_window.reset(rawWindow);
   glfwMakeContextCurrent(m_window.get());
 
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-    LOG_ERROR("Failed to initialize GLAD!");
+    LOG_ERROR("Failed to initialize GLAD");
     return false;
   }
 
-  setGLFWCallbacks();
-  LOG_INFO("WindowManager initialized successfully.");
+  LOG_INFO("Window initialized!");
+  LOG_DEBUG("Monitor size: " + std::to_string(videoMode->width) + "x" + std::to_string(videoMode->height));
+  LOG_DEBUG("Monitor refresh rate: " + std::to_string(videoMode->refreshRate) + "Hz");
+  LOG_DEBUG("Monitor aspect ratio: " + std::to_string(videoMode->width / static_cast<float>(videoMode->height)));
+  LOG_DEBUG("Window size: " + std::to_string(m_width) + "x" + std::to_string(m_height));
+  LOG_DEBUG("Window aspect ratio: " + std::to_string(m_width / static_cast<float>(m_height)));
+  LOG_DEBUG("OpenGL version: " + std::string(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+  LOG_DEBUG("OpenGL vendor: " + std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR))));
+  LOG_DEBUG("OpenGL renderer: " + std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
+  LOG_DEBUG("OpenGL shading language version: " + std::string(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))));
+
   return true;
 }
 
-void WindowManager::setGLFWCallbacks() {
-  LOG_DEBUG("Setting up GLFW callbacks...");
-
-  // Example: Set up mouse movement callback
-  glfwSetCursorPosCallback(m_window.get(), [](GLFWwindow* window, double xpos, double ypos) {
-      // Handle mouse movement
-  });
-
-  // Example: Set up keyboard input callback
-  glfwSetKeyCallback(m_window.get(), [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-      // Handle key input
-  });
-}
-
-void WindowManager::pollEvents() const { glfwPollEvents(); }
+void WindowManager::pollEvents() { glfwPollEvents(); }
 void WindowManager::swapBuffers() const { glfwSwapBuffers(m_window.get()); }
 bool WindowManager::shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
-void WindowManager::close() { glfwSetWindowShouldClose(m_window.get(), true); }
-
-void WindowManager::GLFWErrorCallback(int error, const char *description) {
-  LOG_ERROR("GLFW Error ({}): {}", error, description);
-}
+void WindowManager::close() const { glfwSetWindowShouldClose(m_window.get(), true); }

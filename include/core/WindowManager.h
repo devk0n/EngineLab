@@ -7,16 +7,15 @@
 
 class WindowManager {
 public:
-  WindowManager(int width, int height, std::string title);
-  ~WindowManager();
+  explicit WindowManager(std::string title);
 
   bool initialize();
-  void pollEvents() const;
+  static void pollEvents() ;
   void swapBuffers() const;
-  bool shouldClose() const;
-  void close();
+  [[nodiscard]] bool shouldClose() const;
+  void close() const;
 
-  GLFWwindow* getNativeWindow() const { return m_window.get(); }
+  [[nodiscard]] GLFWwindow* getNativeWindow() const { return m_window.get(); }
 
 private:
   std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
@@ -24,8 +23,6 @@ private:
   int m_height;
   std::string m_title;
 
-  void setGLFWCallbacks();
-  static void GLFWErrorCallback(int error, const char* description);
 };
 
 #endif // WINDOWMANAGER_H

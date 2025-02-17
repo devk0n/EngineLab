@@ -17,7 +17,7 @@
 #define RESET "\033[0m"
 #define WHITE "\033[97m"  // Bright White
 #define COLOR_DEBUG "\033[36m"  // Cyan
-#define COLOR_INFO "\033[32m"  // Green
+#define COLOR_INFO "\033[97m"  // White
 #define COLOR_WARN "\033[33m"  // Yellow
 #define COLOR_ERROR "\033[31m"  // Red
 
