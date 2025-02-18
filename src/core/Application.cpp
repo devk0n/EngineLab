@@ -6,7 +6,8 @@
 Application::Application()
     : m_initialized(false),
       m_windowManager(std::make_unique<WindowManager>("EngineLab")),
-      m_inputManager(std::make_unique<InputManager>()) {}
+      m_inputManager(std::make_unique<InputManager>()),
+      m_renderer(std::make_unique<Renderer>()) {}
 
 bool Application::initialize() {
     if (Logger::initialize("log.txt")) {
@@ -24,7 +25,6 @@ bool Application::initialize() {
         return false;
     }
 
-    m_renderer = std::make_unique<Renderer>();
     if (!m_renderer->initialize()) {
         LOG_ERROR("Failed to initialize renderer");
         return false;
