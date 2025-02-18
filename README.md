@@ -1,12 +1,9 @@
 ```mermaid
-flowchart BT
-  sm([Scene Manager])
-  sl([Scene Loader])
-  lsi([Load Scene Info])
+flowchart TB
+    usm([Unity Scene Manager])
 
-  lsi -->|Load| sl
-  lsi -->|Unload| sl
-  lsi -->|Transition| sl
-  sl -->|Load| sm
-  sl -->|Unload| sm
+    usm --> asm([Advanced Scene Manager])
+    asm --> s_a["Scene [0]"]
+    asm --> s_b["Scene [1]"]
+    asm --> s_n["Scene [n]"]
 ```
