@@ -15,9 +15,9 @@ public:
   bool initialize();
   static void pollEvents();
   void swapBuffers() const;
-  bool shouldClose() const;
+  [[nodiscard]] bool shouldClose() const;
   void close() const;
-  GLFWwindow* getNativeWindow() const;
+  [[nodiscard]] GLFWwindow* getNativeWindow() const;
 
 private:
   // Window Data
@@ -33,7 +33,7 @@ private:
   void setOpenGLHints() const;
   bool createWindow();
   void centerWindow(GLFWwindow* window, const GLFWvidmode* videoMode) const;
-  bool initializeGLAD() const;
+  [[nodiscard]] bool initializeGLAD() const;
   void logDebugInfo(const GLFWvidmode* videoMode) const;
 
   // Member Variables
