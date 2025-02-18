@@ -47,7 +47,7 @@ void WindowManager::calculateWindowSize(const GLFWvidmode* videoMode) {
     m_data.height = std::max(m_data.height, 600);
 }
 
-void WindowManager::setOpenGLHints() const {
+void WindowManager::setOpenGLHints() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -80,7 +80,7 @@ void WindowManager::centerWindow(GLFWwindow* window, const GLFWvidmode* videoMod
     glfwSetWindowPos(window, xPos, yPos);
 }
 
-bool WindowManager::initializeGLAD() const {
+bool WindowManager::initializeGLAD() {
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
         LOG_ERROR("Failed to initialize GLAD");
         glfwTerminate();

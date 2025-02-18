@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "core/InputManager.h"
+#include "core/Renderer.h"
 #include "core/WindowManager.h"
 
 class Application {
@@ -16,6 +17,7 @@ private:
   bool m_initialized;
   std::unique_ptr<WindowManager> m_windowManager;
   std::unique_ptr<InputManager> m_inputManager;
+  std::unique_ptr<Renderer> m_renderer;
 
   double m_lastFrameTime = 0.0;
 };

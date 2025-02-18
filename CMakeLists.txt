@@ -75,6 +75,7 @@ set(SOURCES
         src/core/Application.cpp
         src/core/WindowManager.cpp
         src/core/InputManager.cpp
+        src/core/Renderer.cpp
 )
 
 # Add executable

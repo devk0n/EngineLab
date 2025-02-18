@@ -30,10 +30,10 @@ private:
 
   // Initialization Helpers
   void calculateWindowSize(const GLFWvidmode* videoMode);
-  void setOpenGLHints() const;
+  static void setOpenGLHints() ;
   bool createWindow();
   void centerWindow(GLFWwindow* window, const GLFWvidmode* videoMode) const;
-  [[nodiscard]] bool initializeGLAD() const;
+  [[nodiscard]] static bool initializeGLAD() ;
   void logDebugInfo(const GLFWvidmode* videoMode) const;
 
   // Member Variables

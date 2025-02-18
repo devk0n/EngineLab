@@ -9,8 +9,6 @@ Application::Application()
       m_inputManager(std::make_unique<InputManager>()) {}
 
 bool Application::initialize() {
-
-    // Initialize logger
     if (Logger::initialize("log.txt")) {
         Logger::setLogLevel(Logger::Level::Debug);
         LOG_INFO("Logger initialized!");
@@ -26,9 +24,16 @@ bool Application::initialize() {
         return false;
     }
 
+    m_renderer = std::make_unique<Renderer>();
+    if (!m_renderer->initialize()) {
+        LOG_ERROR("Failed to initialize renderer");
+        return false;
+    }
+
     m_initialized = true;
     return m_initialized;
 }
+
 
 void Application::run() {
     if (!m_initialized) {
@@ -37,39 +42,27 @@ void Application::run() {
     }
 
     LOG_INFO("Application started!");
-
     m_lastFrameTime = glfwGetTime();
 
     while (!m_windowManager->shouldClose()) {
-        // Calculate dt
         double currentTime = glfwGetTime();
-        // auto dt = static_cast<float>(currentTime - m_lastFrameTime);
         m_lastFrameTime = currentTime;
 
-        // Poll events & handle input
         WindowManager::pollEvents();
         m_inputManager->update();
 
-        // Example usage: Close window on ESC press
         if (m_inputManager->isKeyPressed(GLFW_KEY_ESCAPE)) {
             m_windowManager->close();
             LOG_INFO("Window closed by user");
         }
 
-        // Update the active scene
-        // m_sceneManager->update(dt);
+        m_renderer->clearScreen();
+        m_renderer->render();
 
-        // Clear the screen
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Render the active scene
-        // m_sceneManager->render();
-
-        // Swap buffers
         m_windowManager->swapBuffers();
     }
 
     LOG_INFO("Application closed!");
 }
+
 
