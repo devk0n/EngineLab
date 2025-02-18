@@ -16,8 +16,8 @@ private:
   bool m_initialized;
   std::unique_ptr<WindowManager> m_windowManager;
   std::unique_ptr<InputManager> m_inputManager;
-  // std::unique_ptr<Camera> m_camera;
 
+  double m_lastFrameTime = 0.0;
 };
 
 #endif // APPLICATION_H

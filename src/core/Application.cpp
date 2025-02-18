@@ -37,8 +37,16 @@ void Application::run() {
     }
 
     LOG_INFO("Application started!");
+
+    m_lastFrameTime = glfwGetTime();
+
     while (!m_windowManager->shouldClose()) {
-        // Handle input and events
+        // Calculate dt
+        double currentTime = glfwGetTime();
+        // auto dt = static_cast<float>(currentTime - m_lastFrameTime);
+        m_lastFrameTime = currentTime;
+
+        // Poll events & handle input
         WindowManager::pollEvents();
         m_inputManager->update();
 
@@ -48,13 +56,20 @@ void Application::run() {
             LOG_INFO("Window closed by user");
         }
 
+        // Update the active scene
+        // m_sceneManager->update(dt);
+
         // Clear the screen
-        glClearColor(0.1, 0.1, 0.1, 1.0);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Render the active scene
+        // m_sceneManager->render();
 
         // Swap buffers
         m_windowManager->swapBuffers();
     }
+
     LOG_INFO("Application closed!");
 }
 
