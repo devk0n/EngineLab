@@ -7,6 +7,7 @@ class InputManager;
 class Renderer;
 class SceneManager;
 class Camera;
+class ImGuiManager;
 
 struct Context {
   WindowManager* window;
@@ -14,6 +15,7 @@ struct Context {
   Renderer* renderer;
   SceneManager* scenes;
   Camera* camera;
+  ImGuiManager* imgui;
 };
 
 #endif // CONTEXT_H

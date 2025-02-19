@@ -78,10 +78,10 @@ set(SOURCES
         src/core/Renderer.cpp
         src/core/ImGuiManager.cpp
         src/core/SceneManager.cpp
+        src/core/Camera.cpp
 
         src/scenes/MainMenu.cpp
-        include/core/Camera.h
-        src/core/Camera.cpp
+
 )
 
 # Add executable

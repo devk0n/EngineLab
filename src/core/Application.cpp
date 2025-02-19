@@ -52,7 +52,8 @@ bool Application::initialize() {
         .input = m_inputManager.get(),
         .renderer = m_renderer.get(),
         .scenes = m_sceneManager.get(),
-        .camera = m_camera.get()
+        .camera = m_camera.get(),
+        .imgui = m_imguiManager.get()
     };
 
     // Initialize SceneManager
@@ -74,6 +75,8 @@ void Application::run() {
     LOG_INFO("Application started!");
     m_lastFrameTime = glfwGetTime();
 
+    m_renderer->initialize(); // ✅ Initialize the renderer
+
     while (!m_windowManager->shouldClose()) {
         double currentTime = glfwGetTime();
         float deltaTime = static_cast<float>(currentTime - m_lastFrameTime);
@@ -81,19 +84,13 @@ void Application::run() {
 
         WindowManager::pollEvents();
         m_inputManager->update();
-
-        // Update the active scene
         m_sceneManager->update(deltaTime);
 
-        // Render
         m_renderer->clearScreen();
-        m_sceneManager->render();
+        m_renderer->render(*m_camera); // ✅ Render the grid!
 
         m_imguiManager->beginFrame();
-
-        ImGui::ShowDemoWindow();
-
-        m_renderer->render();
+        m_sceneManager->render();
         m_imguiManager->endFrame();
 
         m_windowManager->swapBuffers();
@@ -101,3 +98,4 @@ void Application::run() {
 
     LOG_INFO("Application closed!");
 }
+

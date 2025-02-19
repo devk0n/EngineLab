@@ -1,8 +1,9 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <GLFW/glfw3.h>
+#include <memory>
 
+#include "Camera.h"
 #include "utils/Logger.h"
 
 
@@ -13,8 +14,7 @@ public:
 
   bool initialize();
   void clearScreen() ;
-  void render();
-
+  void render(Camera& camera);
 };
 
 

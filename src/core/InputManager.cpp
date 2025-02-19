@@ -1,4 +1,6 @@
 #include "core/InputManager.h"
+
+#include "core/Camera.h"
 #include "utils/Logger.h"
 
 InputManager::InputManager()
@@ -54,6 +56,16 @@ void InputManager::update() {
     m_scrollX = 0.0;
     m_scrollY = 0.0;
 }
+
+void InputManager::handleCameraMovement(Camera& camera, float dt) {
+    if (isKeyHeld(GLFW_KEY_W)) camera.processKeyboardInput(CameraMovement::FORWARD, dt);
+    if (isKeyHeld(GLFW_KEY_S)) camera.processKeyboardInput(CameraMovement::BACKWARD, dt);
+    if (isKeyHeld(GLFW_KEY_A)) camera.processKeyboardInput(CameraMovement::LEFT, dt);
+    if (isKeyHeld(GLFW_KEY_D)) camera.processKeyboardInput(CameraMovement::RIGHT, dt);
+    if (isKeyHeld(GLFW_KEY_LEFT_SHIFT)) camera.processKeyboardInput(CameraMovement::UP, dt);
+    if (isKeyHeld(GLFW_KEY_LEFT_CONTROL)) camera.processKeyboardInput(CameraMovement::DOWN, dt);
+}
+
 
 // Keyboard
 bool InputManager::isKeyPressed(const int key) const {

@@ -60,6 +60,10 @@ void Camera::processScroll(float yOffset) {
   m_movementSpeed += yOffset;
 }
 
+glm::vec3 Camera::getPosition() {
+  return m_position;
+}
+
 void Camera::updateCameraVectors() {
   // Convert Euler angles (yaw, pitch) to a direction vector
   glm::vec3 front;

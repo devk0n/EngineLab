@@ -1,4 +1,9 @@
 #include "scenes/MainMenu.h"
+
+#include <imgui.h>
+#include <core/ImGuiManager.h>
+
+#include "core/Camera.h"
 #include "core/InputManager.h"
 #include "utils/Logger.h"
 
@@ -8,6 +13,9 @@ void MainMenu::load() {
 }
 
 void MainMenu::update(float dt) {
+  // Handle camera movement
+  m_ctx.input->handleCameraMovement(*m_ctx.camera, dt);
+
   // Use input manager from context
   if (m_ctx.input->isKeyPressed(GLFW_KEY_ENTER)) {
     // Transition to GameLevel using scene manager from context
@@ -19,6 +27,12 @@ void MainMenu::update(float dt) {
 void MainMenu::render() {
   // Use renderer from context
   // m_ctx.renderer->DrawTexture("menu_bg", {0, 0});
+
+  ImGui::Begin("MainMenu");
+  auto pos = m_ctx.camera->getPosition();
+  ImGui::Text("Press ENTER to start %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+  ImGui::End();
+
 }
 
 void MainMenu::unload() {

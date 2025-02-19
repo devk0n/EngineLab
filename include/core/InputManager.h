@@ -4,12 +4,16 @@
 #include <array>
 #include <GLFW/glfw3.h>
 
+#include "Camera.h"
+
 class InputManager {
 public:
   InputManager();
 
   bool initialize(GLFWwindow* window);
   void update();
+
+  void handleCameraMovement(Camera &camera, float dt);
 
   // Keyboard
   [[nodiscard]] bool isKeyPressed(int key) const;
