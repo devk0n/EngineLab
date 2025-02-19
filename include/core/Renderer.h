@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include <GLFW/glfw3.h>
+
 #include "utils/Logger.h"
 
 
@@ -13,6 +14,7 @@ public:
   bool initialize();
   void clearScreen() ;
   void render();
+
 };
 
 

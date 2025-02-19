@@ -2,8 +2,11 @@
 #define APPLICATION_H
 
 #include <memory>
+
+#include "ImGuiManager.h"
 #include "core/InputManager.h"
 #include "core/Renderer.h"
+#include "core/SceneManager.h"
 #include "core/WindowManager.h"
 
 class Application {
@@ -18,6 +21,8 @@ private:
   std::unique_ptr<WindowManager> m_windowManager;
   std::unique_ptr<InputManager> m_inputManager;
   std::unique_ptr<Renderer> m_renderer;
+  std::unique_ptr<ImGuiManager> m_imguiManager;
+  std::unique_ptr<SceneManager> m_sceneManager;
 
   double m_lastFrameTime = 0.0;
 };

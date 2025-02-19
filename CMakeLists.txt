@@ -76,6 +76,10 @@ set(SOURCES
         src/core/WindowManager.cpp
         src/core/InputManager.cpp
         src/core/Renderer.cpp
+        src/core/ImGuiManager.cpp
+        src/core/SceneManager.cpp
+
+        src/scenes/MainMenu.cpp
 )
 
 # Add executable
