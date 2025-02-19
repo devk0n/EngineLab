@@ -80,6 +80,8 @@ set(SOURCES
         src/core/SceneManager.cpp
 
         src/scenes/MainMenu.cpp
+        include/core/Camera.h
+        src/core/Camera.cpp
 )
 
 # Add executable

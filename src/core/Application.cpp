@@ -14,6 +14,7 @@ Application::Application()
       m_inputManager(std::make_unique<InputManager>()),
       m_renderer(std::make_unique<Renderer>()),
       m_imguiManager(std::make_unique<ImGuiManager>()),
+      m_camera(std::make_unique<Camera>()),
       m_sceneManager(std::make_unique<SceneManager>()) {}
 
 bool Application::initialize() {
@@ -45,16 +46,17 @@ bool Application::initialize() {
         return false;
     }
 
-    // Initialize SceneManager
-    m_sceneManager = std::make_unique<SceneManager>();
-
     // Create a context for scenes to access engine systems
     Context ctx{
         .window = m_windowManager.get(),
         .input = m_inputManager.get(),
         .renderer = m_renderer.get(),
-        .scenes = m_sceneManager.get()
+        .scenes = m_sceneManager.get(),
+        .camera = m_camera.get()
     };
+
+    // Initialize SceneManager
+    m_sceneManager = std::make_unique<SceneManager>();
 
     // Push the initial scene (e.g., MainMenu)
     m_sceneManager->pushScene(std::make_unique<MainMenu>(ctx));

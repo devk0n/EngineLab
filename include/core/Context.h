@@ -6,12 +6,14 @@ class WindowManager;
 class InputManager;
 class Renderer;
 class SceneManager;
+class Camera;
 
 struct Context {
   WindowManager* window;
   InputManager* input;
   Renderer* renderer;
   SceneManager* scenes;
+  Camera* camera;
 };
 
 #endif // CONTEXT_H
