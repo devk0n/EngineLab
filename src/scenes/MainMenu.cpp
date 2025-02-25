@@ -35,6 +35,15 @@ void MainMenu::render() {
   ImGui::Text("Press ENTER to start %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
   ImGui::End();
 
+
+
+  // In your scene's render function
+  ImGui::Begin("Camera Debug");
+  ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+  ImGui::SliderFloat("Move Speed", m_ctx.camera->getMovementSpeed(), 1.0f, 20.0f);
+  ImGui::SliderFloat("Mouse Sens.", m_ctx.camera->getMouseSensitivity(), 0.01f, 1.0f);
+  ImGui::End();
+
 }
 
 void MainMenu::unload() {

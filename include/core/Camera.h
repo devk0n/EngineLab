@@ -28,6 +28,9 @@ public:
 
   glm::vec3 getPosition() const;
 
+  float *getMovementSpeed();
+  float *getMouseSensitivity();
+
 private:
   glm::vec3 m_position;
   glm::vec3 m_front;
@@ -43,10 +46,10 @@ private:
   float m_mouseSensitivity = 0.1f;
 
   // Projection parameters
-  float m_fov;
-  float m_aspectRatio;
-  float m_nearClip;
-  float m_farClip;
+  float m_fov = 45.0f;
+  float m_aspectRatio = 16.0f / 9.0f;
+  float m_nearClip = 0.1f;
+  float m_farClip = 100.0f;
 
   void updateCameraVectors();
 };

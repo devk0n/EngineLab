@@ -58,12 +58,26 @@ void InputManager::update() {
 }
 
 void InputManager::handleCameraMovement(Camera& camera, float dt) {
+    // Movement controls
     if (isKeyHeld(GLFW_KEY_W)) camera.processKeyboardInput(CameraMovement::FORWARD, dt);
     if (isKeyHeld(GLFW_KEY_S)) camera.processKeyboardInput(CameraMovement::BACKWARD, dt);
     if (isKeyHeld(GLFW_KEY_A)) camera.processKeyboardInput(CameraMovement::LEFT, dt);
     if (isKeyHeld(GLFW_KEY_D)) camera.processKeyboardInput(CameraMovement::RIGHT, dt);
     if (isKeyHeld(GLFW_KEY_LEFT_SHIFT)) camera.processKeyboardInput(CameraMovement::UP, dt);
     if (isKeyHeld(GLFW_KEY_LEFT_CONTROL)) camera.processKeyboardInput(CameraMovement::DOWN, dt);
+
+    // Right-click look control
+    const bool looking = isMouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT);
+    glfwSetInputMode(m_window, GLFW_CURSOR, looking ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+    if (looking) {
+        double xOffset, yOffset;
+        getMouseDelta(xOffset, yOffset);
+        camera.processMouseMovement(
+            static_cast<float>(-xOffset),
+            static_cast<float>(-yOffset) // Invert Y axis for natural movement
+        );
+    }
 }
 
 

@@ -103,4 +103,3 @@ void Application::run() {
 
     LOG_INFO("Application closed!");
 }
-

@@ -21,6 +21,8 @@ public:
 
 private:
   ShaderManager m_shaderManager;
+  GLuint m_gridVAO;
+  GLuint m_gridVBO;
 };
 
 

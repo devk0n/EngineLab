@@ -19,17 +19,14 @@ void GameLevel::update(float dt) {
 
   // Use input manager from context
   if (m_ctx.input->isKeyPressed(GLFW_KEY_ENTER)) {
-    // Transition to GameLevel using scene manager from context
+    // Transition to MainMenu using scene manager from context
     m_ctx.scenes->pushScene(std::make_unique<MainMenu>(m_ctx));
-    LOG_DEBUG("Transitioning to GameLevel");
+    LOG_DEBUG("Transitioning to MainMenu");
   }
 }
 
 void GameLevel::render() {
-  ImGui::Begin("GameLevel");
-  auto pos = m_ctx.camera->getPosition();
-  ImGui::Text("Press ENTER to start %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-  ImGui::End();
+  ImGui::ShowDemoWindow();
 }
 
 void GameLevel::unload() {
