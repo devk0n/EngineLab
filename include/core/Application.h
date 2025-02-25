@@ -13,6 +13,7 @@
 class Application {
 public:
   Application();
+  ~Application();
 
   bool initialize();
   void run();

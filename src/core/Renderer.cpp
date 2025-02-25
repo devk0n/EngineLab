@@ -25,6 +25,8 @@ void Renderer::clearScreen() {
 }
 
 void Renderer::render(const Camera& camera) {
+  [[maybe_unused]] auto view = camera.getViewMatrix();
+  [[maybe_unused]] auto projection = camera.getProjectionMatrix();
 
 }
 

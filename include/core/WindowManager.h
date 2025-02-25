@@ -10,7 +10,6 @@ class WindowManager {
 public:
   // Construction & Destruction
   explicit WindowManager(std::string title);
-  ~WindowManager();
 
   // Core Interface
   bool initialize();

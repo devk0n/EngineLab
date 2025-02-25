@@ -16,6 +16,15 @@ Application::Application()
       m_camera(std::make_unique<Camera>()),
       m_sceneManager(std::make_unique<SceneManager>()) {}
 
+Application::~Application() {
+    m_imguiManager->shutdown();
+    LOG_INFO("Application destroyed");
+    m_windowManager.reset();
+    glfwTerminate();
+    LOG_DEBUG("GLFW terminated");
+}
+
+
 bool Application::initialize() {
     // Initialize logger
     if (!Logger::initialize("log.txt")) { return false; }
@@ -55,9 +64,6 @@ bool Application::initialize() {
         .imgui = m_imguiManager.get()
     };
 
-    // Initialize SceneManager
-    m_sceneManager = std::make_unique<SceneManager>();
-
     // Push the initial scene (e.g., MainMenu)
     m_sceneManager->pushScene(std::make_unique<MainMenu>(ctx));
 
@@ -73,8 +79,6 @@ void Application::run() {
 
     LOG_INFO("Application started!");
     m_lastFrameTime = glfwGetTime();
-
-    m_renderer->initialize();
 
     while (!m_windowManager->shouldClose()) {
         double currentTime = glfwGetTime();

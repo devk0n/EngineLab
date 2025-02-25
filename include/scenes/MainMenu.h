@@ -1,8 +1,8 @@
 #ifndef MAINMENU_H
 #define MAINMENU_H
 
+#include "Scene.h"
 #include "core/Context.h"
-#include "scenes/Scene.h"
 
 class MainMenu final : public Scene {
 public:

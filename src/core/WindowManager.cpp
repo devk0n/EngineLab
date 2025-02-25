@@ -7,11 +7,6 @@ WindowManager::WindowManager(std::string title)
     : m_window(nullptr, glfwDestroyWindow),
       m_data{0, 0, std::move(title), nullptr} {}
 
-WindowManager::~WindowManager() {
-  glfwTerminate();
-  LOG_DEBUG("GLFW terminated");
-}
-
 bool WindowManager::initialize() {
   if (!glfwInit()) {
     LOG_ERROR("Failed to initialize GLFW");
@@ -20,7 +15,10 @@ bool WindowManager::initialize() {
 
   m_data.primaryMonitor = glfwGetPrimaryMonitor();
   const GLFWvidmode* videoMode = glfwGetVideoMode(m_data.primaryMonitor);
-  if (!videoMode) return false;
+    if (!videoMode) {
+        LOG_ERROR("Failed to get video mode");
+        return false;
+    }
 
   calculateWindowSize(videoMode);
   setOpenGLHints();
