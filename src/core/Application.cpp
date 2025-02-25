@@ -14,7 +14,8 @@ Application::Application()
       m_renderer(std::make_unique<Renderer>()),
       m_imguiManager(std::make_unique<ImGuiManager>()),
       m_camera(std::make_unique<Camera>()),
-      m_sceneManager(std::make_unique<SceneManager>()) {}
+      m_sceneManager(std::make_unique<SceneManager>()),
+      m_shaderManager(std::make_unique<ShaderManager>()) {}
 
 Application::~Application() {
     m_imguiManager->shutdown();
@@ -23,7 +24,6 @@ Application::~Application() {
     glfwTerminate();
     LOG_DEBUG("GLFW terminated");
 }
-
 
 bool Application::initialize() {
     // Initialize logger
@@ -61,7 +61,8 @@ bool Application::initialize() {
         .renderer = m_renderer.get(),
         .scenes = m_sceneManager.get(),
         .camera = m_camera.get(),
-        .imgui = m_imguiManager.get()
+        .imgui = m_imguiManager.get(),
+        .shaders = m_shaderManager.get()
     };
 
     // Push the initial scene (e.g., MainMenu)

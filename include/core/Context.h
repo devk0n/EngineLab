@@ -8,6 +8,7 @@ class Renderer;
 class SceneManager;
 class Camera;
 class ImGuiManager;
+class ShaderManager;
 
 struct Context {
   WindowManager* window;
@@ -16,6 +17,7 @@ struct Context {
   SceneManager* scenes;
   Camera* camera;
   ImGuiManager* imgui;
+  ShaderManager* shaders;
 };
 
 #endif // CONTEXT_H

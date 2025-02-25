@@ -5,9 +5,11 @@
 
 #include "Camera.h"
 #include "ImGuiManager.h"
+#include "ShaderManager.h"
 #include "core/InputManager.h"
 #include "core/Renderer.h"
 #include "core/SceneManager.h"
+#include "core/ShaderManager.h"
 #include "core/WindowManager.h"
 
 class Application {
@@ -26,6 +28,7 @@ private:
   std::unique_ptr<ImGuiManager> m_imguiManager;
   std::unique_ptr<Camera> m_camera;
   std::unique_ptr<SceneManager> m_sceneManager;
+  std::unique_ptr<ShaderManager> m_shaderManager;
 
   double m_lastFrameTime = 0.0;
 };

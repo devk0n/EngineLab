@@ -79,11 +79,10 @@ set(SOURCES
         src/core/ImGuiManager.cpp
         src/core/SceneManager.cpp
         src/core/Camera.cpp
+        src/core/ShaderManager.cpp
 
         src/scenes/MainMenu.cpp
         src/scenes/GameLevel.cpp
-
-        src/graphics/Shader.cpp
 )
 
 # Add executable
