@@ -60,7 +60,7 @@ void Camera::processScroll(float yOffset) {
   m_movementSpeed += yOffset;
 }
 
-glm::vec3 Camera::getPosition() {
+glm::vec3 Camera::getPosition() const {
   return m_position;
 }
 

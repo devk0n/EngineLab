@@ -3,7 +3,8 @@
 
 #include <memory>
 #include <string>
-#include <GLFW/glfw3.h>
+#include "utils/OpenGLSetup.h"
+
 
 class WindowManager {
 public:

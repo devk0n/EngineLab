@@ -1,7 +1,7 @@
 #ifndef IMGUIMANAGER_H
 #define IMGUIMANAGER_H
 
-#include "GLFW/glfw3.h"
+#include "utils/OpenGLSetup.h"
 
 class ImGuiManager {
 public:

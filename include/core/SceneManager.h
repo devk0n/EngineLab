@@ -5,7 +5,6 @@
 #include <stack>
 #include "scenes/Scene.h"
 
-
 class SceneManager {
 public:
   void pushScene(std::unique_ptr<Scene> scene);
@@ -17,5 +16,4 @@ private:
   std::stack<std::unique_ptr<Scene>> m_scenes;
 };
 
-
-#endif //SCENEMANAGER_H
+#endif // SCENEMANAGER_H

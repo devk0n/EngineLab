@@ -14,7 +14,8 @@ public:
 
   bool initialize();
   void clearScreen() ;
-  void render(Camera& camera);
+  void render(const Camera& camera);
+
 };
 
 

@@ -1,15 +1,15 @@
 #include "scenes/MainMenu.h"
 
 #include <imgui.h>
-#include <core/ImGuiManager.h>
+#include <core/InputManager.h>
 
-#include "core/Camera.h"
-#include "core/InputManager.h"
 #include "utils/Logger.h"
+#include "utils/OpenGLSetup.h"
 
-void MainMenu::load() {
+bool MainMenu::load() {
   // Access resources via context
   // m_ctx.renderer->loadTexture("menu_bg", "assets/menu_bg.png");
+  return true;
 }
 
 void MainMenu::update(float dt) {
@@ -19,7 +19,6 @@ void MainMenu::update(float dt) {
   // Use input manager from context
   if (m_ctx.input->isKeyPressed(GLFW_KEY_ENTER)) {
     // Transition to GameLevel using scene manager from context
-    // m_ctx.scenes->pushScene(std::make_unique<GameLevel>(m_ctx));
     LOG_DEBUG("Transitioning to GameLevel");
   }
 }

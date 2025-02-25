@@ -1,13 +1,15 @@
 #include "core/Renderer.h"
-#include "GLFW/glfw3.h"
+#include "utils/OpenGLSetup.h"
 
-Renderer::Renderer() {}
+Renderer::Renderer() {
+}
 
 Renderer::~Renderer() {
   LOG_INFO("Renderer destroyed");
 }
 
 bool Renderer::initialize() {
+  // Initialize OpenGL settings
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
@@ -22,6 +24,7 @@ void Renderer::clearScreen() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::render(Camera& camera) {
+void Renderer::render(const Camera& camera) {
 
 }
+

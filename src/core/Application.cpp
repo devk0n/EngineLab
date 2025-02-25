@@ -3,7 +3,6 @@
 #include "core/Application.h"
 
 #include <imgui.h>
-#include <GLFW/glfw3.h>
 
 #include "core/Context.h"
 #include "scenes/MainMenu.h"
@@ -75,7 +74,7 @@ void Application::run() {
     LOG_INFO("Application started!");
     m_lastFrameTime = glfwGetTime();
 
-    m_renderer->initialize(); // ✅ Initialize the renderer
+    m_renderer->initialize();
 
     while (!m_windowManager->shouldClose()) {
         double currentTime = glfwGetTime();
@@ -87,7 +86,7 @@ void Application::run() {
         m_sceneManager->update(deltaTime);
 
         m_renderer->clearScreen();
-        m_renderer->render(*m_camera); // ✅ Render the grid!
+        m_renderer->render(*m_camera);
 
         m_imguiManager->beginFrame();
         m_sceneManager->render();

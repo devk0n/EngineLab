@@ -2,7 +2,7 @@
 #define INPUTMANAGER_H
 
 #include <array>
-#include <GLFW/glfw3.h>
+#include "utils/OpenGLSetup.h"
 
 #include "Camera.h"
 

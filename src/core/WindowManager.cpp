@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "utils/OpenGLSetup.h"
 
 #include "core/WindowManager.h"
 #include "utils/Logger.h"
@@ -92,6 +92,12 @@ bool WindowManager::initializeGLAD() {
 void WindowManager::logDebugInfo(const GLFWvidmode* videoMode) const {
     LOG_INFO("Window initialized - Size: ", m_data.width, "x", m_data.height);
     LOG_DEBUG("Monitor: ", videoMode->width, "x", videoMode->height, " @ ", videoMode->refreshRate, "Hz");
-    LOG_DEBUG("OpenGL: ", glGetString(GL_VERSION));
-    LOG_DEBUG("Renderer: ", glGetString(GL_RENDERER));
+
+    if (glGetString(GL_VERSION) == nullptr) {
+        LOG_ERROR("ERROR: OpenGL context is not available! glGetString(GL_VERSION) returned nullptr.");
+        return;
+    }
+
+    LOG_DEBUG("OpenGL Version: ", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    LOG_DEBUG("Renderer: ", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
 }

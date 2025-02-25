@@ -81,7 +81,6 @@ set(SOURCES
         src/core/Camera.cpp
 
         src/scenes/MainMenu.cpp
-
 )
 
 # Add executable
