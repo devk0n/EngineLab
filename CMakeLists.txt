@@ -82,6 +82,8 @@ set(SOURCES
 
         src/scenes/MainMenu.cpp
         src/scenes/GameLevel.cpp
+
+        src/graphics/Shader.cpp
 )
 
 # Add executable

@@ -10,6 +10,6 @@
 #   2) Or open PowerShell in the project's folder and run:
 #      .\CombineCode.ps1
 
-Get-ChildItem -Path .\src, .\include, .\assets -Recurse -Include *.cpp, *.h -File |
+Get-ChildItem -Path .\src, .\include, .\assets -Recurse -Include *.cpp, *.h, *.glsl -File |
     Get-Content |
-    Out-File Combined.cpp
+    Out-File Combined.txt

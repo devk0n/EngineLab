@@ -1,8 +1,7 @@
 #include "core/Renderer.h"
 #include "utils/OpenGLSetup.h"
 
-Renderer::Renderer() {
-}
+Renderer::Renderer() {}
 
 Renderer::~Renderer() {
   LOG_INFO("Renderer destroyed");
