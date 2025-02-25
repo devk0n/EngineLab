@@ -1,7 +1,4 @@
 /.idea
 /build-debug
 
-CombineCode.ps1
 Combined.txt
-system.lua
-system.toml
