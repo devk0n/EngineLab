@@ -16,9 +16,9 @@
 // ANSI Color Codes for Unix/Linux/macOS & Windows 10+
 #define RESET "\033[0m"
 #define WHITE "\033[97m"  // Bright White
-#define COLOR_DEBUG "\033[36m"  // Cyan
-#define COLOR_INFO "\033[97m"  // White
-#define COLOR_WARN "\033[33m"  // Yellow
+#define COLOR_DEBUG "\x1B[95m"  // Magenta
+#define COLOR_INFO  "\x1B[96m"  // Cyan
+#define COLOR_WARN  "\x1B[38;2;255;165;0m"  // Orange
 #define COLOR_ERROR "\033[31m"  // Red
 
 //FIXME: Some prints to the console are showing on the same line.

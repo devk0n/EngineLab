@@ -1,54 +1,93 @@
 ```mermaid
+%% 1. Core Components Overview
 flowchart TD
-    usm([EngineLab]):::main
+    A[Application] --> B[WindowManager]
+    A --> C[InputManager]
+    A --> D[Renderer]
+    A --> E[ImGuiManager]
+    A --> F[Camera]
+    A --> G[SceneManager]
+    A --> H[ShaderManager]
+    G --> I[MainMenu]
+    G --> J[GameLevel]
+```
 
-    subgraph CoreEngine
-        asm([Application]):::subsystem
-    end
+---
 
-    subgraph Managers
-        s_a(["WindowManager"]):::component
-        s_b(["InputManager"]):::component
-        s_c(["RenderManager"]):::component
-        s_d(["EventManager"]):::component
-    end
-
-    %% Main Relationships
-    usm --> asm
-    asm --> s_a
-    asm --> s_b
-    asm --> s_c
-    asm --> s_d
-
-    %% WindowManager Workflow
-    subgraph WindowManagerWorkflow
-        wa1([Initialize Window])
-        wa2([Handle Resize Events])
-        wa3([Render Window Frame])
-        s_a --> wa1 --> wa2 --> wa3
-    end
-
-    %% InputManager Workflow
-    subgraph InputManagerWorkflow
-        ib1([Capture User Input])
-        ib2([Process Input Events])
-        ib3([Send Input to Entities])
-        s_b --> ib1 --> ib2 --> ib3
-    end
-
-    %% RenderManager Workflow
-    subgraph RenderManagerWorkflow
-        rc1([Load Graphics Pipeline])
-        rc2([Render Scene])
-        rc3([Optimize Resources])
-        s_c --> rc1 --> rc2 --> rc3
-    end
-
-    %% EventManager Workflow
-    subgraph EventManagerWorkflow
-        ev1([Queue Events])
-        ev2([Dispatch Events])
-        ev3([Broadcast to Listeners])
-        s_d --> ev1 --> ev2 --> ev3
+### 2. Main Loop Flow
+```mermaid
+sequenceDiagram
+    loop Every Frame
+        Application->>WindowManager: PollEvents()
+        Application->>InputManager: Update()
+        Application->>SceneManager: Update(deltaTime)
+        Application->>Renderer: ClearScreen()
+        Application->>Renderer: Render(camera)
+        Application->>ImGuiManager: BeginFrame()
+        Application->>SceneManager: Render()
+        Application->>ImGuiManager: EndFrame()
+        Application->>WindowManager: SwapBuffers()
     end
 ```
+
+---
+
+### 3. Scene Management
+```mermaid
+stateDiagram-v2
+    [*] --> MainMenu
+    MainMenu --> GameLevel: Push on ENTER
+    GameLevel --> MainMenu: Push on ENTER
+```
+
+---
+
+### 4. Key Data Flow
+```mermaid
+flowchart LR
+    InputManager --> Camera:eyboard/Mouse
+    Camera --> Renderer: View/Projection Matrices
+    ShaderManager --> Renderer: Shader Programs
+    SceneManager --> ImGuiManager: UI Rendering
+```
+
+---
+
+### 5. Dependency Graph (via CMake + Graphviz)
+```bash
+# Generate with:
+cmake --graphviz=deps.dot .
+dot -Tpng deps.dot -o dependencies.png
+```
+
+---
+
+### 6. Critical Code Snippets
+
+#### Context Sharing
+```cpp
+// Application.cpp
+Context ctx{
+    .window = m_windowManager.get(),
+    .input = m_inputManager.get(),
+    .renderer = m_renderer.get(),
+    .scenes = m_sceneManager.get(),
+    .camera = m_camera.get(),
+    .imgui = m_imguiManager.get(),
+    .shaders = m_shaderManager.get()
+};
+```
+
+---
+
+### 7. Architecture Summary Table
+
+| Component          | Responsibility                          | Depends On               |
+|--------------------|-----------------------------------------|--------------------------|
+| WindowManager      | GLFW window/context management          | GLFW, OpenGL             |
+| InputManager       | Input state aggregation                 | GLFW callbacks           |
+| Renderer           | OpenGL draw command management          | ShaderManager, Camera    |
+| SceneManager       | State transitions & scene lifecycle     | Context                  |
+| ImGuiManager       | UI rendering pipeline                   | GLFW/OpenGL backends     |
+| ShaderManager      | Shader program lifecycle                | OpenGL                   |
+| Camera             | View/projection matrices                | InputManager             |

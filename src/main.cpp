@@ -2,10 +2,18 @@
 
 int main() {
 
+  // Initialize logger
+  if (!Logger::initialize("log.txt")) { return false; }
+  Logger::setLogLevel(Logger::Level::Debug);
+  LOG_ERROR("Logger initialized.");
+
   Application app;
-  if (!app.initialize()) { return 1; }
+  if (!app.initialize()) {
+    LOG_ERROR("Failed to initialize application.");
+    return 1;
+  }
 
   app.run();
 
-  return 0;
+  LOG_DEBUG("Application terminated.");
 }

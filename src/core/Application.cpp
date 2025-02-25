@@ -26,10 +26,6 @@ Application::~Application() {
 }
 
 bool Application::initialize() {
-    // Initialize logger
-    if (!Logger::initialize("log.txt")) { return false; }
-    Logger::setLogLevel(Logger::Level::Debug);
-
     // Initialize window manager
     if (!m_windowManager->initialize()) {
         LOG_ERROR("Failed to initialize window manager");
@@ -62,7 +58,6 @@ bool Application::initialize() {
         .scenes = m_sceneManager.get(),
         .camera = m_camera.get(),
         .imgui = m_imguiManager.get(),
-        .shaders = m_shaderManager.get()
     };
 
     // Push the initial scene (e.g., MainMenu)
@@ -88,6 +83,12 @@ void Application::run() {
 
         WindowManager::pollEvents();
         m_inputManager->update();
+
+        // Add ESC key check here
+        if (m_inputManager->isKeyPressed(GLFW_KEY_ESCAPE)) {
+            m_windowManager->close();
+        }
+
         m_sceneManager->update(deltaTime);
 
         m_renderer->clearScreen();
