@@ -73,13 +73,14 @@ void InputManager::handleCameraMovement(Camera& camera, float dt) {
     if (looking) {
         double xOffset, yOffset;
         getMouseDelta(xOffset, yOffset);
+
+        // After (correct)
         camera.processMouseMovement(
-            static_cast<float>(-xOffset),
-            static_cast<float>(-yOffset) // Invert Y axis for natural movement
+            static_cast<float>(xOffset),
+            static_cast<float>(yOffset) // Remove negative sign
         );
     }
 }
-
 
 // Keyboard
 bool InputManager::isKeyPressed(const int key) const {

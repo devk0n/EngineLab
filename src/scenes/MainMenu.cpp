@@ -39,8 +39,9 @@ void MainMenu::showCameraDebug() {
     // Use const references for vectors
     const glm::vec3& position = camera.getPosition();
     const glm::vec3& front = camera.getFront();
+    const glm::vec3& left = camera.getLeft();
     const glm::vec3& up = camera.getUp();
-    const glm::vec3& right = camera.getRight();
+
 
     // Get float values (returned by value, safe)
     float yaw = camera.getYaw();
@@ -66,8 +67,8 @@ void MainMenu::showCameraDebug() {
 
         DISPLAY_VECTOR("Position", position);
         DISPLAY_VECTOR("Front", front);
+        DISPLAY_VECTOR("Left", left);
         DISPLAY_VECTOR("Up", up);
-        DISPLAY_VECTOR("Right", right);
 
         #undef DISPLAY_VECTOR
 

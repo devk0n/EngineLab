@@ -62,10 +62,6 @@ bool Renderer::initialize() {
   glGenVertexArrays(1, &m_skyVAO);
   glBindVertexArray(m_skyVAO);
 
-  // Create and upload to VBO
-  glGenVertexArrays(1, &m_skyVAO);
-  glBindVertexArray(m_skyVAO);
-
   glGenBuffers(1, &m_skyVBO);
   glBindBuffer(GL_ARRAY_BUFFER, m_skyVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(skyVertices), skyVertices, GL_STATIC_DRAW);
@@ -90,7 +86,7 @@ void Renderer::clearScreen() {
 
 void Renderer::render(const Camera& camera) {
   // Render sky first
-  renderSky(camera);
+  // renderSky(camera);
 
   // Render grid
   renderGrid(camera);

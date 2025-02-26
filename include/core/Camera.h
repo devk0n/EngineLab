@@ -32,7 +32,7 @@ public:
   const glm::vec3& getPosition() const;
   const glm::vec3& getFront() const;
   const glm::vec3& getUp() const;
-  const glm::vec3& getRight() const;
+  const glm::vec3& getLeft() const;
 
   // For fundamental types, return by value to avoid issues
   float getYaw() const;
@@ -46,9 +46,6 @@ public:
 
   // Setters
   void setPosition(glm::vec3 position);
-  void setFront(glm::vec3 front);
-  void setUp(glm::vec3 up);
-  void setRight(glm::vec3 right);
   void setYaw(float yaw);
   void setPitch(float pitch);
   void setFov(float fov);
@@ -59,14 +56,15 @@ public:
   void setMouseSensitivity(float mouseSensitivity);
 
 private:
-  glm::vec3 m_position;
-  glm::vec3 m_front;
-  glm::vec3 m_up;
-  glm::vec3 m_right;
+  glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 m_front = glm::vec3(1.0f, 0.0f, 0.0f);
+  glm::vec3 m_left  = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 m_up    = glm::vec3(0.0f, 0.0f, 1.0f);
 
   // Euler angles
-  float m_yaw;
-  float m_pitch;
+  float m_roll = 0.0f;
+  float m_pitch = 0.0f;
+  float m_yaw = 0.0f;
 
   // Camera settings
   float m_movementSpeed = 10.0f;
