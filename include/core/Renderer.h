@@ -21,8 +21,12 @@ public:
 
 private:
   ShaderManager m_shaderManager;
-  GLuint m_gridVAO;
-  GLuint m_gridVBO;
+  GLuint m_skyVAO, m_skyVBO, m_skyEBO;
+  GLuint m_gridVAO, m_gridVBO;
+
+
+  void renderSky(const Camera& camera);
+  void renderGrid(const Camera& camera);
 };
 
 

@@ -1,5 +1,7 @@
 #version 460 core
 
+layout(early_fragment_tests) in;
+
 out vec4 FragColor;
 
 uniform mat4 view;
