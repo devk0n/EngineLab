@@ -27,6 +27,9 @@ public:
   void processScroll(float yOffset);
 
   glm::vec3 getPosition() const;
+  void setPosition(glm::vec3 position);
+
+  void lookAt(glm::vec3 target);
 
   float *getMovementSpeed();
   float *getMouseSensitivity();

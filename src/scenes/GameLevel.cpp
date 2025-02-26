@@ -10,6 +10,8 @@
 #include "utils/OpenGLSetup.h"
 
 bool GameLevel::load() {
+  m_ctx.camera->setPosition(glm::vec3(10, 8, 6));  // Position above the grid
+  m_ctx.camera->lookAt(glm::vec3(0, 0, 0));       // Look at the center of the grid
   return true;
 }
 

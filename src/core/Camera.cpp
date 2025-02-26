@@ -60,6 +60,20 @@ glm::vec3 Camera::getPosition() const {
   return m_position;
 }
 
+void Camera::setPosition(glm::vec3 position) {
+  m_position = position;
+}
+
+void Camera::lookAt(glm::vec3 target) {
+  // Recompute forward dir
+  glm::vec3 newFront = glm::normalize(target - m_position);
+
+  m_yaw   = glm::degrees(std::atan2(newFront.y, newFront.x));
+  m_pitch = glm::degrees(std::asin(newFront.z));
+
+  updateCameraVectors();
+}
+
 float *Camera::getMovementSpeed() {
   return &m_movementSpeed;
 }
@@ -74,11 +88,11 @@ void Camera::updateCameraVectors() {
   front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
   front.y = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)); // Fixed Y component
   front.z = sin(glm::radians(m_pitch));                            // Fixed Z component
-  m_front = glm::normalize(front);
+  m_front = normalize(front);
 
   // Right vector remains correct
-  m_right = glm::normalize(glm::cross(m_front, glm::vec3(0.0f, 0.0f, 1.0f)));
+  m_right = normalize(cross(m_front, glm::vec3(0.0f, 0.0f, 1.0f)));
 
   // Up vector calculation stays correct
-  m_up = glm::normalize(glm::cross(m_right, m_front));
+  m_up = normalize(cross(m_right, m_front));
 }
