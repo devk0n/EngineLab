@@ -1,14 +1,10 @@
-#version 460 core
+#version 330 core
+layout(location = 0) in vec3 aPos;
+out vec3 vWorldPos;
 
-layout (location = 0) in vec3 aPos;
-
-out vec3 TexCoords;
-
-uniform mat4 projection;
-uniform mat4 view;
+uniform mat4 u_viewProjection;
 
 void main() {
-    TexCoords = aPos;
-    vec4 pos = projection * view * vec4(aPos * 100.0, 1.0); // Scale cube
-    gl_Position = pos.xyww;
+    vWorldPos = aPos;  // Pass world position to fragment shader
+    gl_Position = u_viewProjection * vec4(aPos, 1.0);
 }

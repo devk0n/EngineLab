@@ -1,19 +1,41 @@
-#version 460 core
+#version 330 core
+in vec3 vWorldPos;
 out vec4 FragColor;
-in vec3 TexCoords;
 
-uniform vec3 sunDir = normalize(vec3(0.2, -1.0, 0.1));
+uniform vec3 u_cameraPos;
+uniform float u_time;  // Optional: For animated stars
+
+// Sky colors
+#define SKY_COLOR_BOTTOM vec3(0.05, 0.05, 0.1)  // Dark blue at the bottom
+#define SKY_COLOR_TOP vec3(0.0, 0.0, 0.0)       // Black at the top
+#define STAR_COLOR vec3(1.0, 1.0, 1.0)          // White stars
+
+// Star settings
+#define STAR_DENSITY 0.02  // Density of stars
+#define STAR_BRIGHTNESS 0.5 // Brightness of stars
+
+// Random function for stars
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
 
 void main() {
-    // Use Z coordinate for vertical gradient
-    float vertical = TexCoords.z; // Changed from .y to .z
-    vec3 skyColor = mix(vec3(0.5, 0.7, 1.0), vec3(0.1, 0.1, 0.3),
-         smoothstep(-0.2, 0.8, vertical));
+    // Normalize world position for sky gradient
+    vec3 dir = normalize(vWorldPos - u_cameraPos);
+    float gradient = smoothstep(-1.0, 1.0, dir.y);  // Vertical gradient
 
-    // Sun calculation (adjust for Z-up)
-    vec3 rayDir = normalize(TexCoords);
-    vec3 sunDir = normalize(vec3(0.2, 0.1, -1.0)); // Sun coming from +X, +Y, -Z
-    float sun = smoothstep(0.999, 0.9997, dot(rayDir, sunDir));
+    // Sky gradient
+    vec3 skyColor = mix(SKY_COLOR_BOTTOM, SKY_COLOR_TOP, gradient);
 
-    FragColor = vec4(skyColor + sun * vec3(1.0, 0.8, 0.6), 1.0);
+    // Stars
+    vec2 starCoord = dir.xz / (1.0 + dir.y);  // Project onto a plane
+    starCoord *= 100.0;  // Scale for star density
+    float starValue = random(floor(starCoord));
+    if (starValue < STAR_DENSITY) {
+        float starBrightness = smoothstep(0.0, 1.0, random(starCoord)) * STAR_BRIGHTNESS;
+        skyColor += starBrightness * STAR_COLOR;
+    }
+
+    // Output final color
+    FragColor = vec4(skyColor, 1.0);
 }

@@ -1,56 +1,75 @@
-#version 460 core
-
-layout(early_fragment_tests) in;
-
+#version 330 core
+in vec3 vWorldPos;
 out vec4 FragColor;
 
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat4 invVP;
-uniform vec3 cameraPos;
+uniform vec3 u_cameraPos;
+uniform float u_scale;
 
-in vec2 vPos;
+// Fog parameters
+uniform vec3 u_fogColor;
+uniform float u_fogStart;
+uniform float u_fogEnd;
+
+// Grid parameters
+#define MAJOR_GRID_COLOR vec3(0.5)
+#define MINOR_GRID_COLOR vec3(0.2)
+#define X_AXIS_COLOR vec3(0.0, 1.0, 1.0)  // Red for X-axis
+#define Y_AXIS_COLOR vec3(1.0, 0.0, 1.0)  // Green for Y-axis
+#define BACKGROUND vec3(0.1)
+#define GRID_TRANSPARENCY 0.1  // 10% transparency for space between lines
+#define GRID_SIZE 1000.0        // Grid size in meters
+
+float computeGrid(vec2 coord, float spacing, float lineWidth) {
+    vec2 gridCoord = coord / spacing;
+    vec2 derivative = fwidth(gridCoord);
+    vec2 gridLine = abs(fract(gridCoord - 0.5) - 0.5);
+    gridLine = smoothstep(lineWidth * derivative, vec2(0.0), gridLine);
+    return clamp(max(gridLine.x, gridLine.y), 0.0, 1.0);
+}
 
 void main() {
-    // Calculate world position from NDC
-    vec4 clipPos = vec4(vPos, 1.0, 1.0);
-    vec4 worldPos = invVP * clipPos;
-    worldPos /= worldPos.w;
+    // Discard fragments outside the 250x250 meter boundary
+    if (abs(vWorldPos.x) > GRID_SIZE * 0.5 || abs(vWorldPos.y) > GRID_SIZE * 0.5) {
+        discard;
+    }
 
-    // Ray direction from camera to fragment
-    vec3 rayDir = normalize(worldPos.xyz - cameraPos);
+    // Align grid with XY plane (Z+ is upwards)
+    vec2 coordXY = vec2(vWorldPos.x, vWorldPos.y);
 
-    // Intersect with XY plane (Z = 0)
-    if (rayDir.z == 0.0) discard;
-    float t = -cameraPos.z / rayDir.z;
-    if (t < 0.0) discard;
-    vec3 hitPoint = cameraPos + t * rayDir;
+    // Major grid lines (every 10 units)
+    float majorGrid = computeGrid(coordXY, 10.0, 1.5);
 
-    // Grid parameters
-    float majorGrid = 10.0;
-    float minorGrid = 1.0;
-    float minorWidth = 0.02;
-    float majorWidth = 0.05;
+    // Minor grid lines (every 1 unit)
+    float minorGrid = computeGrid(coordXY, 1.0, 0.5);
 
-     // Grid parameters (now using XY coordinates)
-    vec2 coord = hitPoint.xy;
-    vec2 minor = abs(fract(coord / minorGrid - 0.5) - 0.5);
-    float minorLine = smoothstep(minorWidth, minorWidth + 0.001, min(minor.x, minor.y));
+    // Axis lines (X-axis in red, Y-axis in green)
+    vec2 axisWidth = fwidth(coordXY);
+    float xAxis = smoothstep(axisWidth.x * 2.0, 0.0, abs(vWorldPos.x));
+    float yAxis = smoothstep(axisWidth.y * 2.0, 0.0, abs(vWorldPos.y));
 
-    // Major grid lines
-    vec2 major = abs(fract(coord / majorGrid - 0.5) - 0.5);
-    float majorLine = smoothstep(majorWidth, majorWidth + 0.001, min(major.x, major.y));
+    // Combine grid and axis
+    vec3 color = mix(BACKGROUND, MINOR_GRID_COLOR, minorGrid);
+    color = mix(color, MAJOR_GRID_COLOR, majorGrid);
+    color = mix(color, X_AXIS_COLOR, xAxis);
+    color = mix(color, Y_AXIS_COLOR, yAxis);
 
-    // Combine lines
-    float grid = max(minorLine, majorLine);
+    // Distance fade
+    float cameraDist = distance(u_cameraPos, vWorldPos);
+    float fade = 1.0 - smoothstep(0.0, 100.0, cameraDist);
+    color *= fade;
 
-    // Fade with distance
-    float distance = length(hitPoint - cameraPos);
-    float fade = 1.0 - smoothstep(10.0, 100.0, distance);
+    // Set alpha based on grid lines
+    float alpha = max(majorGrid, minorGrid);  // Use grid lines to determine opacity
+    alpha = mix(GRID_TRANSPARENCY, 1.0, alpha);  // 10% transparency for space between lines
 
-    // Color and alpha
-    vec3 color = vec3(0.5) * grid * fade;
-    float alpha = grid * fade;
+    // Fog calculation
+    float fogFactor = clamp((u_fogEnd - cameraDist) / (u_fogEnd - u_fogStart), 0.0, 1.0);
 
-    FragColor = vec4(color, alpha * 0.5);
+    // Apply fog to the color
+    vec3 finalColor = mix(u_fogColor, color, fogFactor);
+
+    // Apply fog to the alpha channel
+    float finalAlpha = mix(1.0, alpha, fogFactor);  // Fog reduces transparency
+
+    FragColor = vec4(finalColor, finalAlpha);
 }

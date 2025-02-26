@@ -49,7 +49,7 @@ private:
   float m_fov = 45.0f;
   float m_aspectRatio = 16.0f / 9.0f;
   float m_nearClip = 0.1f;
-  float m_farClip = 100.0f;
+  float m_farClip = 250.0f;
 
   void updateCameraVectors();
 };
