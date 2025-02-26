@@ -11,6 +11,9 @@ public:
   void update(float dt) override;
   void render() override;
   void unload() override;
+
+private:
+  void showCameraDebug();
 };
 
 #endif // MAINMENU_H

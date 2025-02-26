@@ -1,19 +1,15 @@
 #include "core/Camera.h"
 
 
-Camera::Camera() :
-    m_position(0.0f, 0.0f, 3.0f),  // X=right, Y=forward, Z=up
-    m_front(1.0f, 0.0f, 0.0f),    // Looking along negative X
-    m_up(0.0f, 0.0f, 1.0f),        // World up is Z+
-    m_right(0.0f, 1.0f, 0.0f),     // Right vector starts as Y+
-    m_yaw(-90.0f),                 // Aligns with initial front vector
-    m_pitch(0.0f) {
-  updateCameraVectors(); // Force proper initialization
+Camera::Camera() {
+  setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
+  lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  updateCameraVectors();
 }
 
 glm::mat4 Camera::getViewMatrix() const {
   // Proper RHS lookAt with Z+ up
-  return glm::lookAtRH(m_position, m_position + m_front, m_up);
+  return lookAtRH(m_position, m_position + m_front, m_up);
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {
@@ -56,14 +52,6 @@ void Camera::processScroll(float yOffset) {
   m_movementSpeed += yOffset;
 }
 
-glm::vec3 Camera::getPosition() const {
-  return m_position;
-}
-
-void Camera::setPosition(glm::vec3 position) {
-  m_position = position;
-}
-
 void Camera::lookAt(glm::vec3 target) {
   // Recompute forward dir
   glm::vec3 newFront = glm::normalize(target - m_position);
@@ -72,14 +60,6 @@ void Camera::lookAt(glm::vec3 target) {
   m_pitch = glm::degrees(std::asin(newFront.z));
 
   updateCameraVectors();
-}
-
-float *Camera::getMovementSpeed() {
-  return &m_movementSpeed;
-}
-
-float *Camera::getMouseSensitivity() {
-  return &m_mouseSensitivity;
 }
 
 void Camera::updateCameraVectors() {
@@ -95,4 +75,102 @@ void Camera::updateCameraVectors() {
 
   // Up vector calculation stays correct
   m_up = normalize(cross(m_right, m_front));
+}
+
+const glm::vec3 & Camera::getPosition() const {
+  return m_position;
+}
+
+const glm::vec3 & Camera::getFront() const {
+  return m_front;
+}
+
+const glm::vec3 & Camera::getUp() const {
+  return m_up;
+}
+
+const glm::vec3 & Camera::getRight() const {
+  return m_right;
+}
+
+float Camera::getYaw() const {
+  return m_yaw;
+}
+
+float Camera::getPitch() const {
+  return m_pitch;
+}
+
+float Camera::getFov() const {
+  return m_fov;
+}
+
+float Camera::getAspectRatio() const {
+  return m_aspectRatio;
+}
+
+float Camera::getNearClip() const {
+  return m_nearClip;
+}
+
+float Camera::getFarClip() const {
+  return m_farClip;
+}
+
+float Camera::getMovementSpeed() const {
+  return m_movementSpeed;
+}
+
+float Camera::getMouseSensitivity() const {
+  return m_mouseSensitivity;
+}
+
+void Camera::setPosition(glm::vec3 position) {
+  m_position = position;
+  updateCameraVectors();
+}
+
+void Camera::setFront(glm::vec3 front) {
+  m_front = front;
+  updateCameraVectors();
+}
+
+void Camera::setUp(glm::vec3 up) {
+  m_up = up;
+}
+
+void Camera::setRight(glm::vec3 right) {
+  m_right = right;
+}
+
+void Camera::setYaw(float yaw) {
+  m_yaw = yaw;
+}
+
+void Camera::setPitch(float pitch) {
+  m_pitch = pitch;
+}
+
+void Camera::setFov(float fov) {
+  m_fov = fov;
+}
+
+void Camera::setAspectRatio(float aspectRatio) {
+  m_aspectRatio = aspectRatio;
+}
+
+void Camera::setNearClip(float nearClip) {
+  m_nearClip = nearClip;
+}
+
+void Camera::setFarClip(float farClip) {
+  m_farClip = farClip;
+}
+
+void Camera::setMovementSpeed(float movementSpeed) {
+  m_movementSpeed = movementSpeed;
+}
+
+void Camera::setMouseSensitivity(float mouseSensitivity) {
+  m_mouseSensitivity = mouseSensitivity;
 }

@@ -17,22 +17,46 @@ class Camera {
 public:
   Camera();
 
-  // Get matrices
-  [[nodiscard]] glm::mat4 getViewMatrix() const;
-  [[nodiscard]] glm::mat4 getProjectionMatrix() const;
-
   // Camera controls
   void processKeyboardInput(CameraMovement direction, float deltaTime);
   void processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
   void processScroll(float yOffset);
 
-  glm::vec3 getPosition() const;
-  void setPosition(glm::vec3 position);
-
   void lookAt(glm::vec3 target);
 
-  float *getMovementSpeed();
-  float *getMouseSensitivity();
+  // Get matrices
+  [[nodiscard]] glm::mat4 getViewMatrix() const;
+  [[nodiscard]] glm::mat4 getProjectionMatrix() const;
+
+  // Return const references for vectors to avoid copying
+  const glm::vec3& getPosition() const;
+  const glm::vec3& getFront() const;
+  const glm::vec3& getUp() const;
+  const glm::vec3& getRight() const;
+
+  // For fundamental types, return by value to avoid issues
+  float getYaw() const;
+  float getPitch() const;
+  float getFov() const;
+  float getAspectRatio() const;
+  float getNearClip() const;
+  float getFarClip() const;
+  float getMovementSpeed() const;
+  float getMouseSensitivity() const;
+
+  // Setters
+  void setPosition(glm::vec3 position);
+  void setFront(glm::vec3 front);
+  void setUp(glm::vec3 up);
+  void setRight(glm::vec3 right);
+  void setYaw(float yaw);
+  void setPitch(float pitch);
+  void setFov(float fov);
+  void setAspectRatio(float aspectRatio);
+  void setNearClip(float nearClip);
+  void setFarClip(float farClip);
+  void setMovementSpeed(float movementSpeed);
+  void setMouseSensitivity(float mouseSensitivity);
 
 private:
   glm::vec3 m_position;
@@ -45,7 +69,7 @@ private:
   float m_pitch;
 
   // Camera settings
-  float m_movementSpeed = 5.0f;
+  float m_movementSpeed = 10.0f;
   float m_mouseSensitivity = 0.1f;
 
   // Projection parameters
