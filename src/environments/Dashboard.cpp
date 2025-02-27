@@ -1,5 +1,7 @@
 #include "environments/Dashboard.h"
+#include <core/ImGuiManager.h>
 #include <imgui.h>
+
 #include "core/EnvironmentManager.h"
 #include "environments/Simulation.h"
 #include "utils/Logger.h"
@@ -9,17 +11,15 @@ bool Dashboard::load() {
   return true;
 }
 
-void Dashboard::update(float dt) {
-  // Transition to Simulation if Enter is pressed
-  /*
-  if (m_ctx.input->isKeyPressed(GLFW_KEY_ENTER)) {
-    // m_ctx.scenes->pushEnvironment(std::make_unique<Simulation>(m_ctx));
-    LOG_DEBUG("Switching to Simulation");
-  }
-*/
+void Dashboard::update(float dt) {}
+
+void Dashboard::render() { showUI(); }
+
+void Dashboard::unload() {
+  LOG_DEBUG("Dashboard::unload() called on: %p", this);
 }
 
-void Dashboard::render() {
+void Dashboard::showUI() {
   ImGui::Begin("Dashboard");
 
   ImGui::Text("Welcome to the Physics Sandbox!");
@@ -33,10 +33,5 @@ void Dashboard::render() {
       m_ctx.environments->pushEnvironment(std::move(simEnv));
     }
   }
-
   ImGui::End();
-}
-
-void Dashboard::unload() {
-  LOG_DEBUG("Dashboard::unload() called on: %p", this);
 }

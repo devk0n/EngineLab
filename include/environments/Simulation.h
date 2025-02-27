@@ -16,7 +16,7 @@ public:
 private:
   Camera m_camera;
 
-  void showCameraDebug();
+  void showUI();
 
   void handleCameraMovement(float dt);
 };

@@ -78,10 +78,12 @@ void Application::run() {
     WindowManager::pollEvents();
     m_inputManager->update();
 
+    // Update
+    m_renderer->beginFrame();
     m_environmentManager->update(deltaTime);
+    m_renderer->endFrame();
 
-    m_renderer->clearScreen();
-
+    // Render
     m_imguiManager->beginFrame();
     m_environmentManager->render();
     m_imguiManager->endFrame();
