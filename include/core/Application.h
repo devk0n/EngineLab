@@ -19,6 +19,9 @@ public:
   void run();
 
 private:
+
+  Context m_ctx;
+
   bool m_initialized;
   std::unique_ptr<WindowManager> m_windowManager;
   std::unique_ptr<InputManager> m_inputManager;

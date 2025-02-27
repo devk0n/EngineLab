@@ -82,6 +82,7 @@ set(SOURCES
         src/core/ShaderManager.cpp
 
         src/environments/Dashboard.cpp
+        src/environments/Simulation.cpp
 )
 
 # Add executable

@@ -5,11 +5,10 @@
 
 class Dashboard final : public Environment {
 public:
-  explicit Dashboard(const Context& ctx);
-  bool load(const std::string& filename) override;
+  explicit Dashboard(const Context& ctx) : Environment(ctx) {}
+  bool load() override;
   void update(float dt) override;
   void render() override;
-  void save(const std::string& filename) override;
   void unload() override;
 
 private:

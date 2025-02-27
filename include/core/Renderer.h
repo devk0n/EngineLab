@@ -15,7 +15,7 @@ public:
 
   bool initialize();
   void clearScreen();
-  void render(const Camera& camera);
+  void render();
   ShaderManager& getShaderManager();
 
 private:

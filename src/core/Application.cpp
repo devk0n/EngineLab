@@ -2,6 +2,7 @@
 
 #include "core/Context.h"
 #include "environments/Dashboard.h"
+#include "environments/Simulation.h"
 #include "utils/Logger.h"
 
 Application::Application()
@@ -46,17 +47,15 @@ bool Application::initialize() {
         return false;
     }
 
-    // Create a context for scenes to access engine systems
-    Context ctx{
-        .window = m_windowManager.get(),
-        .input = m_inputManager.get(),
-        .renderer = m_renderer.get(),
-        .environments = m_environmentManager.get(),
-        .imgui = m_imguiManager.get(),
-    };
+    // Initialize the member context
+    m_ctx.window = m_windowManager.get();
+    m_ctx.input = m_inputManager.get();
+    m_ctx.renderer = m_renderer.get();
+    m_ctx.environments = m_environmentManager.get();
+    m_ctx.imgui = m_imguiManager.get();
 
-    // Push the initial (e.g., Dashboards)
-    m_environmentManager->pushEnvironment(std::make_unique<Dashboard>(ctx));
+    // Push the initial environment using the member context
+    m_environmentManager->pushEnvironment(std::make_unique<Dashboard>(m_ctx));
 
     m_initialized = true;
     return m_initialized;
@@ -79,15 +78,9 @@ void Application::run() {
         WindowManager::pollEvents();
         m_inputManager->update();
 
-        // Add ESC key check here
-        if (m_inputManager->isKeyPressed(GLFW_KEY_ESCAPE)) {
-            m_windowManager->close();
-        }
-
         m_environmentManager->update(deltaTime);
 
         m_renderer->clearScreen();
-        // m_renderer->render(*m_camera);
 
         m_imguiManager->beginFrame();
         m_environmentManager->render();
