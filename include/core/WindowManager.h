@@ -5,7 +5,6 @@
 #include <string>
 #include "utils/OpenGLSetup.h"
 
-
 class WindowManager {
 public:
   // Construction & Destruction

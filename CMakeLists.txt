@@ -77,12 +77,11 @@ set(SOURCES
         src/core/InputManager.cpp
         src/core/Renderer.cpp
         src/core/ImGuiManager.cpp
-        src/core/SceneManager.cpp
+        src/core/EnvironmentManager.cpp
         src/core/Camera.cpp
         src/core/ShaderManager.cpp
 
-        src/scenes/MainMenu.cpp
-        src/scenes/GameLevel.cpp
+        src/environments/Dashboard.cpp
 )
 
 # Add executable

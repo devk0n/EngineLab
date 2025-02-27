@@ -1,10 +1,9 @@
 #ifndef INPUTMANAGER_H
 #define INPUTMANAGER_H
 
-#include <array>
-#include "utils/OpenGLSetup.h"
+#include <unordered_set>
 
-#include "Camera.h"
+#include "utils/OpenGLSetup.h"
 
 class InputManager {
 public:
@@ -12,8 +11,6 @@ public:
 
   bool initialize(GLFWwindow* window);
   void update();
-
-  void handleCameraMovement(Camera &camera, float dt);
 
   // Keyboard
   [[nodiscard]] bool isKeyPressed(int key) const;
@@ -30,24 +27,33 @@ public:
   void getScrollDelta(double& xOffset, double& yOffset) const;
 
 private:
+  static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+  static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
   static void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 
   GLFWwindow* m_window;
 
   // Keyboard state
-  std::array<bool, GLFW_KEY_LAST + 1> m_currentKeys;
-  std::array<bool, GLFW_KEY_LAST + 1> m_previousKeys;
+  std::unordered_set<int> m_heldKeys;
+  std::unordered_set<int> m_pressedKeys;
+  std::unordered_set<int> m_releasedKeys;
 
   // Mouse state
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> m_currentMouseButtons;
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> m_previousMouseButtons;
-  double m_currentMouseX, m_currentMouseY;
-  double m_previousMouseX, m_previousMouseY;
+  std::unordered_set<int> m_heldMouseButtons;
+  std::unordered_set<int> m_pressedMouseButtons;
+  std::unordered_set<int> m_releasedMouseButtons;
+
+  // Mouse position
+  double m_currentMouseX = 0.0;
+  double m_currentMouseY = 0.0;
+  double m_previousMouseX = 0.0;
+  double m_previousMouseY = 0.0;
 
   // Scroll state
-  double m_currentScrollX, m_currentScrollY;
-  double m_scrollX, m_scrollY;
+  double m_scrollX = 0.0;
+  double m_scrollY = 0.0;
+  double m_previousScrollX = 0.0;
+  double m_previousScrollY = 0.0;
 };
-
 
 #endif // INPUTMANAGER_H

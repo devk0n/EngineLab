@@ -2,7 +2,6 @@
 #define CAMERA_H
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 enum class CameraMovement {
   FORWARD,
@@ -56,7 +55,7 @@ public:
   void setMouseSensitivity(float mouseSensitivity);
 
 private:
-  glm::vec3 m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 m_position = glm::vec3(10.0f, 8.0f, 6.0f);
   glm::vec3 m_front = glm::vec3(1.0f, 0.0f, 0.0f);
   glm::vec3 m_left  = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::vec3 m_up    = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -78,6 +77,5 @@ private:
 
   void updateCameraVectors();
 };
-
 
 #endif // CAMERA_H

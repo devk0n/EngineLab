@@ -8,14 +8,13 @@
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
-
 class Renderer {
 public:
   Renderer();
   ~Renderer();
 
   bool initialize();
-  void clearScreen() ;
+  void clearScreen();
   void render(const Camera& camera);
   ShaderManager& getShaderManager();
 
@@ -24,6 +23,7 @@ private:
   GLuint m_skyVAO, m_skyVBO, m_skyEBO;
   GLuint m_gridVAO, m_gridVBO;
 
+  // Default renders
   void renderSky(const Camera& camera);
   void renderGrid(const Camera& camera);
 };

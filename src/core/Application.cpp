@@ -1,11 +1,8 @@
-#include "utils/Logger.h"
-
 #include "core/Application.h"
 
-#include <imgui.h>
-
 #include "core/Context.h"
-#include "scenes/MainMenu.h"
+#include "environments/Dashboard.h"
+#include "utils/Logger.h"
 
 Application::Application()
     : m_initialized(false),
@@ -13,8 +10,7 @@ Application::Application()
       m_inputManager(std::make_unique<InputManager>()),
       m_renderer(std::make_unique<Renderer>()),
       m_imguiManager(std::make_unique<ImGuiManager>()),
-      m_camera(std::make_unique<Camera>()),
-      m_sceneManager(std::make_unique<SceneManager>()),
+      m_environmentManager(std::make_unique<EnvironmentManager>()),
       m_shaderManager(std::make_unique<ShaderManager>()) {}
 
 Application::~Application() {
@@ -55,13 +51,12 @@ bool Application::initialize() {
         .window = m_windowManager.get(),
         .input = m_inputManager.get(),
         .renderer = m_renderer.get(),
-        .scenes = m_sceneManager.get(),
-        .camera = m_camera.get(),
+        .environments = m_environmentManager.get(),
         .imgui = m_imguiManager.get(),
     };
 
-    // Push the initial scene (e.g., MainMenu)
-    m_sceneManager->pushScene(std::make_unique<MainMenu>(ctx));
+    // Push the initial (e.g., Dashboards)
+    m_environmentManager->pushEnvironment(std::make_unique<Dashboard>(ctx));
 
     m_initialized = true;
     return m_initialized;
@@ -89,13 +84,13 @@ void Application::run() {
             m_windowManager->close();
         }
 
-        m_sceneManager->update(deltaTime);
+        m_environmentManager->update(deltaTime);
 
         m_renderer->clearScreen();
-        m_renderer->render(*m_camera);
+        // m_renderer->render(*m_camera);
 
         m_imguiManager->beginFrame();
-        m_sceneManager->render();
+        m_environmentManager->render();
         m_imguiManager->endFrame();
 
         m_windowManager->swapBuffers();

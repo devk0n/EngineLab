@@ -3,10 +3,10 @@
 #include "utils/OpenGLSetup.h"
 
 float vertices[] = {
-  -1000.0f, -1000.0f, 0.0f,  // Bottom-left
-  -1000.0f,  1000.0f, 0.0f,  // Top-left
-   1000.0f, -1000.0f, 0.0f,  // Bottom-right
-   1000.0f,  1000.0f, 0.0f   // Top-right
+  -1.0f, -1.0f, 0.0f,
+   1.0f, -1.0f, 0.0f,
+  -1.0f,  1.0f, 0.0f,
+   1.0f,  1.0f, 0.0f
 };
 
 // Full-screen quad vertices
@@ -20,6 +20,10 @@ float skyVertices[] = {
 Renderer::Renderer() {}
 
 Renderer::~Renderer() {
+  glDeleteVertexArrays(1, &m_gridVAO);
+  glDeleteBuffers(1, &m_gridVBO);
+  glDeleteVertexArrays(1, &m_skyVAO);
+  glDeleteBuffers(1, &m_skyVBO);
   LOG_INFO("Renderer destroyed");
 }
 

@@ -1,13 +1,8 @@
-//
-// Created by devkon on 18/02/2025.
-//
-
 #include "core/ImGuiManager.h"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-
 
 bool ImGuiManager::initialize(GLFWwindow* window) {
   // Create ImGui context
@@ -18,7 +13,9 @@ bool ImGuiManager::initialize(GLFWwindow* window) {
   ImGui::StyleColorsDark();
 
   // Initialize the ImGui GLFW and OpenGL backends
-  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  if (!ImGui_ImplGlfw_InitForOpenGL(window, true)) {
+    return false;
+  }
   // Use e.g. "#version 460" or what’s appropriate for your GL version
   ImGui_ImplOpenGL3_Init("#version 460");
 

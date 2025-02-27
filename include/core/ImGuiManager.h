@@ -11,7 +11,7 @@ public:
   void shutdown();
 
 private:
-  bool m_initialized;
+  bool m_initialized = false;
 };
 
 
