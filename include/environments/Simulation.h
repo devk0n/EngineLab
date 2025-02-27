@@ -3,6 +3,8 @@
 
 #include "environments/Environment.h"
 
+#include "core/Camera.h"
+
 class Simulation final : public Environment {
 public:
   explicit Simulation(const Context &ctx) : Environment(ctx) {}
@@ -10,6 +12,13 @@ public:
   void update(float dt) override;
   void render() override;
   void unload() override;
+
+private:
+  Camera m_camera;
+
+  void showCameraDebug();
+
+  void handleCameraMovement(float dt);
 };
 
 #endif // SIMULATION_H

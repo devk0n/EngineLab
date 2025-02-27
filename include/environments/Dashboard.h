@@ -12,7 +12,7 @@ public:
   void unload() override;
 
 private:
-  void showUI(); // UI for selecting environments
+  void showUI();
 };
 
 #endif // DASHBOARD_H

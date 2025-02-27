@@ -6,7 +6,7 @@ AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
 AlwaysBreakTemplateDeclarations: Yes
-BraceWrapping: 
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
@@ -27,13 +27,17 @@ BreakBeforeBraces: Custom
 BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-IncludeCategories: 
-  - Regex: '^<.*'
+IncludeCategories:
+  - Regex: '^<glad/.*>'  # glad.h first
     Priority: 1
-  - Regex: '^".*'
+  - Regex: '^<GLFW/.*>'  # GLFW after glad
     Priority: 2
-  - Regex: '.*'
+  - Regex: '^<.*>'        # Other system headers
     Priority: 3
+  - Regex: '^".*'         # Project-specific headers
+    Priority: 4
+  - Regex: '.*'           # Everything else
+    Priority: 5
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentCaseLabels: true
 InsertNewlineAtEOF: true
