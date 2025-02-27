@@ -3,14 +3,7 @@
 
 #include <glm/glm.hpp>
 
-enum class CameraMovement {
-  FORWARD,
-  BACKWARD,
-  LEFT,
-  RIGHT,
-  UP,
-  DOWN
-};
+enum class CameraMovement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 class Camera {
 public:
@@ -18,7 +11,8 @@ public:
 
   // Camera controls
   void processKeyboardInput(CameraMovement direction, float deltaTime);
-  void processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
+  void processMouseMovement(float xOffset, float yOffset,
+                            bool constrainPitch = true);
   void processScroll(float yOffset);
 
   void lookAt(glm::vec3 target);
@@ -28,10 +22,10 @@ public:
   [[nodiscard]] glm::mat4 getProjectionMatrix() const;
 
   // Return const references for vectors to avoid copying
-  const glm::vec3& getPosition() const;
-  const glm::vec3& getFront() const;
-  const glm::vec3& getUp() const;
-  const glm::vec3& getLeft() const;
+  const glm::vec3 &getPosition() const;
+  const glm::vec3 &getFront() const;
+  const glm::vec3 &getUp() const;
+  const glm::vec3 &getLeft() const;
 
   // For fundamental types, return by value to avoid issues
   float getYaw() const;
@@ -57,8 +51,8 @@ public:
 private:
   glm::vec3 m_position = glm::vec3(10.0f, 8.0f, 6.0f);
   glm::vec3 m_front = glm::vec3(1.0f, 0.0f, 0.0f);
-  glm::vec3 m_left  = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 m_up    = glm::vec3(0.0f, 0.0f, 1.0f);
+  glm::vec3 m_left = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 m_up = glm::vec3(0.0f, 0.0f, 1.0f);
 
   // Euler angles
   float m_roll = 0.0f;

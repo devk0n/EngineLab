@@ -5,7 +5,7 @@
 
 class Dashboard final : public Environment {
 public:
-  explicit Dashboard(const Context& ctx) : Environment(ctx) {}
+  explicit Dashboard(const Context &ctx) : Environment(ctx) {}
   bool load() override;
   void update(float dt) override;
   void render() override;

@@ -16,7 +16,7 @@ public:
   void swapBuffers() const;
   [[nodiscard]] bool shouldClose() const;
   void close() const;
-  [[nodiscard]] GLFWwindow* getNativeWindow() const;
+  [[nodiscard]] GLFWwindow *getNativeWindow() const;
 
 private:
   // Window Data
@@ -24,19 +24,19 @@ private:
     int width = 0;
     int height = 0;
     std::string title;
-    GLFWmonitor* primaryMonitor = nullptr;
+    GLFWmonitor *primaryMonitor = nullptr;
   };
 
   // Initialization Helpers
-  void calculateWindowSize(const GLFWvidmode* videoMode);
-  static void setOpenGLHints() ;
+  void calculateWindowSize(const GLFWvidmode *videoMode);
+  static void setOpenGLHints();
   bool createWindow();
-  void centerWindow(GLFWwindow* window, const GLFWvidmode* videoMode) const;
-  [[nodiscard]] static bool initializeGLAD() ;
-  void logDebugInfo(const GLFWvidmode* videoMode) const;
+  void centerWindow(GLFWwindow *window, const GLFWvidmode *videoMode) const;
+  [[nodiscard]] static bool initializeGLAD();
+  void logDebugInfo(const GLFWvidmode *videoMode) const;
 
   // Member Variables
-  std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
+  std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> m_window;
   WindowData m_data;
 };
 

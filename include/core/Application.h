@@ -19,7 +19,6 @@ public:
   void run();
 
 private:
-
   Context m_ctx;
 
   bool m_initialized;

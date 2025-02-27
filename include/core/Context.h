@@ -8,11 +8,11 @@ class EnvironmentManager;
 class ImGuiManager;
 
 struct Context {
-  WindowManager* window;
-  InputManager* input;
-  Renderer* renderer;
-  EnvironmentManager* environments;
-  ImGuiManager* imgui;
+  WindowManager *window;
+  InputManager *input;
+  Renderer *renderer;
+  EnvironmentManager *environments;
+  ImGuiManager *imgui;
 };
 
 #endif // CONTEXT_H

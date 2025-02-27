@@ -5,7 +5,7 @@
 
 class Environment {
 public:
-  explicit Environment(const Context& ctx) : m_ctx(ctx) {}
+  explicit Environment(const Context &ctx) : m_ctx(ctx) {}
   virtual ~Environment() = default;
 
   virtual bool load() = 0;
@@ -14,7 +14,7 @@ public:
   virtual void unload() = 0;
 
 protected:
-  const Context& m_ctx;
+  const Context &m_ctx;
 };
 
 #endif // ENVIRONMENT_H

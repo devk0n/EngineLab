@@ -3,11 +3,11 @@
 
 // Check if GLFW was included first (which is wrong)
 #ifdef _GLFW3_H
-    #error "GLFW was included before GLAD! Include OpenGLSetup.h instead."
+#error "GLFW was included before GLAD! Include OpenGLSetup.h instead."
 #endif
 
 // Ensure GLAD is included first
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 #endif // OPENGLSETUP_H

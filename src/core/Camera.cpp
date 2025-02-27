@@ -12,22 +12,30 @@ glm::mat4 Camera::getViewMatrix() const {
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {
-  return glm::perspective(glm::radians(m_fov), m_aspectRatio, m_nearClip, m_farClip);
+  return glm::perspective(glm::radians(m_fov), m_aspectRatio, m_nearClip,
+                          m_farClip);
 }
 
 void Camera::processKeyboardInput(CameraMovement direction, float deltaTime) {
   float velocity = m_movementSpeed * deltaTime;
 
   // ENU-aligned movement
-  if (direction == CameraMovement::FORWARD)   m_position += m_front * velocity;
-  if (direction == CameraMovement::BACKWARD)  m_position -= m_front * velocity;
-  if (direction == CameraMovement::LEFT)      m_position += m_left * velocity;
-  if (direction == CameraMovement::RIGHT)     m_position -= m_left * velocity;
-  if (direction == CameraMovement::UP)        m_position += m_up * velocity;
-  if (direction == CameraMovement::DOWN)      m_position -= m_up * velocity;
+  if (direction == CameraMovement::FORWARD)
+    m_position += m_front * velocity;
+  if (direction == CameraMovement::BACKWARD)
+    m_position -= m_front * velocity;
+  if (direction == CameraMovement::LEFT)
+    m_position += m_left * velocity;
+  if (direction == CameraMovement::RIGHT)
+    m_position -= m_left * velocity;
+  if (direction == CameraMovement::UP)
+    m_position += m_up * velocity;
+  if (direction == CameraMovement::DOWN)
+    m_position -= m_up * velocity;
 }
 
-void Camera::processMouseMovement(float xOffset, float yOffset, bool constrainPitch) {
+void Camera::processMouseMovement(float xOffset, float yOffset,
+                                  bool constrainPitch) {
   xOffset *= m_mouseSensitivity;
   yOffset *= m_mouseSensitivity;
 
@@ -49,7 +57,7 @@ void Camera::lookAt(glm::vec3 target) {
   // Recompute forward dir
   glm::vec3 newFront = normalize(target - m_position);
 
-  m_yaw   = glm::degrees(std::atan2(newFront.y, newFront.x));
+  m_yaw = glm::degrees(std::atan2(newFront.y, newFront.x));
   m_pitch = glm::degrees(std::asin(newFront.z));
 
   updateCameraVectors();
@@ -58,9 +66,9 @@ void Camera::lookAt(glm::vec3 target) {
 void Camera::updateCameraVectors() {
   // Calculate front vector using ENU conventions
   glm::vec3 front;
-  front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));  // East (X+)
-  front.y = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));  // North (Y+)
-  front.z = sin(glm::radians(m_pitch));  // Up (Z+)
+  front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)); // East (X+)
+  front.y = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)); // North (Y+)
+  front.z = sin(glm::radians(m_pitch)); // Up (Z+)
   m_front = normalize(front);
 
   // Recalculate the left vector (North, Y+ in ENU)
@@ -70,10 +78,10 @@ void Camera::updateCameraVectors() {
   m_up = normalize(cross(m_front, m_left));
 }
 
-const glm::vec3& Camera::getPosition() const { return m_position; }
-const glm::vec3& Camera::getFront() const { return m_front; }
-const glm::vec3& Camera::getUp() const { return m_up; }
-const glm::vec3& Camera::getLeft() const { return m_left; }
+const glm::vec3 &Camera::getPosition() const { return m_position; }
+const glm::vec3 &Camera::getFront() const { return m_front; }
+const glm::vec3 &Camera::getUp() const { return m_up; }
+const glm::vec3 &Camera::getLeft() const { return m_left; }
 
 float Camera::getYaw() const { return m_yaw; }
 float Camera::getPitch() const { return m_pitch; }
@@ -103,5 +111,9 @@ void Camera::setFov(float fov) { m_fov = fov; }
 void Camera::setAspectRatio(float aspectRatio) { m_aspectRatio = aspectRatio; }
 void Camera::setNearClip(float nearClip) { m_nearClip = nearClip; }
 void Camera::setFarClip(float farClip) { m_farClip = farClip; }
-void Camera::setMovementSpeed(float movementSpeed) { m_movementSpeed = movementSpeed; }
-void Camera::setMouseSensitivity(float mouseSensitivity) { m_mouseSensitivity = mouseSensitivity; }
+void Camera::setMovementSpeed(float movementSpeed) {
+  m_movementSpeed = movementSpeed;
+}
+void Camera::setMouseSensitivity(float mouseSensitivity) {
+  m_mouseSensitivity = mouseSensitivity;
+}

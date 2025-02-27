@@ -2,20 +2,12 @@
 
 #include "utils/OpenGLSetup.h"
 
-float vertices[] = {
-  -1.0f, -1.0f, 0.0f,
-   1.0f, -1.0f, 0.0f,
-  -1.0f,  1.0f, 0.0f,
-   1.0f,  1.0f, 0.0f
-};
+float vertices[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
+                    -1.0f, 1.0f,  0.0f, 1.0f, 1.0f,  0.0f};
 
 // Full-screen quad vertices
-float skyVertices[] = {
-  -1.0f,  1.0f, 0.0f,
-  -1.0f, -1.0f, 0.0f,
-   1.0f,  1.0f, 0.0f,
-   1.0f, -1.0f, 0.0f
-};
+float skyVertices[] = {-1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f,
+                       1.0f,  1.0f, 0.0f, 1.0f,  -1.0f, 0.0f};
 
 Renderer::Renderer() {}
 
@@ -35,16 +27,14 @@ bool Renderer::initialize() {
   glFrontFace(GL_CCW);
   glEnable(GL_MULTISAMPLE);
 
-  if (!m_shaderManager.loadShader("grid",
-    "../assets/shaders/grid.vert",
-    "../assets/shaders/grid.frag")) {
+  if (!m_shaderManager.loadShader("grid", "../assets/shaders/grid.vert",
+                                  "../assets/shaders/grid.frag")) {
     LOG_ERROR("Failed to load shader");
     return false;
   }
 
-  if (!m_shaderManager.loadShader("sky",
-    "../assets/shaders/sky.vert",
-    "../assets/shaders/sky.frag")) {
+  if (!m_shaderManager.loadShader("sky", "../assets/shaders/sky.vert",
+                                  "../assets/shaders/sky.frag")) {
     LOG_ERROR("Failed to load sky shader");
     return false;
   }
@@ -57,7 +47,8 @@ bool Renderer::initialize() {
   glBindBuffer(GL_ARRAY_BUFFER, m_gridVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(nullptr));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                        static_cast<void *>(nullptr));
   glEnableVertexAttribArray(0);
 
   glBindVertexArray(0);
@@ -68,9 +59,11 @@ bool Renderer::initialize() {
 
   glGenBuffers(1, &m_skyVBO);
   glBindBuffer(GL_ARRAY_BUFFER, m_skyVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(skyVertices), skyVertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(skyVertices), skyVertices,
+               GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(nullptr));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                        static_cast<void *>(nullptr));
   glEnableVertexAttribArray(0);
 
   glBindVertexArray(0);
@@ -98,20 +91,22 @@ void Renderer::render() {
 
 void Renderer::renderSky(const Camera &camera) {
 
-
   // Use sky shader
   unsigned int shader = m_shaderManager.getShader("sky");
   glUseProgram(shader);
 
   // Set uniforms
-  auto view = glm::mat4(glm::mat3(camera.getViewMatrix()));  // Remove translation
+  auto view =
+      glm::mat4(glm::mat3(camera.getViewMatrix())); // Remove translation
   glm::mat4 projection = camera.getProjectionMatrix();
   glm::mat4 viewProjection = projection * view;
-  glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"),
-                     1, GL_FALSE, glm::value_ptr(viewProjection));
+  glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1,
+                     GL_FALSE, glm::value_ptr(viewProjection));
   glUniform3f(glGetUniformLocation(shader, "u_cameraPos"),
-             camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-  glUniform1f(glGetUniformLocation(shader, "u_time"), glfwGetTime());  // Optional: For animated stars
+              camera.getPosition().x, camera.getPosition().y,
+              camera.getPosition().z);
+  glUniform1f(glGetUniformLocation(shader, "u_time"),
+              glfwGetTime()); // Optional: For animated stars
 
   // Disable depth writing
   glDisable(GL_DEPTH_TEST);
@@ -119,7 +114,7 @@ void Renderer::renderSky(const Camera &camera) {
 
   // Draw sky (full-screen quad or sphere)
   glBindVertexArray(m_skyVAO);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);  // For a full-screen quad
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // For a full-screen quad
   glBindVertexArray(0);
 
   glEnable(GL_DEPTH_TEST);
@@ -138,15 +133,17 @@ void Renderer::renderGrid(const Camera &camera) {
   glUseProgram(shader);
 
   // Set uniforms
-  glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"),
-                     1, GL_FALSE, glm::value_ptr(viewProjection));
-  glUniform3f(glGetUniformLocation(shader, "u_cameraPos"),
-             cameraPos.x, cameraPos.y, cameraPos.z);
+  glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1,
+                     GL_FALSE, glm::value_ptr(viewProjection));
+  glUniform3f(glGetUniformLocation(shader, "u_cameraPos"), cameraPos.x,
+              cameraPos.y, cameraPos.z);
   glUniform1f(glGetUniformLocation(shader, "u_scale"), 1.0f);
   // Set fog parameters
   glUniform3f(glGetUniformLocation(shader, "u_fogColor"), 0.2f, 0.2f, 0.2f);
-  glUniform1f(glGetUniformLocation(shader, "u_fogStart"), 50.0f);  // Fog starts at 50m
-  glUniform1f(glGetUniformLocation(shader, "u_fogEnd"), 250.0f);   // Full fog at 200m
+  glUniform1f(glGetUniformLocation(shader, "u_fogStart"),
+              50.0f); // Fog starts at 50m
+  glUniform1f(glGetUniformLocation(shader, "u_fogEnd"),
+              250.0f); // Full fog at 200m
 
   // Disable backface culling and depth testing
   glDisable(GL_CULL_FACE);
@@ -161,5 +158,3 @@ void Renderer::renderGrid(const Camera &camera) {
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
 }
-
-

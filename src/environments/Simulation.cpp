@@ -9,13 +9,8 @@ bool Simulation::load() {
   return true;
 }
 
-void Simulation::update(float dt) {
-}
+void Simulation::update(float dt) {}
 
-void Simulation::render() {
-  ImGui::ShowDemoWindow();
-}
+void Simulation::render() { ImGui::ShowDemoWindow(); }
 
-void Simulation::unload() {
-  LOG_INFO("Unloading hardcoded simulation...");
-}
+void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }

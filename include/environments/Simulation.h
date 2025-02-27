@@ -5,7 +5,7 @@
 
 class Simulation final : public Environment {
 public:
-  explicit Simulation(const Context& ctx) : Environment(ctx) {}
+  explicit Simulation(const Context &ctx) : Environment(ctx) {}
   bool load() override;
   void update(float dt) override;
   void render() override;

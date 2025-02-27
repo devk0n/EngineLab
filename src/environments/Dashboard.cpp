@@ -37,7 +37,6 @@ void Dashboard::render() {
   ImGui::End();
 }
 
-
 void Dashboard::unload() {
   LOG_DEBUG("Dashboard::unload() called on: %p", this);
 }

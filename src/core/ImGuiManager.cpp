@@ -1,10 +1,10 @@
 #include "core/ImGuiManager.h"
 
-#include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "imgui.h"
 
-bool ImGuiManager::initialize(GLFWwindow* window) {
+bool ImGuiManager::initialize(GLFWwindow *window) {
   // Create ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -24,7 +24,8 @@ bool ImGuiManager::initialize(GLFWwindow* window) {
 }
 
 void ImGuiManager::beginFrame() {
-  if (!m_initialized) return;
+  if (!m_initialized)
+    return;
 
   // Start a new frame
   ImGui_ImplOpenGL3_NewFrame();
@@ -33,7 +34,8 @@ void ImGuiManager::beginFrame() {
 }
 
 void ImGuiManager::endFrame() {
-  if (!m_initialized) return;
+  if (!m_initialized)
+    return;
 
   // Render ImGui’s draw data
   ImGui::Render();
@@ -41,11 +43,11 @@ void ImGuiManager::endFrame() {
 }
 
 void ImGuiManager::shutdown() {
-  if (!m_initialized) return;
+  if (!m_initialized)
+    return;
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
   m_initialized = false;
 }
-

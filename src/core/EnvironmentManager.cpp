@@ -1,7 +1,8 @@
 #include "core/EnvironmentManager.h"
 #include "utils/Logger.h"
 
-void EnvironmentManager::pushEnvironment(std::unique_ptr<Environment> environment) {
+void EnvironmentManager::pushEnvironment(
+    std::unique_ptr<Environment> environment) {
   if (!environment) {
     LOG_ERROR("Attempted to push a null environment");
     return;
@@ -27,7 +28,8 @@ void EnvironmentManager::popEnvironment() {
   m_environments.top()->unload();
   m_environments.pop();
 
-  LOG_DEBUG("Environment popped. New top: %p", m_environments.empty() ? nullptr : m_environments.top().get());
+  LOG_DEBUG("Environment popped. New top: %p",
+            m_environments.empty() ? nullptr : m_environments.top().get());
 
   // Ensure new environment is loaded
   if (!m_environments.empty()) {

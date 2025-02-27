@@ -9,7 +9,7 @@ class InputManager {
 public:
   InputManager();
 
-  bool initialize(GLFWwindow* window);
+  bool initialize(GLFWwindow *window);
   void update();
 
   // Keyboard
@@ -22,16 +22,19 @@ public:
   [[nodiscard]] bool isMouseButtonHeld(int button) const;
   [[nodiscard]] bool isMouseButtonReleased(int button) const;
 
-  void getMousePosition(double& xPos, double& yPos) const;
-  void getMouseDelta(double& dx, double& dy) const;
-  void getScrollDelta(double& xOffset, double& yOffset) const;
+  void getMousePosition(double &xPos, double &yPos) const;
+  void getMouseDelta(double &dx, double &dy) const;
+  void getScrollDelta(double &xOffset, double &yOffset) const;
 
 private:
-  static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-  static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-  static void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+  static void keyCallback(GLFWwindow *window, int key, int scancode, int action,
+                          int mods);
+  static void mouseButtonCallback(GLFWwindow *window, int button, int action,
+                                  int mods);
+  static void scrollCallback(GLFWwindow *window, double xOffset,
+                             double yOffset);
 
-  GLFWwindow* m_window;
+  GLFWwindow *m_window;
 
   // Keyboard state
   std::unordered_set<int> m_heldKeys;

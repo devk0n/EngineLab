@@ -16,7 +16,7 @@ public:
   bool initialize();
   void clearScreen();
   void render();
-  ShaderManager& getShaderManager();
+  ShaderManager &getShaderManager();
 
 private:
   ShaderManager m_shaderManager;
@@ -24,9 +24,8 @@ private:
   GLuint m_gridVAO, m_gridVBO;
 
   // Default renders
-  void renderSky(const Camera& camera);
-  void renderGrid(const Camera& camera);
+  void renderSky(const Camera &camera);
+  void renderGrid(const Camera &camera);
 };
-
 
 #endif // RENDERER_H

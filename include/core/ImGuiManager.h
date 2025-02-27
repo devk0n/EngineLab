@@ -5,7 +5,7 @@
 
 class ImGuiManager {
 public:
-  bool initialize(GLFWwindow* window);
+  bool initialize(GLFWwindow *window);
   void beginFrame();
   void endFrame();
   void shutdown();
@@ -14,5 +14,4 @@ private:
   bool m_initialized = false;
 };
 
-
-#endif //IMGUIMANAGER_H
+#endif // IMGUIMANAGER_H

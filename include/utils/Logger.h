@@ -15,13 +15,13 @@
 
 // ANSI Color Codes for Unix/Linux/macOS & Windows 10+
 #define RESET "\033[0m"
-#define WHITE "\033[97m"  // Bright White
-#define COLOR_DEBUG "\x1B[95m"  // Magenta
-#define COLOR_INFO  "\x1B[96m"  // Cyan
-#define COLOR_WARN  "\x1B[38;2;255;165;0m"  // Orange
-#define COLOR_ERROR "\033[31m"  // Red
+#define WHITE "\033[97m" // Bright White
+#define COLOR_DEBUG "\x1B[95m" // Magenta
+#define COLOR_INFO "\x1B[96m" // Cyan
+#define COLOR_WARN "\x1B[38;2;255;165;0m" // Orange
+#define COLOR_ERROR "\033[31m" // Red
 
-//FIXME: Some prints to the console are showing on the same line.
+// FIXME: Some prints to the console are showing on the same line.
 
 class Logger {
 public:
@@ -55,12 +55,14 @@ public:
     return m_initialized;
   }
 
-  template <typename... Args>
-  static void log(const Level level, const std::string &file, int line, Args &&...args) {
+  template<typename... Args>
+  static void log(const Level level, const std::string &file, int line,
+                  Args &&...args) {
     if (level < m_logLevel)
       return;
 
-    const std::string message = formatMessage(level, file, line, std::forward<Args>(args)...);
+    const std::string message =
+        formatMessage(level, file, line, std::forward<Args>(args)...);
     const std::string coloredMessage = applyColor(level, message);
 
     std::lock_guard lock(m_mutex);
@@ -85,43 +87,46 @@ private:
 
   static std::string levelToString(const Level level) {
     switch (level) {
-    case Level::Debug:
-      return "DEBUG";
-    case Level::Info:
-      return "INFO";
-    case Level::Warning:
-      return "WARNING";
-    case Level::Error:
-      return "ERROR";
-    default:
-      return "UNKNOWN";
+      case Level::Debug:
+        return "DEBUG";
+      case Level::Info:
+        return "INFO";
+      case Level::Warning:
+        return "WARNING";
+      case Level::Error:
+        return "ERROR";
+      default:
+        return "UNKNOWN";
     }
   }
 
   static std::string applyColor(const Level level, const std::string &msg) {
     std::string color;
     switch (level) {
-    case Level::Debug:
-      color = COLOR_DEBUG;
-      break;
-    case Level::Info:
-      color = COLOR_INFO;
-      break;
-    case Level::Warning:
-      color = COLOR_WARN;
-      break;
-    case Level::Error:
-      color = COLOR_ERROR;
-      break;
-    default:
-      color = RESET;
-      break;
+      case Level::Debug:
+        color = COLOR_DEBUG;
+        break;
+      case Level::Info:
+        color = COLOR_INFO;
+        break;
+      case Level::Warning:
+        color = COLOR_WARN;
+        break;
+      case Level::Error:
+        color = COLOR_ERROR;
+        break;
+      default:
+        color = RESET;
+        break;
     }
 
     // Keep timestamp white, but color the rest (including file name)
-    if (const std::size_t firstBracketPos = msg.find("] ["); firstBracketPos != std::string::npos) {
+    if (const std::size_t firstBracketPos = msg.find("] [");
+        firstBracketPos != std::string::npos) {
       return WHITE + msg.substr(0, firstBracketPos + 2) + // White timestamp
-             color + msg.substr(firstBracketPos + 2) +    // Colored message (including file name)
+             color +
+             msg.substr(firstBracketPos +
+                        2) + // Colored message (including file name)
              RESET;
     }
 
@@ -137,8 +142,9 @@ private:
     return path.substr(lastSlashPos + 1); // Extract the file name
   }
 
-  template <typename... Args>
-  static std::string formatMessage(const Level level, const std::string &file, const int line, Args &&...args) {
+  template<typename... Args>
+  static std::string formatMessage(const Level level, const std::string &file,
+                                   const int line, Args &&...args) {
     std::ostringstream ss;
 
     const auto now = std::chrono::system_clock::now();
@@ -148,7 +154,8 @@ private:
     const std::string fileName = extractFileName(file);
 
     // White timestamp + log level + file:line + message
-    ss << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S") << "] "
+    ss << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S")
+       << "] "
        << "[" << levelToString(level) << "] "
        << "[" << fileName << ":" << line << "] ";
 
@@ -160,9 +167,13 @@ private:
 };
 
 // Macros for logging with file and line information
-#define LOG_DEBUG(...) Logger::log(Logger::Level::Debug, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_INFO(...) Logger::log(Logger::Level::Info, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_WARN(...) Logger::log(Logger::Level::Warning, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...) Logger::log(Logger::Level::Error, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_DEBUG(...)                                                         \
+  Logger::log(Logger::Level::Debug, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_INFO(...)                                                          \
+  Logger::log(Logger::Level::Info, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_WARN(...)                                                          \
+  Logger::log(Logger::Level::Warning, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...)                                                         \
+  Logger::log(Logger::Level::Error, __FILE__, __LINE__, __VA_ARGS__)
 
 #endif // LOGGER_H
