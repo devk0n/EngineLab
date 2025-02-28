@@ -47,22 +47,21 @@ void Simulation::showUI() {
   ImGui::End();
 }
 
-enum MoveDirection { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
-
 void Simulation::handleCameraMovement(float dt) {
   // Movement controls
+
   if (m_ctx.input->isKeyHeld(GLFW_KEY_W))
-    m_camera.processKeyboardInput(FORWARD, dt);
+    m_camera.processKeyboardInput(CameraMovement::FORWARD, dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_S))
-    m_camera.processKeyboardInput(BACKWARD, dt);
+    m_camera.processKeyboardInput(CameraMovement::BACKWARD, dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_A))
-    m_camera.processKeyboardInput(LEFT, dt);
+    m_camera.processKeyboardInput(CameraMovement::LEFT, dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_D))
-    m_camera.processKeyboardInput(RIGHT, dt);
+    m_camera.processKeyboardInput(CameraMovement::RIGHT, dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_LEFT_SHIFT))
-    m_camera.processKeyboardInput(UP, dt);
+    m_camera.processKeyboardInput(CameraMovement::UP, dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_LEFT_CONTROL))
-    m_camera.processKeyboardInput(DOWN, dt);
+    m_camera.processKeyboardInput(CameraMovement::DOWN, dt);
 
   // Right-click look control
   const bool looking = m_ctx.input->isMouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT);

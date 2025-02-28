@@ -7,8 +7,7 @@ Camera::Camera() :
   updateVectors();
 }
 
-void Camera::processMouseMovement(float xOffset, float yOffset,
-                                  bool constrainPitch) {
+void Camera::processMouseMovement(float xOffset, float yOffset) {
   xOffset *= m_mouseSensitivity;
   yOffset *= m_mouseSensitivity;
 
@@ -16,7 +15,7 @@ void Camera::processMouseMovement(float xOffset, float yOffset,
   glm::quat yawRot =
       angleAxis(glm::radians(-xOffset), glm::vec3(0.0f, 0.0f, 1.0f));
   glm::quat pitchRot =
-      angleAxis(glm::radians(-yOffset), glm::vec3(0.0f, -1.0f, 0.0f));
+      angleAxis(glm::radians(-yOffset), -glm::vec3(0.0f, 1.0f, 0.0f));
 
   // Apply rotations (yaw first, then pitch)
   m_orientation = yawRot * m_orientation * pitchRot;
@@ -27,25 +26,28 @@ void Camera::processMouseMovement(float xOffset, float yOffset,
   updateVectors();
 }
 
-void Camera::processKeyboardInput(int direction, float deltaTime) {
+void Camera::processKeyboardInput(CameraMovement direction, float deltaTime) {
   float velocity = m_movementSpeed * deltaTime;
-  glm::vec3 moveDir(0.0f);
 
-  if (direction == 0)
-    moveDir += m_front; // Forward (W)
-  if (direction == 1)
-    moveDir -= m_front; // Backward (S)
-  if (direction == 2)
-    moveDir += m_left; // Left (A)
-  if (direction == 3)
-    moveDir -= m_left; // Right (D)
-  if (direction == 4)
-    moveDir += m_up; // Up (Space)
-  if (direction == 5)
-    moveDir -= m_up; // Down (Ctrl)
-
-  if (glm::length(moveDir) > 0.0f) {
-    m_position += glm::normalize(moveDir) * velocity;
+  switch (direction) {
+    case CameraMovement::FORWARD:
+      m_position += m_front * velocity;
+      break;
+    case CameraMovement::BACKWARD:
+      m_position -= m_front * velocity;
+      break;
+    case CameraMovement::LEFT:
+      m_position += m_left * velocity;
+      break;
+    case CameraMovement::RIGHT:
+      m_position -= m_left * velocity;
+      break;
+    case CameraMovement::UP:
+      m_position += m_up * velocity;
+      break;
+    case CameraMovement::DOWN:
+      m_position -= m_up * velocity;
+      break;
   }
 }
 

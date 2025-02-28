@@ -4,14 +4,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+enum class CameraMovement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
+
 class Camera {
 public:
   Camera();
 
   // Camera controls
-  void processMouseMovement(float xOffset, float yOffset,
-                            bool constrainPitch = true);
-  void processKeyboardInput(int direction, float deltaTime);
+  void processMouseMovement(float xOffset, float yOffset);
+  void processKeyboardInput(CameraMovement direction, float deltaTime);
   void processScroll(float yOffset);
 
   // Getters
