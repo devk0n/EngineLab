@@ -7,7 +7,7 @@ int main() {
     return false;
   }
   Logger::setLogLevel(Logger::Level::Debug);
-  LOG_ERROR("Logger initialized.");
+  LOG_INFO("Logger initialized.");
 
   Application app;
   if (!app.initialize()) {

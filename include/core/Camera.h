@@ -2,74 +2,62 @@
 #define CAMERA_H
 
 #include <glm/glm.hpp>
-
-enum class CameraMovement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
+#include <glm/gtc/quaternion.hpp>
 
 class Camera {
 public:
   Camera();
 
   // Camera controls
-  void processKeyboardInput(CameraMovement direction, float deltaTime);
   void processMouseMovement(float xOffset, float yOffset,
                             bool constrainPitch = true);
+  void processKeyboardInput(int direction, float deltaTime);
   void processScroll(float yOffset);
 
-  void lookAt(glm::vec3 target);
+  // Getters
+  glm::mat4 getViewMatrix() const;
+  glm::mat4 getProjectionMatrix() const;
+  glm::vec3 getPosition() const { return m_position; }
+  glm::quat getOrientation() const { return m_orientation; }
+  glm::vec3 getFront() const { return m_front; }
+  glm::vec3 getLeft() const { return m_left; }
+  glm::vec3 getUp() const { return m_up; }
 
-  // Get matrices
-  [[nodiscard]] glm::mat4 getViewMatrix() const;
-  [[nodiscard]] glm::mat4 getProjectionMatrix() const;
-
-  // Return const references for vectors to avoid copying
-  const glm::vec3 &getPosition() const;
-  const glm::vec3 &getFront() const;
-  const glm::vec3 &getUp() const;
-  const glm::vec3 &getLeft() const;
-
-  // For fundamental types, return by value to avoid issues
-  float getYaw() const;
-  float getPitch() const;
-  float getFov() const;
-  float getAspectRatio() const;
-  float getNearClip() const;
-  float getFarClip() const;
-  float getMovementSpeed() const;
-  float getMouseSensitivity() const;
+  float getFov() const { return m_fov; }
+  float getAspectRatio() const { return m_aspectRatio; }
+  float getNearClip() const { return m_nearClip; }
+  float getFarClip() const { return m_farClip; }
+  float getMovementSpeed() const { return m_movementSpeed; }
 
   // Setters
-  void setPosition(glm::vec3 position);
-  void setYaw(float yaw);
-  void setPitch(float pitch);
-  void setFov(float fov);
-  void setAspectRatio(float aspectRatio);
-  void setNearClip(float nearClip);
-  void setFarClip(float farClip);
-  void setMovementSpeed(float movementSpeed);
-  void setMouseSensitivity(float mouseSensitivity);
+  void setPosition(glm::vec3 position) { m_position = position; }
+  void setOrientation(glm::quat orientation) { m_orientation = orientation; }
+  void setFront(glm::vec3 front) { m_front = front; }
+  void setLeft(glm::vec3 left) { m_left = left; }
+  void setUp(glm::vec3 up) { m_up = up; }
+  void setFov(float fov) { m_fov = fov; }
+  void setAspectRatio(float aspectRatio) { m_aspectRatio = aspectRatio; }
 
 private:
-  glm::vec3 m_position = glm::vec3(10.0f, 8.0f, 6.0f);
-  glm::vec3 m_front = glm::vec3(1.0f, 0.0f, 0.0f);
-  glm::vec3 m_left = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 m_up = glm::vec3(0.0f, 0.0f, 1.0f);
+  void updateVectors();
 
-  // Euler angles
-  float m_roll = 0.0f;
-  float m_pitch = 0.0f;
-  float m_yaw = 0.0f;
+  // Camera state
+  glm::vec3 m_position;
+  glm::quat m_orientation;
 
-  // Camera settings
-  float m_movementSpeed = 10.0f;
-  float m_mouseSensitivity = 0.1f;
+  // Camera vectors
+  glm::vec3 m_front = {1.0f, 0.0f, 0.0f};
+  glm::vec3 m_left = {0.0f, 1.0f, 0.0f};
+  glm::vec3 m_up = {0.0f, 0.0f, 1.0f};
 
-  // Projection parameters
-  float m_fov = 45.0f;
-  float m_aspectRatio = 16.0f / 9.0f;
-  float m_nearClip = 0.1f;
-  float m_farClip = 250.0f;
+  // Camera options
+  float m_movementSpeed;
+  float m_mouseSensitivity;
 
-  void updateCameraVectors();
+  float m_fov;
+  float m_aspectRatio;
+  float m_nearClip;
+  float m_farClip;
 };
 
 #endif // CAMERA_H

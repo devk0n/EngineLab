@@ -6,8 +6,9 @@
 static float gridVertices[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
                                -1.0f, 1.0f,  0.0f, 1.0f, 1.0f,  0.0f};
 
-static float skyVertices[] = {-1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f,
-                              1.0f,  1.0f, 0.0f, 1.0f,  -1.0f, 0.0f};
+// Full-screen quad vertices
+float skyVertices[] = {-1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f,
+                       1.0f,  1.0f, 0.0f, 1.0f,  -1.0f, 0.0f};
 
 Renderer::Renderer() : m_gridVAO(0), m_gridVBO(0), m_skyVAO(0), m_skyVBO(0) {}
 
