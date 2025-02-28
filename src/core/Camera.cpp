@@ -1,4 +1,5 @@
 #include "core/Camera.h"
+#include "utils/Logger.h"
 
 Camera::Camera() :
     m_position(0.0f, 0.0f, 0.0f), m_orientation(1.0f, 0.0f, 0.0f, 0.0f),
@@ -49,6 +50,13 @@ void Camera::processKeyboardInput(CameraMovement direction, float deltaTime) {
       m_position -= m_up * velocity;
       break;
   }
+}
+
+void Camera::processScroll(float yOffset) {
+  constexpr float scrollSensitivity = 2.0f;
+  yOffset *= scrollSensitivity;
+
+  m_fov = glm::clamp(m_fov + yOffset, 1.0f, 90.0f);
 }
 
 void Camera::updateVectors() {

@@ -49,7 +49,6 @@ void Simulation::showUI() {
 
 void Simulation::handleCameraMovement(float dt) {
   // Movement controls
-
   if (m_ctx.input->isKeyHeld(GLFW_KEY_W))
     m_camera.processKeyboardInput(CameraMovement::FORWARD, dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_S))
@@ -74,4 +73,10 @@ void Simulation::handleCameraMovement(float dt) {
     m_camera.processMouseMovement(static_cast<float>(xOffset),
                                   static_cast<float>(yOffset));
   }
+
+  // Handle scroll independently of looking mode
+  double xScrollOffset = 0.0, yScrollOffset = 0.0;
+  m_ctx.input->getScrollDelta(xScrollOffset, yScrollOffset);
+  m_camera.processScroll(
+      static_cast<float>(yScrollOffset)); // Changed to yScrollOffset
 }
