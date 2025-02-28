@@ -84,6 +84,7 @@ find_package(OpenGL REQUIRED)
 # Source files
 set(SOURCES
         src/main.cpp
+
         src/core/Application.cpp
         src/core/WindowManager.cpp
         src/core/InputManager.cpp
@@ -92,6 +93,7 @@ set(SOURCES
         src/core/EnvironmentManager.cpp
         src/core/Camera.cpp
         src/core/ShaderManager.cpp
+
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 )
