@@ -5,6 +5,13 @@
 #include <string>
 #include "utils/OpenGLSetup.h"
 
+struct WindowData {
+  int width = 0;
+  int height = 0;
+  std::string title;
+  GLFWmonitor *primaryMonitor = nullptr;
+};
+
 class WindowManager {
 public:
   // Construction & Destruction
@@ -12,32 +19,29 @@ public:
 
   // Core Interface
   bool initialize();
-  static void pollEvents();
+  bool shouldClose() const;
+
   void swapBuffers() const;
-  [[nodiscard]] bool shouldClose() const;
   void close() const;
-  [[nodiscard]] GLFWwindow *getNativeWindow() const;
+
+  static void pollEvents();
+
+  GLFWwindow *getNativeWindow() const;
 
 private:
-  // Window Data
-  struct WindowData {
-    int width = 0;
-    int height = 0;
-    std::string title;
-    GLFWmonitor *primaryMonitor = nullptr;
-  };
-
-  // Initialization Helpers
-  void calculateWindowSize(const GLFWvidmode *videoMode);
-  static void setOpenGLHints();
-  bool createWindow();
-  void centerWindow(GLFWwindow *window, const GLFWvidmode *videoMode) const;
-  [[nodiscard]] static bool initializeGLAD();
-  void logDebugInfo(const GLFWvidmode *videoMode) const;
-
   // Member Variables
   std::unique_ptr<GLFWwindow, void (*)(GLFWwindow *)> m_window;
   WindowData m_data;
+
+  // Initialization Helpers
+  void calculateWindowSize(const GLFWvidmode *videoMode);
+  void centerWindow(GLFWwindow *window, const GLFWvidmode *videoMode) const;
+  void logDebugInfo(const GLFWvidmode *videoMode) const;
+
+  bool createWindow();
+
+  static bool initializeGLAD();
+  static void setOpenGLHints();
 };
 
 #endif // WINDOWMANAGER_H

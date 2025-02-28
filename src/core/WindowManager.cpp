@@ -4,8 +4,7 @@
 #include "utils/Logger.h"
 
 WindowManager::WindowManager(std::string title) :
-    m_window(nullptr, glfwDestroyWindow),
-    m_data{0, 0, std::move(title), nullptr} {}
+    m_window(nullptr, glfwDestroyWindow), m_data{0, 0, std::move(title), nullptr} {}
 
 bool WindowManager::initialize() {
   if (!glfwInit()) {
@@ -36,12 +35,8 @@ bool WindowManager::initialize() {
 
 void WindowManager::pollEvents() { glfwPollEvents(); }
 void WindowManager::swapBuffers() const { glfwSwapBuffers(m_window.get()); }
-bool WindowManager::shouldClose() const {
-  return glfwWindowShouldClose(m_window.get());
-}
-void WindowManager::close() const {
-  glfwSetWindowShouldClose(m_window.get(), true);
-}
+bool WindowManager::shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
+void WindowManager::close() const { glfwSetWindowShouldClose(m_window.get(), true); }
 GLFWwindow *WindowManager::getNativeWindow() const { return m_window.get(); }
 
 void WindowManager::calculateWindowSize(const GLFWvidmode *videoMode) {
@@ -55,14 +50,13 @@ void WindowManager::setOpenGLHints() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
   glfwWindowHint(GLFW_SAMPLES, 4);
-  glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+  glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 }
 
 bool WindowManager::createWindow() {
-  GLFWwindow *window = glfwCreateWindow(m_data.width, m_data.height,
-                                        m_data.title.c_str(), nullptr, nullptr
+  GLFWwindow *window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr
 
   );
 
@@ -77,8 +71,7 @@ bool WindowManager::createWindow() {
   return true;
 }
 
-void WindowManager::centerWindow(GLFWwindow *window,
-                                 const GLFWvidmode *videoMode) const {
+void WindowManager::centerWindow(GLFWwindow *window, const GLFWvidmode *videoMode) const {
   const int xPos = (videoMode->width - m_data.width) / 2;
   const int yPos = (videoMode->height - m_data.height) / 2;
   glfwSetWindowPos(window, xPos, yPos);
@@ -95,8 +88,7 @@ bool WindowManager::initializeGLAD() {
 
 void WindowManager::logDebugInfo(const GLFWvidmode *videoMode) const {
   LOG_INFO("Window initialized - Size: ", m_data.width, "x", m_data.height);
-  LOG_DEBUG("Monitor: ", videoMode->width, "x", videoMode->height, " @ ",
-            videoMode->refreshRate, "Hz");
+  LOG_DEBUG("Monitor: ", videoMode->width, "x", videoMode->height, " @ ", videoMode->refreshRate, "Hz");
 
   if (glGetString(GL_VERSION) == nullptr) {
     LOG_ERROR("ERROR: OpenGL context is not available! glGetString(GL_VERSION) "
@@ -104,8 +96,6 @@ void WindowManager::logDebugInfo(const GLFWvidmode *videoMode) const {
     return;
   }
 
-  LOG_DEBUG("OpenGL Version: ",
-            reinterpret_cast<const char *>(glGetString(GL_VERSION)));
-  LOG_DEBUG("Renderer: ",
-            reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+  LOG_DEBUG("OpenGL Version: ", reinterpret_cast<const char *>(glGetString(GL_VERSION)));
+  LOG_DEBUG("Renderer: ", reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
 }
