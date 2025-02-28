@@ -23,7 +23,10 @@ void Simulation::update(float dt) {
   handleDefaultInputs();
 }
 
-void Simulation::render() { showUI(); }
+void Simulation::render() {
+  showUI();
+  showWindowDebug();
+}
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
 
@@ -36,14 +39,10 @@ void Simulation::showUI() {
   const glm::vec3 orientationEuler = eulerAngles(m_camera.getOrientation());
 
   ImGui::Begin("Camera Debug");
-  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y,
-              position.z);
-  ImGui::Text("Orientation: (%.2f, %.2f, %.2f, %.2f)", orientation.w,
-              orientation.x, orientation.y, orientation.z);
-  ImGui::Text("Orientation Euler: (%.2f, %.2f, %.2f)",
-              orientationEuler.z * 180.0f / glm::pi<float>(),
-              orientationEuler.y * 180.0f / glm::pi<float>(),
-              orientationEuler.x * 180.0f / glm::pi<float>());
+  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+  ImGui::Text("Orientation: (%.2f, %.2f, %.2f, %.2f)", orientation.w, orientation.x, orientation.y, orientation.z);
+  ImGui::Text("Orientation Euler: (%.2f, %.2f, %.2f)", orientationEuler.z * 180.0f / glm::pi<float>(),
+              orientationEuler.y * 180.0f / glm::pi<float>(), orientationEuler.x * 180.0f / glm::pi<float>());
 
   ImGui::End();
 }
@@ -66,25 +65,43 @@ void Simulation::handleCameraMovement(float dt) {
 
   // Right-click look control
   const bool looking = m_ctx.input->isMouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT);
-  glfwSetInputMode(m_ctx.window->getNativeWindow(), GLFW_CURSOR,
-                   looking ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+  glfwSetInputMode(m_ctx.window->getNativeWindow(), GLFW_CURSOR, looking ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 
   if (looking) {
     double xOffset, yOffset;
     m_ctx.input->getMouseDelta(xOffset, yOffset);
-    m_camera.processMouseMovement(static_cast<float>(xOffset),
-                                  static_cast<float>(yOffset));
+    m_camera.processMouseMovement(static_cast<float>(xOffset), static_cast<float>(yOffset));
   }
 
   // Handle scroll independently of looking mode
   double xScrollOffset = 0.0, yScrollOffset = 0.0;
   m_ctx.input->getScrollDelta(xScrollOffset, yScrollOffset);
-  m_camera.processScroll(
-      static_cast<float>(yScrollOffset)); // Changed to yScrollOffset
+  m_camera.processScroll(static_cast<float>(yScrollOffset)); // Changed to yScrollOffset
 }
 
 void Simulation::handleDefaultInputs() {
   if (m_ctx.input->isKeyPressed(GLFW_KEY_ESCAPE)) {
     m_ctx.window->close();
   }
+}
+
+void Simulation::showWindowDebug() {
+
+  float currentFps = ImGui::GetIO().Framerate;
+
+  // Initialize displayed FPS on first frame
+  if (m_displayedFps == 0.0f) {
+    m_displayedFps = currentFps;
+  }
+
+  // Update the displayed FPS value once per second
+  m_fpsUpdateTimer += ImGui::GetIO().DeltaTime; // Using ImGui's delta time
+  if (m_fpsUpdateTimer >= FPS_UPDATE_INTERVAL) {
+    m_displayedFps = currentFps;
+    m_fpsUpdateTimer = 0.0f;
+  }
+
+  ImGui::Begin("Window Debug");
+  ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps, ImGui::GetIO().DeltaTime * 1000.0f);
+  ImGui::End();
 }

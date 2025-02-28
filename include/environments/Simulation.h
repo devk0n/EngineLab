@@ -20,6 +20,11 @@ private:
 
   void handleCameraMovement(float dt);
   void handleDefaultInputs();
+  void showWindowDebug();
+
+  float m_displayedFps = 0.0f;
+  float m_fpsUpdateTimer = 0.0f;
+  static constexpr float FPS_UPDATE_INTERVAL = 1.0f;
 };
 
 #endif // SIMULATION_H
