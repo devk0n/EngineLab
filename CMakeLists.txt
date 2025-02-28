@@ -31,9 +31,22 @@ set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_BUILD_TESTS OFF)
 FetchContent_MakeAvailable(glfw)
 
-# Add GLAD as a static library
-add_library(glad STATIC external/glad/src/glad.c)
-target_include_directories(glad PUBLIC external/glad/include)
+# GLAD
+FetchContent_Declare(
+        glad
+        DOWNLOAD_EXTRACT_TIMESTAMP OFF
+        URL https://github.com/Dav1dde/glad/archive/refs/tags/v2.0.8.zip
+)
+
+FetchContent_GetProperties(glad)
+if (NOT glad_POPULATED)
+    set(FETCHCONTENT_QUIET NO)
+    FetchContent_MakeAvailable(glad)
+
+    add_subdirectory("${glad_SOURCE_DIR}/cmake" glad_cmake)
+    glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.6)
+endif ()
+set_target_properties(glad PROPERTIES FOLDER "Dependencies")
 
 # Fetch ImGui
 FetchContent_Declare(
@@ -71,7 +84,6 @@ find_package(OpenGL REQUIRED)
 # Source files
 set(SOURCES
         src/main.cpp
-
         src/core/Application.cpp
         src/core/WindowManager.cpp
         src/core/InputManager.cpp
@@ -80,7 +92,6 @@ set(SOURCES
         src/core/EnvironmentManager.cpp
         src/core/Camera.cpp
         src/core/ShaderManager.cpp
-
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 )
@@ -101,9 +112,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         Eigen3::Eigen
 )
 
-# Include the current source directory in the project's include directories
+# Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-
+        ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
 )

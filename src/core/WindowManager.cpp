@@ -85,7 +85,7 @@ void WindowManager::centerWindow(GLFWwindow *window,
 }
 
 bool WindowManager::initializeGLAD() {
-  if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+  if (!gladLoadGL(glfwGetProcAddress)) {
     LOG_ERROR("Failed to initialize GLAD");
     glfwTerminate();
     return false;

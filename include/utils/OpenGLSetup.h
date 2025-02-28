@@ -7,7 +7,7 @@
 #endif
 
 // Ensure GLAD is included first
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #endif // OPENGLSETUP_H
