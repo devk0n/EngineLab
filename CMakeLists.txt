@@ -96,6 +96,10 @@ set(SOURCES
 
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
+        src/physics/PhysicsEngine.cpp
+        include/physics/PhysicsEngine.h
+        src/physics/Object.cpp
+        src/physics/Object.h
 )
 
 # Add executable
