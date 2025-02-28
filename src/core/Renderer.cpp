@@ -3,8 +3,9 @@
 #include "utils/OpenGLSetup.h"
 
 // Example vertex data for the grid and sky (full-screen quad).
-static float gridVertices[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
-                               -1.0f, 1.0f,  0.0f, 1.0f, 1.0f,  0.0f};
+static float gridVertices[] = {-1000.0f, -1000.0f, 0.0f,     1000.0f,
+                               -1000.0f, 0.0f,     -1000.0f, 1000.0f,
+                               0.0f,     1000.0f,  1000.0f,  0.0f};
 
 // Full-screen quad vertices
 float skyVertices[] = {-1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f,
@@ -77,9 +78,10 @@ void Renderer::drawGrid(const Camera &camera) {
   glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1,
                      GL_FALSE, glm::value_ptr(viewProjection));
 
-  // Set additional uniforms (e.g., camera position, fog parameters) as needed.
-  // For example:
-  // glUniform3f(glGetUniformLocation(shader, "u_cameraPos"), ...);
+  // Inside Renderer::drawGrid(), after setting the viewProjection uniform
+  glUniform3f(glGetUniformLocation(shader, "u_fogColor"), 0.1f, 0.1f, 0.1f);
+  glUniform1f(glGetUniformLocation(shader, "u_fogStart"), 50.0f);
+  glUniform1f(glGetUniformLocation(shader, "u_fogEnd"), 500.0f);
 
   // Draw the grid.
   glBindVertexArray(m_gridVAO);

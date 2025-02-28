@@ -4,7 +4,7 @@
 Camera::Camera() :
     m_position(0.0f, 0.0f, 0.0f), m_orientation(1.0f, 0.0f, 0.0f, 0.0f),
     m_movementSpeed(5.0f), m_mouseSensitivity(0.1f), m_fov(45.0f),
-    m_aspectRatio(16.0f / 9.0f), m_nearClip(0.1f), m_farClip(100.0f) {
+    m_aspectRatio(16.0f / 9.0f), m_nearClip(0.1f), m_farClip(250.0f) {
   updateVectors();
 }
 
