@@ -19,6 +19,7 @@ private:
   void showUI();
 
   void handleCameraMovement(float dt);
+  void handleDefaultInputs();
 };
 
 #endif // SIMULATION_H

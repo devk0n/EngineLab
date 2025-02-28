@@ -59,6 +59,22 @@ void Camera::processScroll(float yOffset) {
   m_fov = glm::clamp(m_fov + yOffset, 1.0f, 90.0f);
 }
 
+void Camera::lookAt(const glm::vec3 &target) {
+  // Compute the forward (X+), left (Y+), and up (Z+) vectors
+  glm::vec3 forward = normalize(target - m_position); // X+ (Forward)
+  glm::vec3 left = normalize(cross(s_up, forward)); // Y+ (Left)
+  glm::vec3 up = cross(forward, left); // Z+ (Up)
+
+  // Construct the rotation matrix for X+ Forward, Y+ Left, Z+ Up
+  glm::mat3 rotationMatrix(forward, left, up);
+
+  // Convert to a quaternion
+  m_orientation = quat_cast(rotationMatrix);
+
+  // Update the direction vectors
+  updateVectors();
+}
+
 void Camera::updateVectors() {
   m_front = m_orientation * glm::vec3(1.0f, 0.0f, 0.0f);
   m_left = m_orientation * glm::vec3(0.0f, 1.0f, 0.0f);
@@ -66,7 +82,7 @@ void Camera::updateVectors() {
 }
 
 glm::mat4 Camera::getViewMatrix() const {
-  return lookAt(m_position, m_position + m_front, m_up);
+  return glm::lookAt(m_position, m_position + m_front, m_up);
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {

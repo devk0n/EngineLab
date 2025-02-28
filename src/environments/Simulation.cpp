@@ -11,8 +11,8 @@
 
 bool Simulation::load() {
   LOG_INFO("Initializing Simulation");
-  m_camera.setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-  m_camera.setOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+  m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
+  m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
   return true;
 }
 
@@ -20,6 +20,7 @@ void Simulation::update(float dt) {
   m_ctx.renderer->drawGrid(m_camera);
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
+  handleDefaultInputs();
 }
 
 void Simulation::render() { showUI(); }
@@ -48,6 +49,7 @@ void Simulation::showUI() {
 }
 
 void Simulation::handleCameraMovement(float dt) {
+
   // Movement controls
   if (m_ctx.input->isKeyHeld(GLFW_KEY_W))
     m_camera.processKeyboardInput(CameraMovement::FORWARD, dt);
@@ -79,4 +81,10 @@ void Simulation::handleCameraMovement(float dt) {
   m_ctx.input->getScrollDelta(xScrollOffset, yScrollOffset);
   m_camera.processScroll(
       static_cast<float>(yScrollOffset)); // Changed to yScrollOffset
+}
+
+void Simulation::handleDefaultInputs() {
+  if (m_ctx.input->isKeyPressed(GLFW_KEY_ESCAPE)) {
+    m_ctx.window->close();
+  }
 }

@@ -71,23 +71,22 @@ void Application::run() {
   m_lastFrameTime = glfwGetTime();
 
   while (!m_windowManager->shouldClose()) {
+    // Delta Time
     double currentTime = glfwGetTime();
     float deltaTime = static_cast<float>(currentTime - m_lastFrameTime);
     m_lastFrameTime = currentTime;
 
-    WindowManager::pollEvents();
-    m_inputManager->update();
-
     // Update
+    WindowManager::pollEvents();
     m_renderer->beginFrame();
     m_environmentManager->update(deltaTime);
+    m_inputManager->update();
     m_renderer->endFrame();
 
     // Render
     m_imguiManager->beginFrame();
     m_environmentManager->render();
     m_imguiManager->endFrame();
-
     m_windowManager->swapBuffers();
   }
 

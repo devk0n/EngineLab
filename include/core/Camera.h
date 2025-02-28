@@ -14,6 +14,7 @@ public:
   void processMouseMovement(float xOffset, float yOffset);
   void processKeyboardInput(CameraMovement direction, float deltaTime);
   void processScroll(float yOffset);
+  void lookAt(const glm::vec3 &target);
 
   // Getters
   glm::mat4 getViewMatrix() const;
@@ -38,6 +39,10 @@ public:
   void setUp(glm::vec3 up) { m_up = up; }
   void setFov(float fov) { m_fov = fov; }
   void setAspectRatio(float aspectRatio) { m_aspectRatio = aspectRatio; }
+
+  static inline glm::vec3 s_forward = {1.0f, 0.0f, 0.0f};
+  static inline glm::vec3 s_left = {0.0f, 1.0f, 0.0f};
+  static inline glm::vec3 s_up = {0.0f, 0.0f, 1.0f};
 
 private:
   void updateVectors();

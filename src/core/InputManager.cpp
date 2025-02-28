@@ -73,9 +73,6 @@ void InputManager::scrollCallback(GLFWwindow *window, double xOffset,
   auto *input = static_cast<InputManager *>(glfwGetWindowUserPointer(window));
   input->m_scrollX += xOffset;
   input->m_scrollY += yOffset;
-
-  // Add debug logging
-  LOG_INFO("Scroll callback, x: ", xOffset, "y: ", yOffset);
 }
 
 // Keyboard state checks
