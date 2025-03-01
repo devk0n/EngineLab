@@ -61,6 +61,7 @@ void Renderer::clearScreen() {
 
 void Renderer::beginFrame() {
   clearScreen();
+  glEnable(GL_DEPTH_TEST);
   // Additional per-frame setup can be done here.
 }
 
@@ -116,13 +117,53 @@ void Renderer::drawSky(const Camera &camera) {
   glDepthMask(GL_TRUE);
 }
 
-// Implement line drawing
+void Renderer::drawCube(const glm::mat4 &viewProjection, const glm::vec3 &position, const glm::quat &orientation,
+                        const glm::vec3 &size, const glm::vec3 &color) {
+  unsigned int shader = m_shaderManager.getShader("line");
+  glUseProgram(shader);
+
+  glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+  glUniform3fv(glGetUniformLocation(shader, "u_color"), 1, glm::value_ptr(color));
+
+  glm::mat4 model =
+      glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(orientation) * glm::scale(glm::mat4(1.0f), size);
+  glUniformMatrix4fv(glGetUniformLocation(shader, "u_model"), 1, GL_FALSE, glm::value_ptr(model));
+
+  // Draw a simple wireframe cube
+  float vertices[] = {-0.5f, -0.5f, -0.5f, 0.5f,  -0.5f, -0.5f, 0.5f,  -0.5f, -0.5f, 0.5f,  0.5f,  -0.5f,
+                      0.5f,  0.5f,  -0.5f, -0.5f, 0.5f,  -0.5f, -0.5f, 0.5f,  -0.5f, -0.5f, -0.5f, -0.5f,
+
+                      -0.5f, -0.5f, 0.5f,  0.5f,  -0.5f, 0.5f,  0.5f,  -0.5f, 0.5f,  0.5f,  0.5f,  0.5f,
+                      0.5f,  0.5f,  0.5f,  -0.5f, 0.5f,  0.5f,  -0.5f, 0.5f,  0.5f,  -0.5f, -0.5f, 0.5f,
+
+                      -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f,  0.5f,  -0.5f, -0.5f, 0.5f,  -0.5f, 0.5f,
+                      0.5f,  0.5f,  -0.5f, 0.5f,  0.5f,  0.5f,  -0.5f, 0.5f,  -0.5f, -0.5f, 0.5f,  0.5f};
+
+  GLuint vao, vbo;
+  glGenVertexArrays(1, &vao);
+  glGenBuffers(1, &vbo);
+
+  glBindVertexArray(vao);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(nullptr));
+  glEnableVertexAttribArray(0);
+
+  glDrawArrays(GL_LINES, 0, 24);
+
+  glDeleteVertexArrays(1, &vao);
+  glDeleteBuffers(1, &vbo);
+}
+
 void Renderer::drawLine(const glm::mat4 &viewProjection, const glm::vec3 &start, const glm::vec3 &end,
                         const glm::vec3 &color) {
   unsigned int shader = m_shaderManager.getShader("line");
   glUseProgram(shader);
 
+  glm::mat4 model = glm::mat4(1.0f); // Identity matrix
   glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+  glUniformMatrix4fv(glGetUniformLocation(shader, "u_model"), 1, GL_FALSE, glm::value_ptr(model));
   glUniform3fv(glGetUniformLocation(shader, "u_color"), 1, glm::value_ptr(color));
 
   float vertices[] = {start.x, start.y, start.z, end.x, end.y, end.z};

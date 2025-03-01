@@ -13,11 +13,11 @@ uniform float u_fogEnd;
 // Grid parameters
 #define MAJOR_GRID_COLOR vec3(0.5)
 #define MINOR_GRID_COLOR vec3(0.2)
-#define X_AXIS_COLOR vec3(0.0, 1.0, 1.0)  // Red for X-axis
-#define Y_AXIS_COLOR vec3(1.0, 0.0, 1.0)  // Green for Y-axis
+#define Y_AXIS_COLOR vec3(0.0, 1.0, 1.0)// Red for X-axis
+#define X_AXIS_COLOR vec3(1.0, 0.0, 1.0)// Green for Y-axis
 #define BACKGROUND vec3(0.1)
-#define GRID_TRANSPARENCY 0.1  // 10% transparency for space between lines
-#define GRID_SIZE 1000.0        // Grid size in meters
+#define GRID_TRANSPARENCY 0.1// 10% transparency for space between lines
+#define GRID_SIZE 1000.0// Grid size in meters
 
 float computeGrid(vec2 coord, float spacing, float lineWidth) {
     vec2 gridCoord = coord / spacing;
@@ -59,8 +59,8 @@ void main() {
     color *= fade;
 
     // Set alpha based on grid lines
-    float alpha = max(majorGrid, minorGrid);  // Use grid lines to determine opacity
-    alpha = mix(GRID_TRANSPARENCY, 1.0, alpha);  // 10% transparency for space between lines
+    float alpha = max(majorGrid, minorGrid);// Use grid lines to determine opacity
+    alpha = mix(GRID_TRANSPARENCY, 1.0, alpha);// 10% transparency for space between lines
 
     // Fog calculation
     float fogFactor = clamp((u_fogEnd - cameraDist) / (u_fogEnd - u_fogStart), 0.0, 1.0);
@@ -69,7 +69,7 @@ void main() {
     vec3 finalColor = mix(u_fogColor, color, fogFactor);
 
     // Apply fog to the alpha channel
-    float finalAlpha = mix(1.0, alpha, fogFactor);  // Fog reduces transparency
+    float finalAlpha = mix(1.0, alpha, fogFactor);// Fog reduces transparency
 
     FragColor = vec4(finalColor, finalAlpha);
 }

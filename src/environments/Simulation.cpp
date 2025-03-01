@@ -10,21 +10,41 @@
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
+constexpr glm::vec3 ORANGE = {1.0f, 0.647f, 0.0f};
+constexpr glm::vec3 BLUE = {0.0f, 0.647f, 1.0f};
+constexpr glm::vec3 LIGHT_GRAY = {0.5f, 0.5f, 0.5f};
+constexpr glm::vec3 CYAN = {0.0f, 1.0f, 1.0f};
+constexpr glm::vec3 MAGENTA = {1.0f, 0.0f, 1.0f};
+constexpr glm::vec3 YELLOW = {1.0f, 1.0f, 0.0f};
+
 bool Simulation::load() {
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
   // Add test rigid bodies
-  RigidBody rigidBody_0;
-  rigidBody_0.position = glm::vec3(1.0f, 1.0f, 1.0f);
-  rigidBody_0.orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-  m_rigidBodies.push_back(rigidBody_0);
+  RigidBody Arm_1(glm::vec3(0.0f, 1.0f, 1.0f),
+                  glm::quat(glm::vec3(glm::radians(0.0f), // x (rotation around X axis)
+                                      glm::radians(0.0f), // y (rotation around Y axis)
+                                      glm::radians(90.0f) // z (rotation around Z axis)
+                                      )),
+                  glm::vec3(2.0f, 0.4f, 0.4f), BLUE);
 
-  RigidBody rigidBody_1;
-  rigidBody_1.position = glm::vec3(1.0f, 2.0f, 1.0f);
-  rigidBody_1.orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-  m_rigidBodies.push_back(rigidBody_1);
+  Arm_1.addGeometry(glm::vec3(-1.0f, 0.0f, 0.0f));
+  Arm_1.addGeometry(glm::vec3(1.0f, 0.0f, 0.0f));
+  m_rigidBodies.push_back(Arm_1);
+
+  // Add test rigid bodies
+  RigidBody Arm_2(glm::vec3(-3.0f * glm::cos(glm::radians(70.0f)), 2.0f, 1.0f + (3.0f * glm::sin(glm::radians(70.0f)))),
+                  glm::quat(glm::vec3(glm::radians(0.0f), // x (rotation around X axis)
+                                      glm::radians(-70.0f), // y (rotation around Y axis)
+                                      glm::radians(180.0f) // z (rotation around Z axis)
+                                      )),
+                  glm::vec3(6.0f, 0.3f, 0.3f), ORANGE);
+
+  Arm_2.addGeometry(glm::vec3(-3.0f, 0.0f, 0.0f));
+  Arm_2.addGeometry(glm::vec3(3.0f, 0.0f, 0.0f));
+  m_rigidBodies.push_back(Arm_2);
 
   return true;
 }
@@ -40,10 +60,18 @@ void Simulation::render() {
   showUI();
   showWindowDebug();
 
-  // Draw rigidbody axes
   glm::mat4 viewProj = m_camera.getProjectionMatrix() * m_camera.getViewMatrix();
+
   for (const auto &rb: m_rigidBodies) {
-    m_ctx.renderer->drawAxes(viewProj, rb.position, rb.orientation, 1.0f);
+    m_ctx.renderer->drawCube(viewProj, rb.position, rb.orientation, rb.size, rb.color);
+    m_ctx.renderer->drawAxes(viewProj, rb.position, rb.orientation, 0.5f);
+    // Draw lines for geometries of current rigid body
+    for (const auto &g: rb.geometries) {
+      // Transform both start (local origin) and end points by the rigid body's transform
+      glm::vec3 startPoint = rb.position;
+      glm::vec3 endPoint = rb.position + (rb.orientation * g);
+      m_ctx.renderer->drawLine(viewProj, startPoint, endPoint, LIGHT_GRAY);
+    }
   }
 }
 
