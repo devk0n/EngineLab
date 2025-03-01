@@ -1,54 +1,38 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "core/ShaderManager.h"
 
 #include "SystemConfiguration.h"
-#include "utils/OpenGLSetup.h"
+#include "core/Renderer.h"
 
 class SystemVisualizer {
 public:
-  explicit SystemVisualizer(const SystemConfiguration& system)
-        : m_system(system) {}
+  explicit SystemVisualizer(const SystemConfiguration &system, ShaderManager &shaderManager, Renderer &renderer) :
+      m_system(system), m_shaderManager(shaderManager), renderer_(renderer) {}
 
-  void render(const glm::mat4& view, const glm::mat4& projection) {
-    glUseProgram(m_shaderProgram);
-
-    // Set view and projection matrices
-    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
+  void render(const glm::mat4 &viewProjection) {
     // Render bodies
-    for (const auto& [name, body] : m_system.bodies()) {
-      renderBody(body);
+    for (const auto &[name, body]: m_system.bodies()) {
+      render_body(body, viewProjection);
     }
   }
 
 private:
-  SystemConfiguration m_system;
+  const SystemConfiguration &m_system;
+  ShaderManager &m_shaderManager;
+  Renderer &m_renderer;
 
-  GLuint m_VAO, m_VBO, m_shaderProgram;
+  void render_body(const SystemConfiguration::Body &body, const glm::mat4 &viewProjection) {
+    // Draw the body as a cube
+    glm::vec3 bodyColor(0.8f, 0.3f, 0.2f); // Orange
+    glm::quat bodyOrientation = glm::quat(glm::radians(body.orientation)); // Convert Euler angles to quaternion
+    m_renderer.drawCube(viewProjection, body.position, bodyOrientation, body.size, bodyColor);
 
-  void renderBody(const SystemConfiguration::Body& body) {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(body.position.x, body.position.y, body.position.z));
-    model = glm::scale(model, glm::vec3(body.size.x, body.size.y, body.size.z));
-
-    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    glUniform3f(glGetUniformLocation(m_shaderProgram, "color"), 0.8f, 0.3f, 0.2f);
-
-    // Render a cube (you can replace this with a more complex mesh)
-    renderCube();
+    // Optionally, draw axes to show orientation
+    float axisLength = 1.0f; // Length of the axes
+    m_renderer.drawAxes(viewProjection, body.position, bodyOrientation, axisLength);
   }
-
-  void renderCube() {
-    // Cube vertices and indices
-    // (You can precompute these and store them in a buffer)
-    // ...
-    glDrawArrays(GL_TRIANGLES, 0, 36); // Example for a cube
-  }
-
 };
 
 #endif // SYSTEMVISUALIZER_H

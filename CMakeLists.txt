@@ -98,6 +98,7 @@ set(SOURCES
         src/environments/Simulation.cpp
 
         src/physics/RigidBody.cpp
+        include/system/SystemVisualizer.h
 )
 
 # Add executable
