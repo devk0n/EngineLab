@@ -8,6 +8,7 @@
 #include "InputManager.h"
 #include "Renderer.h"
 #include "ShaderManager.h"
+#include "Time.h"
 #include "WindowManager.h"
 
 class Application {
@@ -28,6 +29,7 @@ private:
   std::unique_ptr<ImGuiManager> m_imguiManager;
   std::unique_ptr<EnvironmentManager> m_environmentManager;
   std::unique_ptr<ShaderManager> m_shaderManager;
+  std::unique_ptr<Time> m_time;
 
   double m_lastFrameTime = 0.0;
 };

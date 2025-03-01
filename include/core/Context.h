@@ -6,6 +6,7 @@ class InputManager;
 class Renderer;
 class EnvironmentManager;
 class ImGuiManager;
+class Time;
 
 struct Context {
   WindowManager *window;
@@ -13,6 +14,7 @@ struct Context {
   Renderer *renderer;
   EnvironmentManager *environments;
   ImGuiManager *imgui;
+  Time *time = nullptr;
 };
 
 #endif // CONTEXT_H

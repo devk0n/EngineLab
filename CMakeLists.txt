@@ -96,6 +96,9 @@ set(SOURCES
 
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
+
+        src/physics/RigidBody.cpp
+        include/core/Time.h
 )
 
 # Add executable

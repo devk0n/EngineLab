@@ -6,6 +6,7 @@
 #include <core/WindowManager.h>
 #include <imgui.h>
 
+#include "core/Time.h"
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
@@ -13,6 +14,18 @@ bool Simulation::load() {
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+
+  // Add test rigid bodies
+  RigidBody rigidBody_0;
+  rigidBody_0.position = glm::vec3(1.0f, 1.0f, 1.0f);
+  rigidBody_0.orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+  m_rigidBodies.push_back(rigidBody_0);
+
+  RigidBody rigidBody_1;
+  rigidBody_1.position = glm::vec3(1.0f, 2.0f, 1.0f);
+  rigidBody_1.orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+  m_rigidBodies.push_back(rigidBody_1);
+
   return true;
 }
 
@@ -26,6 +39,12 @@ void Simulation::update(float dt) {
 void Simulation::render() {
   showUI();
   showWindowDebug();
+
+  // Draw rigidbody axes
+  glm::mat4 viewProj = m_camera.getProjectionMatrix() * m_camera.getViewMatrix();
+  for (const auto &rb: m_rigidBodies) {
+    m_ctx.renderer->drawAxes(viewProj, rb.position, rb.orientation, 1.0f);
+  }
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
@@ -101,7 +120,15 @@ void Simulation::showWindowDebug() {
     m_fpsUpdateTimer = 0.0f;
   }
 
+  float totalSeconds = m_ctx.time->getElapsedTime();
+  int hours = static_cast<int>(totalSeconds) / 3600;
+  int minutes = (static_cast<int>(totalSeconds) % 3600) / 60;
+  int seconds = static_cast<int>(totalSeconds) % 60;
+  int milliseconds = static_cast<int>((totalSeconds - std::floor(totalSeconds)) * 1000);
+
   ImGui::Begin("Window Debug");
   ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps, ImGui::GetIO().DeltaTime * 1000.0f);
+  ImGui::Text("Elapsed Time: %02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+  ImGui::Text("Delta Time: %.0f µs", m_ctx.time->getDeltaTime() * 1000000.0f);
   ImGui::End();
 }

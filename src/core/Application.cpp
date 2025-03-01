@@ -6,13 +6,10 @@
 #include "utils/Logger.h"
 
 Application::Application() :
-    m_ctx(), m_initialized(false),
-    m_windowManager(std::make_unique<WindowManager>("EngineLab")),
-    m_inputManager(std::make_unique<InputManager>()),
-    m_renderer(std::make_unique<Renderer>()),
-    m_imguiManager(std::make_unique<ImGuiManager>()),
-    m_environmentManager(std::make_unique<EnvironmentManager>()),
-    m_shaderManager(std::make_unique<ShaderManager>()) {}
+    m_ctx(), m_initialized(false), m_windowManager(std::make_unique<WindowManager>("EngineLab")),
+    m_inputManager(std::make_unique<InputManager>()), m_renderer(std::make_unique<Renderer>()),
+    m_imguiManager(std::make_unique<ImGuiManager>()), m_environmentManager(std::make_unique<EnvironmentManager>()),
+    m_shaderManager(std::make_unique<ShaderManager>()), m_time(std::make_unique<Time>()) {}
 
 Application::~Application() {
   m_imguiManager->shutdown();
@@ -53,9 +50,10 @@ bool Application::initialize() {
   m_ctx.renderer = m_renderer.get();
   m_ctx.environments = m_environmentManager.get();
   m_ctx.imgui = m_imguiManager.get();
+  m_ctx.time = m_time.get();
 
   // Push the initial environment using the member context
-  m_environmentManager->pushEnvironment(std::make_unique<Dashboard>(m_ctx));
+  m_environmentManager->pushEnvironment(std::make_unique<Simulation>(m_ctx));
 
   m_initialized = true;
   return m_initialized;
@@ -68,18 +66,16 @@ void Application::run() {
   }
 
   LOG_INFO("Application started!");
-  m_lastFrameTime = glfwGetTime();
+  m_time->update();
 
   while (!m_windowManager->shouldClose()) {
     // Delta Time
-    double currentTime = glfwGetTime();
-    float deltaTime = static_cast<float>(currentTime - m_lastFrameTime);
-    m_lastFrameTime = currentTime;
+    m_time->update();
 
     // Update
     WindowManager::pollEvents();
     m_renderer->beginFrame();
-    m_environmentManager->update(deltaTime);
+    m_environmentManager->update(m_time->getDeltaTime());
     m_inputManager->update();
     m_renderer->endFrame();
 

@@ -26,6 +26,8 @@ public:
   // Utility drawing functions that environments can use.
   void drawGrid(const Camera &camera);
   void drawSky(const Camera &camera);
+  void drawLine(const glm::mat4 &viewProjection, const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &color);
+  void drawAxes(const glm::mat4 &viewProjection, const glm::vec3 &position, const glm::quat &orientation, float length);
 
   // Access to the shader manager if needed.
   ShaderManager &getShaderManager();

@@ -4,6 +4,9 @@
 #include "environments/Environment.h"
 
 #include "core/Camera.h"
+#include "physics/RigidBody.h"
+
+#include <vector>
 
 class Simulation final : public Environment {
 public:
@@ -15,6 +18,8 @@ public:
 
 private:
   Camera m_camera;
+
+  std::vector<RigidBody> m_rigidBodies;
 
   void showUI();
 
