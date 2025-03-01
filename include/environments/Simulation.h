@@ -6,6 +6,7 @@
 #include "core/Camera.h"
 #include "physics/RigidBody.h"
 
+#include <system/SystemManager.h>
 #include <vector>
 
 class Simulation final : public Environment {
@@ -17,6 +18,8 @@ public:
   void unload() override;
 
 private:
+  SystemManager m_systemManager;
+
   Camera m_camera;
 
   std::vector<RigidBody> m_rigidBodies;

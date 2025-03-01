@@ -7,6 +7,8 @@
 #include <imgui.h>
 
 #include "core/Time.h"
+#include "system/SystemBuilder.h"
+#include "system/SystemManager.h"
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
@@ -46,6 +48,13 @@ bool Simulation::load() {
   Arm_2.addGeometry(glm::vec3(3.0f, 0.0f, 0.0f));
   m_rigidBodies.push_back(Arm_2);
 
+  auto config = SystemBuilder()
+                    .body("Arm 1", glm::vec3(0.0f, 1.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))),
+                          glm::vec3(1.0f), 1.0f)
+                    .body("Arm 2", glm::vec3(-3.0f, 2.0f, 1.0f),
+                          glm::quat(glm::vec3(0.0f, glm::radians(-70.0f), glm::radians(180.0f))), glm::vec3(1.0f), 1.0f)
+                    .build();
+
   return true;
 }
 
@@ -54,12 +63,14 @@ void Simulation::update(float dt) {
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
   handleDefaultInputs();
+
+  // system.render();
 }
 
 void Simulation::render() {
   showUI();
   showWindowDebug();
-
+  m_systemManager.update();
   glm::mat4 viewProj = m_camera.getProjectionMatrix() * m_camera.getViewMatrix();
 
   for (const auto &rb: m_rigidBodies) {
