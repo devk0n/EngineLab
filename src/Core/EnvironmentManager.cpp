@@ -1,4 +1,4 @@
-#include "core/EnvironmentManager.h"
+#include "Core/EnvironmentManager.h"
 #include "utils/Logger.h"
 
 void EnvironmentManager::pushEnvironment(
@@ -19,7 +19,7 @@ void EnvironmentManager::pushEnvironment(
 }
 void EnvironmentManager::popEnvironment() {
   if (m_environments.empty()) {
-    LOG_WARN("No environments to pop.");
+    LOG_WARN("No Environments to pop.");
     return;
   }
 

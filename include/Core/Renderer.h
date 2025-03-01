@@ -23,7 +23,7 @@ public:
   void beginFrame();
   void endFrame();
 
-  // Utility drawing functions that environments can use.
+  // Utility drawing functions that Environments can use.
   void drawGrid(const Camera &camera);
   void drawSky(const Camera &camera);
 

@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <stack>
-#include "environments/Environment.h"
+#include "Environments/Environment.h"
 
 class EnvironmentManager {
 public:

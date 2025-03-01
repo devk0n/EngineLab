@@ -1,9 +1,9 @@
-#include "environments/Dashboard.h"
-#include <core/ImGuiManager.h>
+#include "Environments/Dashboard.h"
+#include <Core/ImGuiManager.h>
 #include <imgui.h>
 
-#include "core/EnvironmentManager.h"
-#include "environments/Simulation.h"
+#include "Core/EnvironmentManager.h"
+#include "Environments/Simulation.h"
 #include "utils/Logger.h"
 
 bool Dashboard::load() {

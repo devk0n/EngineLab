@@ -85,21 +85,17 @@ find_package(OpenGL REQUIRED)
 set(SOURCES
         src/main.cpp
 
-        src/core/Application.cpp
-        src/core/WindowManager.cpp
-        src/core/InputManager.cpp
-        src/core/Renderer.cpp
-        src/core/ImGuiManager.cpp
-        src/core/EnvironmentManager.cpp
-        src/core/Camera.cpp
-        src/core/ShaderManager.cpp
+        src/Core/Application.cpp
+        src/Core/WindowManager.cpp
+        src/Core/InputManager.cpp
+        src/Core/Renderer.cpp
+        src/Core/ImGuiManager.cpp
+        src/Core/EnvironmentManager.cpp
+        src/Core/Camera.cpp
+        src/Core/ShaderManager.cpp
 
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
-        src/physics/PhysicsEngine.cpp
-        include/physics/PhysicsEngine.h
-        src/physics/Object.cpp
-        src/physics/Object.h
 )
 
 # Add executable
@@ -122,5 +118,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
+        ${glad_SOURCE_DIR}/include
 )

@@ -1,9 +1,9 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "environments/Environment.h"
+#include "Environments/Environment.h"
 
-#include "core/Camera.h"
+#include "Core/Camera.h"
 
 class Simulation final : public Environment {
 public:

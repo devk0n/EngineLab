@@ -1,4 +1,4 @@
-#include "core/Camera.h"
+#include "Core/Camera.h"
 #include "utils/Logger.h"
 
 Camera::Camera() :

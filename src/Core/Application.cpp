@@ -1,8 +1,8 @@
-#include "core/Application.h"
+#include "Core/Application.h"
 
-#include "core/Context.h"
-#include "environments/Dashboard.h"
-#include "environments/Simulation.h"
+#include "Core/Context.h"
+#include "Environments/Dashboard.h"
+#include "Environments/Simulation.h"
 #include "utils/Logger.h"
 
 Application::Application() :

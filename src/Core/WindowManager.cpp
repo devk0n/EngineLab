@@ -1,6 +1,6 @@
 #include "utils/OpenGLSetup.h"
 
-#include "core/WindowManager.h"
+#include "Core/WindowManager.h"
 #include "utils/Logger.h"
 
 WindowManager::WindowManager(std::string title) :

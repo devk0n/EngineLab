@@ -1,6 +1,6 @@
-#include "core/InputManager.h"
+#include "Core/InputManager.h"
 
-#include "core/Camera.h"
+#include "Core/Camera.h"
 #include "utils/Logger.h"
 
 InputManager::InputManager() : m_window(nullptr) {}

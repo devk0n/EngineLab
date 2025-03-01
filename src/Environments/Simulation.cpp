@@ -1,9 +1,9 @@
-#include "environments/Simulation.h"
+#include "Environments/Simulation.h"
 
-#include <core/ImGuiManager.h>
-#include <core/InputManager.h>
-#include <core/Renderer.h>
-#include <core/WindowManager.h>
+#include <Core/ImGuiManager.h>
+#include <Core/InputManager.h>
+#include <Core/Renderer.h>
+#include <Core/WindowManager.h>
 #include <imgui.h>
 
 #include "utils/Logger.h"

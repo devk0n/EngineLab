@@ -1,4 +1,4 @@
-#include "core/Renderer.h"
+#include "Core/Renderer.h"
 
 #include "utils/OpenGLSetup.h"
 

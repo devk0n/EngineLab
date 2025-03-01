@@ -1,7 +1,7 @@
 #ifndef DASHBOARD_H
 #define DASHBOARD_H
 
-#include "environments/Environment.h"
+#include "Environments/Environment.h"
 
 class Dashboard final : public Environment {
 public:

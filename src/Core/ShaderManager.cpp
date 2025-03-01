@@ -1,4 +1,4 @@
-#include "core/ShaderManager.h"
+#include "Core/ShaderManager.h"
 #include <fstream>
 #include <sstream>
 
