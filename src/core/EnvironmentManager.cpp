@@ -8,22 +8,20 @@ void EnvironmentManager::pushEnvironment(
     return;
   }
 
-  LOG_DEBUG("Pushing new environment. Address: %p", environment.get());
+  LOG_DEBUG("Pushing new environment. ");
   if (!environment->load()) {
     LOG_ERROR("Failed to load environment");
     return;
   }
 
   m_environments.push(std::move(environment));
-  LOG_DEBUG("Environment pushed. New top: %p", m_environments.top().get());
+  LOG_DEBUG("Environment pushed.");
 }
 void EnvironmentManager::popEnvironment() {
   if (m_environments.empty()) {
     LOG_WARN("No environments to pop.");
     return;
   }
-
-  LOG_DEBUG("Popping environment: %p", m_environments.top().get());
 
   m_environments.top()->unload();
   m_environments.pop();

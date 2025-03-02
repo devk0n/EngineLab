@@ -26,20 +26,18 @@ bool Simulation::load() {
   m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
-  auto m_config =
-      SystemBuilder()
-      .body("Arm 1", glm::vec3(0.0f, 1.0f, 1.0f),
-            glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))),
-            glm::vec3(1.0f), 1.0f)
-      .body("Arm 2", glm::vec3(-3.0f, 2.0f, 1.0f),
-            glm::quat(glm::vec3(0.0f, glm::radians(-70.0f),
-                                glm::radians(180.0f))), glm::vec3(1.0f), 1.0f)
-      .build();
+  if (!m_ctx.renderer->getShaderManager()
+    .loadShader("cubeShader",
+                "../assets/shaders/cube.vert",
+                "../assets/shaders/cube.frag")) {
+    LOG_ERROR("Failed to load cube shader");
+    return false;
+  }
 
   return true;
 }
 
-void Simulation::update(float dt) {
+void Simulation::update(const float dt) {
   m_ctx.renderer->drawGrid(m_camera);
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
@@ -52,32 +50,35 @@ void Simulation::render() {
   showUI();
   showWindowDebug();
 
-  m_systemManager.update();
+  m_systemManager.render(m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
 
-void Simulation::showUI() {
+void Simulation::showUI() const {
   // Use const references for vectors
   const glm::vec3 position = m_camera.getPosition();
   const glm::quat orientation = m_camera.getOrientation();
-
   const glm::vec3 orientationEuler = eulerAngles(m_camera.getOrientation());
 
   ImGui::Begin("Camera Debug");
-  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y,
+  ImGui::Text("Position: (%.2f, %.2f, %.2f)",
+              position.x,
+              position.y,
               position.z);
-  ImGui::Text("Orientation: (%.2f, %.2f, %.2f, %.2f)", orientation.w,
-              orientation.x, orientation.y, orientation.z);
+  ImGui::Text("Orientation: (%.2f, %.2f, %.2f, %.2f)",
+              orientation.w,
+              orientation.x,
+              orientation.y,
+              orientation.z);
   ImGui::Text("Orientation Euler: (%.2f, %.2f, %.2f)",
-              orientationEuler.z * 180.0f / glm::pi<float>(),
+              orientationEuler.x * 180.0f / glm::pi<float>(),
               orientationEuler.y * 180.0f / glm::pi<float>(),
-              orientationEuler.x * 180.0f / glm::pi<float>());
-
+              orientationEuler.z * 180.0f / glm::pi<float>());
   ImGui::End();
 }
 
-void Simulation::handleCameraMovement(float dt) {
+void Simulation::handleCameraMovement(const float dt) {
   // Movement controls
   if (m_ctx.input->isKeyHeld(GLFW_KEY_W))
     m_camera.processKeyboardInput(CameraMovement::FORWARD, dt);
@@ -111,7 +112,7 @@ void Simulation::handleCameraMovement(float dt) {
   // Changed to yScrollOffset
 }
 
-void Simulation::handleDefaultInputs() {
+void Simulation::handleDefaultInputs() const {
   if (m_ctx.input->isKeyPressed(GLFW_KEY_ESCAPE)) {
     m_ctx.window->close();
   }
@@ -132,16 +133,15 @@ void Simulation::showWindowDebug() {
     m_fpsUpdateTimer = 0.0f;
   }
 
-  const float totalSeconds = m_ctx.time->getElapsedTime();
+  const double totalSeconds = m_ctx.time->getElapsedTime();
   const int hours = static_cast<int>(totalSeconds) / 3600;
   const int minutes = (static_cast<int>(totalSeconds) % 3600) / 60;
   const int seconds = static_cast<int>(totalSeconds) % 60;
   const int milliseconds = static_cast<int>((totalSeconds - std::floor(totalSeconds)) * 1000);
 
   ImGui::Begin("Window Debug");
-  ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps,
-              ImGui::GetIO().DeltaTime * 1000.0f);
+  ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps, ImGui::GetIO().DeltaTime * 1000);
   ImGui::Text("Elapsed Time: %02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
-  ImGui::Text("Delta Time: %.0f µs", m_ctx.time->getDeltaTime() * 1000000.0f);
+  ImGui::Text("Delta Time: %.0f µs", m_ctx.time->getDeltaTime() * 1000000);
   ImGui::End();
 }
