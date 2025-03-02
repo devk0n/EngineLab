@@ -26,11 +26,13 @@ bool Simulation::load() {
 
   auto m_config =
       SystemBuilder()
-          .body("Arm 1", glm::vec3(0.0f, 1.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))),
-                glm::vec3(1.0f), 1.0f)
-          .body("Arm 2", glm::vec3(-3.0f, 2.0f, 1.0f),
-                glm::quat(glm::vec3(0.0f, glm::radians(-70.0f), glm::radians(180.0f))), glm::vec3(1.0f), 1.0f)
-          .build();
+      .body("Arm 1", glm::vec3(0.0f, 1.0f, 1.0f),
+            glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))),
+            glm::vec3(1.0f), 1.0f)
+      .body("Arm 2", glm::vec3(-3.0f, 2.0f, 1.0f),
+            glm::quat(glm::vec3(0.0f, glm::radians(-70.0f),
+                                glm::radians(180.0f))), glm::vec3(1.0f), 1.0f)
+      .build();
 
   return true;
 }
@@ -54,7 +56,6 @@ void Simulation::render() {
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
 
 void Simulation::showUI() {
-
   // Use const references for vectors
   const glm::vec3 position = m_camera.getPosition();
   const glm::quat orientation = m_camera.getOrientation();
@@ -62,16 +63,19 @@ void Simulation::showUI() {
   const glm::vec3 orientationEuler = eulerAngles(m_camera.getOrientation());
 
   ImGui::Begin("Camera Debug");
-  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
-  ImGui::Text("Orientation: (%.2f, %.2f, %.2f, %.2f)", orientation.w, orientation.x, orientation.y, orientation.z);
-  ImGui::Text("Orientation Euler: (%.2f, %.2f, %.2f)", orientationEuler.z * 180.0f / glm::pi<float>(),
-              orientationEuler.y * 180.0f / glm::pi<float>(), orientationEuler.x * 180.0f / glm::pi<float>());
+  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y,
+              position.z);
+  ImGui::Text("Orientation: (%.2f, %.2f, %.2f, %.2f)", orientation.w,
+              orientation.x, orientation.y, orientation.z);
+  ImGui::Text("Orientation Euler: (%.2f, %.2f, %.2f)",
+              orientationEuler.z * 180.0f / glm::pi<float>(),
+              orientationEuler.y * 180.0f / glm::pi<float>(),
+              orientationEuler.x * 180.0f / glm::pi<float>());
 
   ImGui::End();
 }
 
 void Simulation::handleCameraMovement(float dt) {
-
   // Movement controls
   if (m_ctx.input->isKeyHeld(GLFW_KEY_W))
     m_camera.processKeyboardInput(CameraMovement::FORWARD, dt);
@@ -88,18 +92,21 @@ void Simulation::handleCameraMovement(float dt) {
 
   // Right-click look control
   const bool looking = m_ctx.input->isMouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT);
-  glfwSetInputMode(m_ctx.window->getNativeWindow(), GLFW_CURSOR, looking ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+  glfwSetInputMode(m_ctx.window->getNativeWindow(), GLFW_CURSOR,
+                   looking ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 
   if (looking) {
     double xOffset, yOffset;
     m_ctx.input->getMouseDelta(xOffset, yOffset);
-    m_camera.processMouseMovement(static_cast<float>(xOffset), static_cast<float>(yOffset));
+    m_camera.processMouseMovement(static_cast<float>(xOffset),
+                                  static_cast<float>(yOffset));
   }
 
   // Handle scroll independently of looking mode
   double xScrollOffset = 0.0, yScrollOffset = 0.0;
   m_ctx.input->getScrollDelta(xScrollOffset, yScrollOffset);
-  m_camera.processScroll(static_cast<float>(yScrollOffset)); // Changed to yScrollOffset
+  m_camera.processScroll(static_cast<float>(yScrollOffset));
+  // Changed to yScrollOffset
 }
 
 void Simulation::handleDefaultInputs() {
@@ -109,7 +116,6 @@ void Simulation::handleDefaultInputs() {
 }
 
 void Simulation::showWindowDebug() {
-
   float currentFps = ImGui::GetIO().Framerate;
 
   // Initialize displayed FPS on first frame
@@ -128,11 +134,14 @@ void Simulation::showWindowDebug() {
   int hours = static_cast<int>(totalSeconds) / 3600;
   int minutes = (static_cast<int>(totalSeconds) % 3600) / 60;
   int seconds = static_cast<int>(totalSeconds) % 60;
-  int milliseconds = static_cast<int>((totalSeconds - std::floor(totalSeconds)) * 1000);
+  int milliseconds = static_cast<int>(
+    (totalSeconds - std::floor(totalSeconds)) * 1000);
 
   ImGui::Begin("Window Debug");
-  ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps, ImGui::GetIO().DeltaTime * 1000.0f);
-  ImGui::Text("Elapsed Time: %02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+  ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps,
+              ImGui::GetIO().DeltaTime * 1000.0f);
+  ImGui::Text("Elapsed Time: %02d:%02d:%02d.%03d", hours, minutes, seconds,
+              milliseconds);
   ImGui::Text("Delta Time: %.0f µs", m_ctx.time->getDeltaTime() * 1000000.0f);
   ImGui::End();
 }

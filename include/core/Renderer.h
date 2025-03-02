@@ -18,18 +18,12 @@ public:
 
   // Frame management: clear the screen at the beginning of a frame.
   void clearScreen();
-
-  // Optionally, beginFrame() and endFrame() could wrap your frame processing.
   void beginFrame();
   void endFrame();
 
   // Utility drawing functions that environments can use.
   void drawGrid(const Camera &camera);
   void drawSky(const Camera &camera);
-  void drawCube(const glm::mat4 &viewProjection, const glm::vec3 &position, const glm::quat &orientation,
-                const glm::vec3 &size, const glm::vec3 &color);
-  void drawLine(const glm::mat4 &viewProjection, const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &color);
-  void drawAxes(const glm::mat4 &viewProjection, const glm::vec3 &position, const glm::quat &orientation, float length);
 
   // Access to the shader manager if needed.
   ShaderManager &getShaderManager();
