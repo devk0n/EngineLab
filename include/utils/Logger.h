@@ -21,8 +21,6 @@
 #define COLOR_WARN "\x1B[38;2;255;165;0m" // Orange
 #define COLOR_ERROR "\033[31m" // Red
 
-// FIXME: Some prints to the console are showing on the same line.
-
 class Logger {
 public:
   enum class Level { Debug, Info, Warning, Error };
