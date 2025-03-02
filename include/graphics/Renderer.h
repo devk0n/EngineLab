@@ -3,6 +3,7 @@
 
 #include "Camera.h"
 #include "ShaderManager.h"
+
 #include "utils/OpenGLSetup.h"
 
 class Renderer {

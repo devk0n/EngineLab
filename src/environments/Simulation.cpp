@@ -118,7 +118,7 @@ void Simulation::handleDefaultInputs() {
 }
 
 void Simulation::showWindowDebug() {
-  float currentFps = ImGui::GetIO().Framerate;
+  const float currentFps = ImGui::GetIO().Framerate;
 
   // Initialize displayed FPS on first frame
   if (m_displayedFps == 0.0f) {
@@ -132,18 +132,16 @@ void Simulation::showWindowDebug() {
     m_fpsUpdateTimer = 0.0f;
   }
 
-  float totalSeconds = m_ctx.time->getElapsedTime();
-  int hours = static_cast<int>(totalSeconds) / 3600;
-  int minutes = (static_cast<int>(totalSeconds) % 3600) / 60;
-  int seconds = static_cast<int>(totalSeconds) % 60;
-  int milliseconds = static_cast<int>(
-    (totalSeconds - std::floor(totalSeconds)) * 1000);
+  const float totalSeconds = m_ctx.time->getElapsedTime();
+  const int hours = static_cast<int>(totalSeconds) / 3600;
+  const int minutes = (static_cast<int>(totalSeconds) % 3600) / 60;
+  const int seconds = static_cast<int>(totalSeconds) % 60;
+  const int milliseconds = static_cast<int>((totalSeconds - std::floor(totalSeconds)) * 1000);
 
   ImGui::Begin("Window Debug");
   ImGui::Text("FPS: %.0f (%.2f ms)", m_displayedFps,
               ImGui::GetIO().DeltaTime * 1000.0f);
-  ImGui::Text("Elapsed Time: %02d:%02d:%02d.%03d", hours, minutes, seconds,
-              milliseconds);
+  ImGui::Text("Elapsed Time: %02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
   ImGui::Text("Delta Time: %.0f µs", m_ctx.time->getDeltaTime() * 1000000.0f);
   ImGui::End();
 }

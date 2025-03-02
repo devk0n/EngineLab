@@ -1,7 +1,7 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
 
-#include "core/ShaderManager.h"
+#include "graphics/ShaderManager.h"
 #include "SystemConfiguration.h"
 
 class SystemVisualizer {
