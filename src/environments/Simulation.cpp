@@ -14,12 +14,12 @@
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
-constexpr glm::vec3 ORANGE = {1.0f, 0.647f, 0.0f};
-constexpr glm::vec3 BLUE = {0.0f, 0.647f, 1.0f};
-constexpr glm::vec3 LIGHT_GRAY = {0.5f, 0.5f, 0.5f};
-constexpr glm::vec3 CYAN = {0.0f, 1.0f, 1.0f};
-constexpr glm::vec3 MAGENTA = {1.0f, 0.0f, 1.0f};
-constexpr glm::vec3 YELLOW = {1.0f, 1.0f, 0.0f};
+constexpr glm::vec3 ORANGE     = {1.0f, 0.647f, 0.0f};
+constexpr glm::vec3 BLUE       = {0.0f, 0.647f, 1.0f};
+constexpr glm::vec3 LIGHT_GRAY = {0.5f,   0.5f, 0.5f};
+constexpr glm::vec3 CYAN       = {0.0f,   1.0f, 1.0f};
+constexpr glm::vec3 MAGENTA    = {1.0f,   0.0f, 1.0f};
+constexpr glm::vec3 YELLOW     = {1.0f,   1.0f, 0.0f};
 
 bool Simulation::load() {
   LOG_INFO("Initializing Simulation");
@@ -31,6 +31,14 @@ bool Simulation::load() {
                 "../assets/shaders/cube.vert",
                 "../assets/shaders/cube.frag")) {
     LOG_ERROR("Failed to load cube shader");
+    return false;
+  }
+
+  if (!m_ctx.renderer->getShaderManager()
+    .loadShader("depthShader",
+                "../assets/shaders/depth.vert",
+                "../assets/shaders/depth.frag")) {
+    LOG_ERROR("Failed to load depth shader");
     return false;
   }
 
@@ -48,7 +56,7 @@ void Simulation::render() {
   showUI();
   showWindowDebug();
 
-  m_systemManager.render(m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
+  m_systemManager.render(m_camera.getPosition(), m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }

@@ -1,6 +1,8 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
 
+#include <ranges>
+
 #include "SystemConfiguration.h"
 #include "graphics/ShaderManager.h"
 
@@ -21,23 +23,27 @@ public:
     cleanupCube();
   }
 
-  void render(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) const {
-    m_shaderManager.useShader("cubeShader"); // Assuming you have a shader named "cubeShader"
+  void render(const glm::vec3 &cameraPosition, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) const {
+    m_shaderManager.useShader("cubeShader");
 
-    for (const auto &[name, body] : m_system.bodies()) {
-      // Create a model matrix for the body
+    // Set light and material properties
+    m_shaderManager.setUniform("lightPos", glm::vec3(200.0f, 400.0f, -100.0f)); // Light position
+    m_shaderManager.setUniform("viewPos", cameraPosition); // Camera position
+    m_shaderManager.setUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f)); // White light
+    m_shaderManager.setUniform("objectColor", glm::vec3(1.0f, 0.0f, 0.0f)); // Red cubes
+
+    // Set transformation matrices
+    m_shaderManager.setUniform("view", viewMatrix);
+    m_shaderManager.setUniform("projection", projectionMatrix);
+
+    // Render each body
+    for (const auto &body : m_system.bodies() | std::views::values) {
       auto modelMatrix = glm::mat4(1.0f);
       modelMatrix = translate(modelMatrix, body.position);
       modelMatrix = modelMatrix * mat4_cast(body.orientation);
       modelMatrix = scale(modelMatrix, body.size);
 
-      // Set the shader uniforms
       m_shaderManager.setUniform("model", modelMatrix);
-      m_shaderManager.setUniform("view", viewMatrix);
-      m_shaderManager.setUniform("projection", projectionMatrix);
-      m_shaderManager.setUniform("color", glm::vec3(1.0f, 0.0f, 0.0f)); // Red color for the cube
-
-      // Draw the cube
       drawCube();
     }
   }
@@ -45,30 +51,63 @@ public:
 private:
   const SystemConfiguration &m_system;
   ShaderManager &m_shaderManager;
-  unsigned int m_cubeVAO, m_cubeVBO, m_cubeEBO;
+  unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
 
   void initializeCube() {
     // Define the vertices of a cube
     constexpr float vertices[] = {
-      // Positions
-      -0.5f, -0.5f, -0.5f,
-       0.5f, -0.5f, -0.5f,
-       0.5f,  0.5f, -0.5f,
-      -0.5f,  0.5f, -0.5f,
-      -0.5f, -0.5f,  0.5f,
-       0.5f, -0.5f,  0.5f,
-       0.5f,  0.5f,  0.5f,
-      -0.5f,  0.5f,  0.5f
+      // Positions          // Normals
+      // Back face
+      -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Bottom-left
+       0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Bottom-right
+       0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Top-right
+      -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Top-left
+
+      // Front face
+      -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Bottom-left
+       0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Bottom-right
+       0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Top-right
+      -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Top-left
+
+      // Left face
+      -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // Top-right
+      -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // Top-left
+      -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // Bottom-left
+      -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // Bottom-right
+
+      // Right face
+       0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // Top-left
+       0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // Top-right
+       0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // Bottom-right
+       0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // Bottom-left
+
+      // Bottom face
+      -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // Bottom-right
+       0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // Bottom-left
+       0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // Top-left
+      -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // Top-right
+
+      // Top face
+      -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // Top-left
+       0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // Top-right
+       0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, // Bottom-right
+      -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f  // Bottom-left
   };
 
     // Define the indices for the cube
     const unsigned int indices[] = {
+      // Back face
       0, 1, 2, 2, 3, 0,
+      // Front face
       4, 5, 6, 6, 7, 4,
-      0, 1, 5, 5, 4, 0,
-      2, 3, 7, 7, 6, 2,
-      0, 3, 7, 7, 4, 0,
-      1, 2, 6, 6, 5, 1
+      // Left face
+      8, 9, 10, 10, 11, 8,
+      // Right face
+      12, 13, 14, 14, 15, 12,
+      // Bottom face
+      16, 17, 18, 18, 19, 16,
+      // Top face
+      20, 21, 22, 22, 23, 20
   };
 
     // Generate and bind the VAO and VBO
@@ -78,15 +117,21 @@ private:
 
     glBindVertexArray(m_cubeVAO);
 
+    // Bind vertex data
     glBindBuffer(GL_ARRAY_BUFFER, m_cubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // Bind index data
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_cubeEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // Set the vertex attribute pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(nullptr));
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), static_cast<void *>(nullptr));
     glEnableVertexAttribArray(0);
+
+    // Normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
   }
