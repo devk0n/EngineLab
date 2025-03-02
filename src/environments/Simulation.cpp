@@ -42,8 +42,6 @@ void Simulation::update(const float dt) {
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
   handleDefaultInputs();
-
-  // system.render();
 }
 
 void Simulation::render() {
