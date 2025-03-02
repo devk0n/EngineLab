@@ -6,10 +6,11 @@
 #include "EnvironmentManager.h"
 #include "ImGuiManager.h"
 #include "InputManager.h"
-#include "Renderer.h"
-#include "ShaderManager.h"
 #include "Time.h"
 #include "WindowManager.h"
+
+#include "graphics/Renderer.h"
+#include "graphics/ShaderManager.h"
 
 class Application {
 public:

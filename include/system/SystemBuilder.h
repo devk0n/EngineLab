@@ -5,7 +5,7 @@
 class SystemBuilder {
 public:
   SystemBuilder &body(const std::string &name, const glm::vec3 &position, const glm::quat &orientation,
-                      const glm::vec3 &size, float mass) {
+                      const glm::vec3 &size, const float mass) {
     SystemConfiguration::Body body;
     body.position = position;
     body.orientation = orientation;

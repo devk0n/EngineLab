@@ -1,5 +1,7 @@
-#include "core/Renderer.h"
+#include "graphics/Renderer.h"
 
+#include "glm/gtc/type_ptr.hpp"
+#include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
 // Example vertex data for the grid and sky (full-screen quad).
@@ -81,17 +83,17 @@ void Renderer::endFrame() {
   // Optionally handle post-processing or other tasks before buffer swap.
 }
 
-void Renderer::drawGrid(const Camera &camera) {
+void Renderer::drawGrid(const Camera &camera) const {
   // Use the grid shader.
-  unsigned int shader = m_shaderManager.getShader("grid");
+  const unsigned int shader = m_shaderManager.getShader("grid");
   glUseProgram(shader);
 
   // Compute the view-projection matrix.
-  glm::mat4 view = camera.getViewMatrix();
-  glm::mat4 projection = camera.getProjectionMatrix();
+  const glm::mat4 view = camera.getViewMatrix();
+  const glm::mat4 projection = camera.getProjectionMatrix();
   glm::mat4 viewProjection = projection * view;
   glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1,
-                     GL_FALSE, glm::value_ptr(viewProjection));
+                     GL_FALSE, value_ptr(viewProjection));
 
   // Inside Renderer::drawGrid(), after setting the viewProjection uniform
   glUniform3f(glGetUniformLocation(shader, "u_fogColor"), 0.1f, 0.1f, 0.1f);
@@ -104,13 +106,13 @@ void Renderer::drawGrid(const Camera &camera) {
   glBindVertexArray(0);
 }
 
-void Renderer::drawSky(const Camera &camera) {
-  unsigned int shader = m_shaderManager.getShader("sky");
+void Renderer::drawSky(const Camera &camera) const {
+  const unsigned int shader = m_shaderManager.getShader("sky");
   glUseProgram(shader);
 
   // Remove translation from the view matrix to keep the sky static.
-  glm::mat4 view = glm::mat4(glm::mat3(camera.getViewMatrix()));
-  glm::mat4 projection = camera.getProjectionMatrix();
+  const auto view = glm::mat4(glm::mat3(camera.getViewMatrix()));
+  const glm::mat4 projection = camera.getProjectionMatrix();
   glm::mat4 viewProjection = projection * view;
   glUniformMatrix4fv(glGetUniformLocation(shader, "u_viewProjection"), 1,
                      GL_FALSE, glm::value_ptr(viewProjection));

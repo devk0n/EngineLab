@@ -2,11 +2,8 @@
 #define SIMULATION_H
 
 #include "environments/Environment.h"
-
-#include "core/Camera.h"
-
-#include <system/SystemManager.h>
-#include <vector>
+#include "graphics/Camera.h"
+#include "system/SystemManager.h"
 
 class Simulation final : public Environment {
 public:

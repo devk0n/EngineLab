@@ -1,11 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "glm/gtc/type_ptr.hpp"
-
 #include "Camera.h"
 #include "ShaderManager.h"
-#include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
 class Renderer {
@@ -17,13 +14,12 @@ public:
   bool initialize();
 
   // Frame management: clear the screen at the beginning of a frame.
-  void clearScreen();
-  void beginFrame();
-  void endFrame();
+  static void beginFrame();
+  static void endFrame();
 
   // Utility drawing functions that environments can use.
-  void drawGrid(const Camera &camera);
-  void drawSky(const Camera &camera);
+  void drawGrid(const Camera &camera) const;
+  void drawSky(const Camera &camera) const;
 
   // Access to the shader manager if needed.
   ShaderManager &getShaderManager();
@@ -34,6 +30,8 @@ private:
   // VAOs and VBOs for common primitives.
   GLuint m_gridVAO, m_gridVBO;
   GLuint m_skyVAO, m_skyVBO;
+
+  static void clearScreen();
 
   // Helper functions for initializing the grid and sky resources.
   bool initGrid();

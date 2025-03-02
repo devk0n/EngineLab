@@ -1,5 +1,4 @@
-#include "core/Camera.h"
-#include "utils/Logger.h"
+#include "graphics/Camera.h"
 
 Camera::Camera() :
     m_position(0.0f, 0.0f, 0.0f), m_orientation(1.0f, 0.0f, 0.0f, 0.0f),

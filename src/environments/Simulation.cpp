@@ -1,14 +1,16 @@
 #include "environments/Simulation.h"
 
-#include <core/ImGuiManager.h>
-#include <core/InputManager.h>
-#include <core/Renderer.h>
-#include <core/WindowManager.h>
 #include <imgui.h>
 
+#include "core/InputManager.h"
 #include "core/Time.h"
+#include "core/WindowManager.h"
+
+#include "graphics/Renderer.h"
+
 #include "system/SystemBuilder.h"
 #include "system/SystemManager.h"
+
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 

@@ -88,11 +88,11 @@ set(SOURCES
         src/core/Application.cpp
         src/core/WindowManager.cpp
         src/core/InputManager.cpp
-        src/core/Renderer.cpp
+        src/graphics/Renderer.cpp
         src/core/ImGuiManager.cpp
         src/core/EnvironmentManager.cpp
-        src/core/Camera.cpp
-        src/core/ShaderManager.cpp
+        src/graphics/Camera.cpp
+        src/graphics/ShaderManager.cpp
 
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
