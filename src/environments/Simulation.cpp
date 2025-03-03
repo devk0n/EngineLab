@@ -46,7 +46,6 @@ bool Simulation::load() {
 }
 
 void Simulation::update(const float dt) {
-  m_ctx.renderer->drawGrid(m_camera);
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
   handleDefaultInputs();
@@ -57,6 +56,7 @@ void Simulation::render() {
   showWindowDebug();
 
   m_systemManager.render(m_camera.getPosition(), m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
+  m_ctx.renderer->drawGrid(m_camera);
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
@@ -130,7 +130,7 @@ void Simulation::handleDefaultInputs() {
     m_systemManager.getGuizmo().setOperation(ImGuizmo::ROTATE);
     LOG_DEBUG("Guizmo set to ROTATE");
   }
-  if (ImGui::IsKeyPressed(ImGuiKey_S)) {
+  if (ImGui::IsKeyPressed(ImGuiKey_E)) {
     m_systemManager.getGuizmo().setOperation(ImGuizmo::SCALE);
     LOG_DEBUG("Guizmo set to SCALE");
   }

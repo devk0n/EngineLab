@@ -119,6 +119,7 @@ set(SOURCES
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 include/system/SystemGuizmo.h
+assets/files/OldSystemEditor.h
 )
 
 # Add executable

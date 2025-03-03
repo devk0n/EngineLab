@@ -10,9 +10,10 @@
 class SystemManager {
 public:
   explicit SystemManager(ShaderManager &shaderManager)
-        : m_editor(m_system, m_guizmo),
-          m_visualizer(m_system, shaderManager),
-          m_guizmo(m_system, m_visualizer) {}
+    : m_editor(m_system, m_guizmo),
+      m_visualizer(m_system, shaderManager),
+      m_guizmo(m_system, m_visualizer) {
+  }
 
   void render(const glm::vec3 &cameraPosition, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
     m_editor.render();

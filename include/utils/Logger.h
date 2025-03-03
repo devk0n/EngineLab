@@ -174,4 +174,12 @@ private:
 #define LOG_ERROR(...)                                                         \
   Logger::log(Logger::Level::Error, __FILE__, __LINE__, __VA_ARGS__)
 
+// Undefine the macros at the end
+#undef RESET
+#undef WHITE
+#undef COLOR_DEBUG
+#undef COLOR_INFO
+#undef COLOR_WARN
+#undef COLOR_ERROR
+
 #endif // LOGGER_H

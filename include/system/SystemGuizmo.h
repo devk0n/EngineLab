@@ -15,6 +15,7 @@ public:
   explicit SystemGuizmo(SystemConfiguration &system,
                         SystemVisualizer &visualizer)
     : m_system(system), m_visualizer(visualizer) {
+    setupImGuizmoStyle();
   }
 
   void render(const glm::mat4 &viewMatrix,
@@ -62,10 +63,12 @@ public:
     body.size = scale;
   }
 
-  [[nodiscard]] const std::string &getSelectedBodyName() const { return m_selectedBodyName; }
+  void setSelectedBody(const std::string& name) {
+    m_selectedBody = name;
+  }
 
-  void setSelectedBody(const std::string &bodyName) {
-    m_selectedBodyName = bodyName;
+  [[nodiscard]] std::string getSelectedBodyName() const {
+    return m_selectedBody;
   }
 
   void setOperation(ImGuizmo::OPERATION operation) {
@@ -76,12 +79,77 @@ public:
     m_currentMode = mode;
   }
 
+  // Add visualization control methods
+  void setShowTrajectories(bool show) { m_showTrajectories = show; }
+  void setShowCollisionBounds(bool show) { m_showCollisionBounds = show; }
+  void setShowBodyNames(bool show) { m_showBodyNames = show; }
+
+
 private:
   SystemConfiguration &m_system;
   SystemVisualizer &m_visualizer;
-  std::string m_selectedBodyName; // Track by name instead of pointer
+  std::string m_selectedBodyName;
+  std::string m_selectedBody;
+  bool m_showTrajectories = true;
+  bool m_showCollisionBounds = false;
+  bool m_showBodyNames = true;
+
+
   ImGuizmo::OPERATION m_currentOperation = ImGuizmo::TRANSLATE;
   ImGuizmo::MODE m_currentMode = ImGuizmo::LOCAL;
+
+  static void setupImGuizmoStyle() {
+    ImGuizmo::Style& style = ImGuizmo::GetStyle();
+
+    [[maybe_unused]] constexpr float ALPHA_SEMI_TRANSPARENT  = 0.5f; // 50% transparency
+    [[maybe_unused]] constexpr float ALPHA_FULLY_OPAQUE      = 1.0f; // 100% visible
+    [[maybe_unused]] constexpr float ALPHA_FULLY_TRANSPARENT = 0.0f; // 0% visible (invisible)
+    [[maybe_unused]] constexpr float ALPHA_SLIGHT            = 0.8f; // 80% visible
+    [[maybe_unused]] constexpr float ALPHA_FAINT             = 0.2f; // 20% visible
+    [[maybe_unused]] constexpr float ALPHA_MEDIUM            = 0.5f; // 50% visible
+    [[maybe_unused]] constexpr float ALPHA_HEAVY             = 0.7f; // 70% visible
+    [[maybe_unused]] constexpr float ALPHA_LIGHT             = 0.3f; // 30% visible
+
+    [[maybe_unused]] constexpr ImVec4       CYAN = {0.0f, 1.0f, 1.0f, ALPHA_HEAVY};
+    [[maybe_unused]] constexpr ImVec4    MAGENTA = {1.0f, 0.0f, 1.0f, ALPHA_HEAVY};
+    [[maybe_unused]] constexpr ImVec4     YELLOW = {1.0f, 1.0f, 0.0f, ALPHA_HEAVY};
+
+    [[maybe_unused]] constexpr ImVec4      WHITE = {1.0f, 1.0f, 1.0f, ALPHA_FULLY_OPAQUE};
+    [[maybe_unused]] constexpr ImVec4 LIGHT_GRAY = {0.8f, 0.8f, 0.8f, ALPHA_MEDIUM};
+
+    style.Colors[ImGuizmo::COLOR::SCALE_LINE] = LIGHT_GRAY;
+    style.Colors[ImGuizmo::COLOR::TRANSLATION_LINE] = LIGHT_GRAY;
+
+    // Axis colors
+    style.Colors[ImGuizmo::COLOR::DIRECTION_X] = CYAN;
+    style.Colors[ImGuizmo::COLOR::DIRECTION_Y] = MAGENTA;
+    style.Colors[ImGuizmo::COLOR::DIRECTION_Z] = YELLOW;
+
+    // Plane colors
+    style.Colors[ImGuizmo::COLOR::PLANE_X] = CYAN;
+    style.Colors[ImGuizmo::COLOR::PLANE_Y] = MAGENTA;
+    style.Colors[ImGuizmo::COLOR::PLANE_Z] = YELLOW;
+
+    // Hovered/Active colors
+    style.Colors[ImGuizmo::COLOR::SELECTION] = LIGHT_GRAY;
+    style.Colors[ImGuizmo::COLOR::ROTATION_USING_FILL] = LIGHT_GRAY;
+    style.Colors[ImGuizmo::COLOR::ROTATION_USING_BORDER] = LIGHT_GRAY;
+
+    style.CenterCircleSize = 5.0f;
+    style.RotationLineThickness = 3.5f;
+    style.ScaleLineThickness = 3.5f;
+    style.TranslationLineThickness = 3.5f;
+    style.HatchedAxisLineThickness = 1.0f;
+    style.RotationOuterLineThickness = 4.0f;
+    style.ScaleLineCircleSize = 1.0f;
+    style.TranslationLineArrowSize = 0.0f;
+
+    // style.Colors[ImGuizmo::COLOR::HATCHED_AXIS_LINES] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    style.Colors[ImGuizmo::COLOR::TEXT] = WHITE;
+    // style.Colors[ImGuizmo::COLOR::TEXT_SHADOW] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    // style.Colors[ImGuizmo::COLOR::INACTIVE] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+  }
 };
 
 #endif // SYSTEMGUIZMO_H
