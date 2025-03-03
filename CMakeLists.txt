@@ -70,6 +70,28 @@ target_include_directories(imgui PUBLIC
 )
 target_link_libraries(imgui glfw OpenGL::GL glad)
 
+# Fetch ImGuizmo
+FetchContent_Declare(
+    imguizmo
+    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(imguizmo)
+
+add_library(imguizmo STATIC
+    ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+)
+target_include_directories(imguizmo PUBLIC ${imguizmo_SOURCE_DIR})
+
+# Add these two lines to connect ImGuizmo with ImGui
+target_include_directories(imguizmo PUBLIC
+    ${imguizmo_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}  # Add ImGui headers
+)
+
+target_link_libraries(imguizmo PRIVATE imgui)  # Link to ImGui library
+
 # Fetch GLM
 FetchContent_Declare(
         glm
@@ -96,6 +118,7 @@ set(SOURCES
 
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
+include/system/SystemGuizmo.h
 )
 
 # Add executable
@@ -112,6 +135,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         glm::glm
         OpenGL::GL
         Eigen3::Eigen
+        imguizmo
 )
 
 # Include directories
@@ -119,4 +143,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
+        ${imguizmo_SOURCE_DIR}
 )

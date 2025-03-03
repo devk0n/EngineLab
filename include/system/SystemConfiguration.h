@@ -19,6 +19,7 @@ public:
 
   // Core Data Access
   const std::unordered_map<std::string, Body> &bodies() const { return m_bodies; }
+  std::unordered_map<std::string, Body> &bodies() { return m_bodies; } // Non-const version
 
   // Modification Interface
   void addBody(const std::string &name, const Body &body) { m_bodies[name] = body; }

@@ -26,7 +26,7 @@ private:
   void showUI() const;
 
   void handleCameraMovement(float dt);
-  void handleDefaultInputs() const;
+  void handleDefaultInputs();
   void showWindowDebug();
 
   float m_displayedFps = 0.0f;

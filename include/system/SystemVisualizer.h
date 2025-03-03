@@ -37,7 +37,7 @@ public:
     m_shaderManager.setUniform("projection", projectionMatrix);
 
     // Render each body
-    for (const auto &body : m_system.bodies() | std::views::values) {
+    for (auto &body : m_system.bodies() | std::views::values) {
       auto modelMatrix = glm::mat4(1.0f);
       modelMatrix = translate(modelMatrix, body.position);
       modelMatrix = modelMatrix * mat4_cast(body.orientation);

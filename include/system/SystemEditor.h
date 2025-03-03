@@ -4,10 +4,13 @@
 #include <imgui.h>
 
 #include "SystemConfiguration.h"
+#include "SystemGuizmo.h"
 
 class SystemEditor {
 public:
-  explicit SystemEditor(SystemConfiguration &system) : m_system(system) {};
+  explicit SystemEditor(SystemConfiguration &system, SystemGuizmo &guizmo)
+    : m_system(system), m_guizmo(guizmo) {
+  }
 
   void render() {
     ImGui::Begin("System Editor");
@@ -47,16 +50,19 @@ public:
     // List of Bodies
     ImGui::Separator();
     ImGui::Text("Bodies");
-    for (auto &[name, body]: m_system.bodies()) { // Use non-const bodies()
+    for (auto &[name, body]: m_system.bodies()) {
+      // Use non-const accessor
       if (ImGui::TreeNode(name.c_str())) {
-        // Edit Body Properties
-        // ImGui::DragFloat3("Position", &body.position, 0.1f);
-        // ImGui::DragFloat4("Orientation", &body.orientation.x, 0.01f, -1.0f, 1.0f);
-        // ImGui::DragFloat3("Size", &body.size.x, 0.1f);
-        // ImGui::DragFloat("Mass", &body.mass, 0.1f);
+        // Select Body for Gizmo Interaction
+        if (ImGui::Button("Select")) {
+          m_guizmo.setSelectedBody(name); // Pass a non-const pointer
+        }
 
         // Delete Body Button
         if (ImGui::Button("Delete")) {
+          if (m_guizmo.getSelectedBodyName() == name) {
+            m_guizmo.setSelectedBody(""); // Clear selection
+          }
           m_system.removeBody(name);
           ImGui::TreePop();
           break;
@@ -71,6 +77,8 @@ public:
 
 private:
   SystemConfiguration &m_system;
+
+  SystemGuizmo &m_guizmo;
 };
 
 #endif // SYSTEMEDITOR_H

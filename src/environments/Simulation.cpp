@@ -118,9 +118,21 @@ void Simulation::handleCameraMovement(const float dt) {
   // Changed to yScrollOffset
 }
 
-void Simulation::handleDefaultInputs() const {
+void Simulation::handleDefaultInputs() {
   if (m_ctx.input->isKeyPressed(GLFW_KEY_ESCAPE)) {
     m_ctx.window->close();
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_T)) {
+    m_systemManager.getGuizmo().setOperation(ImGuizmo::TRANSLATE);
+    LOG_DEBUG("Guizmo set to TRANSLATE");
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_R)) {
+    m_systemManager.getGuizmo().setOperation(ImGuizmo::ROTATE);
+    LOG_DEBUG("Guizmo set to ROTATE");
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_S)) {
+    m_systemManager.getGuizmo().setOperation(ImGuizmo::SCALE);
+    LOG_DEBUG("Guizmo set to SCALE");
   }
 }
 

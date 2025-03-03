@@ -1,8 +1,12 @@
 #include "core/ImGuiManager.h"
 
+
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
+
+#include <ImGuizmo.h>
+
 
 bool ImGuiManager::initialize(GLFWwindow *window) {
   // Create ImGui context
@@ -31,6 +35,8 @@ void ImGuiManager::beginFrame() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+
+  ImGuizmo::BeginFrame();
 }
 
 void ImGuiManager::endFrame() {
