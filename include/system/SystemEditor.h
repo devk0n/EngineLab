@@ -2,7 +2,6 @@
 #define SYSTEMEDITOR_H
 
 #include <imgui.h>
-#include <stack>
 
 #include "SystemConfiguration.h"
 #include "SystemGuizmo.h"

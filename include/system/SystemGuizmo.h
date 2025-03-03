@@ -14,18 +14,19 @@ class SystemGuizmo {
 public:
   explicit SystemGuizmo(SystemConfiguration &system,
                         SystemVisualizer &visualizer)
-    : m_system(system), m_visualizer(visualizer) {
+    : m_system(system),
+      m_visualizer(visualizer) {
     setupImGuizmoStyle();
   }
 
   void render(const glm::mat4 &viewMatrix,
               const glm::mat4 &projectionMatrix) {
-    if (m_selectedBodyName.empty()) return;
+    if (m_selectedBody.empty()) return;
 
     // Find the body by name
-    const auto it = m_system.bodies().find(m_selectedBodyName);
+    const auto it = m_system.bodies().find(m_selectedBody);
     if (it == m_system.bodies().end()) {
-      m_selectedBodyName.clear(); // Clear selection if not found
+      m_selectedBody.clear(); // Clear selection if not found
       return;
     }
 
@@ -33,20 +34,22 @@ public:
 
     // Get the current transform of the selected body
     auto modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::translate(modelMatrix, body.position);
-    modelMatrix = modelMatrix * glm::mat4_cast(body.orientation);
-    modelMatrix = glm::scale(modelMatrix, body.size);
+    modelMatrix = translate(modelMatrix, body.position);
+    modelMatrix = modelMatrix * mat4_cast(body.orientation);
+    modelMatrix = scale(modelMatrix, body.size);
 
     // Render the gizmo
     ImGuizmo::SetOrthographic(false);
-    ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x,
-                      ImGui::GetIO().DisplaySize.y);
-    ImGuizmo::Manipulate(
-      glm::value_ptr(viewMatrix),
-      glm::value_ptr(projectionMatrix),
+    ImGuizmo::SetRect(0, 0,
+      ImGui::GetIO().DisplaySize.x,
+      ImGui::GetIO().DisplaySize.y);
+
+    Manipulate(
+      value_ptr(viewMatrix),
+      value_ptr(projectionMatrix),
       m_currentOperation,
       m_currentMode,
-      glm::value_ptr(modelMatrix)
+      value_ptr(modelMatrix)
     );
 
     // Decompose the updated matrix back into position, orientation, and scale
@@ -54,8 +57,12 @@ public:
     glm::quat orientation;
     glm::vec3 skew;
     glm::vec4 perspective;
-    glm::decompose(modelMatrix, scale, orientation, translation, skew,
-                   perspective);
+    decompose(modelMatrix,
+              scale,
+              orientation,
+              translation,
+              skew,
+              perspective);
 
     // Update the selected body's properties
     body.position = translation;
@@ -93,7 +100,6 @@ private:
   bool m_showTrajectories = true;
   bool m_showCollisionBounds = false;
   bool m_showBodyNames = true;
-
 
   ImGuizmo::OPERATION m_currentOperation = ImGuizmo::TRANSLATE;
   ImGuizmo::MODE m_currentMode = ImGuizmo::LOCAL;
