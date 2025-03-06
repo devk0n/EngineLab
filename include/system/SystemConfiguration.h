@@ -3,21 +3,30 @@
 
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <Eigen/Dense>
 
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 
 struct Body {
   glm::vec3 position;
+  glm::vec3 velocity;
+  glm::vec3 acceleration;
+
   glm::quat orientation;
   glm::vec3 size;
   float mass;
   glm::vec4 color;
 
-  Body() : position(0), orientation(1,0,0,0), size(1), mass(1.0f),
-          color(0.4f, 0.7f, 1.0f, 1.0f) {}
+  Body() : position(0),
+           velocity(0),
+           acceleration(0),
+           orientation(1,0,0,0),
+           size(1),
+           mass(1.0f),
+           color(0.4f, 0.7f, 1.0f, 1.0f) {}
 };
+
 
 class SystemConfiguration {
 public:

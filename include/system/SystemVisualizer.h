@@ -27,10 +27,9 @@ public:
     m_shaderManager.useShader("cubeShader");
 
     // Set light and material properties
-    m_shaderManager.setUniform("lightPos", glm::vec3(200.0f, 400.0f, -100.0f)); // Light position
+    m_shaderManager.setUniform("lightPos", glm::vec3(200.0f, 400.0f, 100.0f)); // Light position
     m_shaderManager.setUniform("viewPos", cameraPosition); // Camera position
     m_shaderManager.setUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f)); // White light
-    m_shaderManager.setUniform("objectColor", glm::vec3(0.0f, 1.0f, 1.0f)); // Red cubes
 
     // Set transformation matrices
     m_shaderManager.setUniform("view", viewMatrix);
@@ -43,6 +42,7 @@ public:
       modelMatrix = modelMatrix * mat4_cast(body.orientation);
       modelMatrix = scale(modelMatrix, body.size);
 
+      m_shaderManager.setUniform("objectColor", body.color); // Color
       m_shaderManager.setUniform("model", modelMatrix);
       drawCube();
     }

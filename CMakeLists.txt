@@ -120,6 +120,7 @@ set(SOURCES
         src/environments/Simulation.cpp
 include/system/SystemGuizmo.h
 assets/files/OldSystemEditor.h
+include/system/SystemSolver.h
 )
 
 # Add executable

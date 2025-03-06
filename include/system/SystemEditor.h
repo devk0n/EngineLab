@@ -146,9 +146,12 @@ private:
     ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "Editing: %s",
                        m_selectedBody.c_str());
     ImGui::Separator();
-
     ImGui::ColorEdit4("Color", &body.color.x);
     ImGui::DragFloat3("Position", &body.position.x, 0.1f);
+    glm::vec3 eulerAngles = glm::eulerAngles(body.orientation);
+    if (ImGui::DragFloat3("Orientation", glm::value_ptr(eulerAngles), 0.1f)) {
+      body.orientation = glm::quat(eulerAngles);
+    }
     ImGui::DragFloat3("Size", &body.size.x, 0.1f);
     ImGui::DragFloat("Mass", &body.mass, 0.1f, 0.1f, 1000.0f);
   }
@@ -156,7 +159,7 @@ private:
   void resetSystem() {
     m_system.clear();
     m_selectedBody.clear();
-    m_bodyCounter = 1;
+    m_bodyCounter = 0;
   }
 };
 

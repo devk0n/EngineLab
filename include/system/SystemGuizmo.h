@@ -23,6 +23,8 @@ public:
               const glm::mat4 &projectionMatrix) {
     if (m_selectedBody.empty()) return;
 
+    ImGuizmo::Enable(true);
+
     // Find the body by name
     const auto it = m_system.bodies().find(m_selectedBody);
     if (it == m_system.bodies().end()) {
@@ -91,11 +93,14 @@ public:
   void setShowCollisionBounds(bool show) { m_showCollisionBounds = show; }
   void setShowBodyNames(bool show) { m_showBodyNames = show; }
 
+  void unselectBody() {
+    m_selectedBody.clear();
+    ImGuizmo::Enable(false);
+  }
 
 private:
   SystemConfiguration &m_system;
   SystemVisualizer &m_visualizer;
-  std::string m_selectedBodyName;
   std::string m_selectedBody;
   bool m_showTrajectories = true;
   bool m_showCollisionBounds = false;

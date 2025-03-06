@@ -49,6 +49,7 @@ void Simulation::update(const float dt) {
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
   handleDefaultInputs();
+  m_systemManager.update(dt);
 }
 
 void Simulation::render() {
@@ -133,6 +134,18 @@ void Simulation::handleDefaultInputs() {
   if (ImGui::IsKeyPressed(ImGuiKey_E)) {
     m_systemManager.getGuizmo().setOperation(ImGuizmo::SCALE);
     LOG_DEBUG("Guizmo set to SCALE");
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_G)) {
+    m_systemManager.getGuizmo().setMode(ImGuizmo::LOCAL);
+    LOG_DEBUG("Guizmo set to LOCAL");
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_H)) {
+    m_systemManager.getGuizmo().setMode(ImGuizmo::WORLD);
+    LOG_DEBUG("Guizmo set to WORLD");
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_C)) {
+    m_systemManager.getGuizmo().unselectBody();
+    LOG_DEBUG("Guizmo unselected");
   }
 }
 
