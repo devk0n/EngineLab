@@ -69,9 +69,9 @@ void ConstraintSolver::buildJacobian(
     gamma.setZero();
     constraint->computeJacobianDerivative(gamma, startRow);
 
-    // Populate RHS: - (beta * C + alpha * C_dot + gamma)
+    // Populate RHS:
     constraintRHS.segment(startRow, constraint->getDOFs()) =
-      gamma - 2 * m_alpha * C_dot - m_beta * c;
+      gamma - (2 * m_alpha * C_dot) - ((m_beta * m_beta) * c);
 
     startRow += constraint->getDOFs();
   }

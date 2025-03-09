@@ -64,6 +64,7 @@ void DynamicSystem::buildForceVector(VectorXd &forces) {
   LOG_DEBUG("Force vector: \n", forces);
 }
 
+// DynamicSystem.cpp
 void DynamicSystem::step(double dt) {
   if (m_particles.empty()) return;
 
@@ -103,8 +104,17 @@ void DynamicSystem::step(double dt) {
       m_massMatrix, forces, jacobian, constraintRHS, accelerations, lambdas
   );
 
-  // Update velocities and positions
+  // Apply reaction forces to particles
+  VectorXd reactionForces = jacobian.transpose() * lambdas;
   int i = 0;
+  for (const auto& [id, particle] : m_particles) {
+    Vector3d reactionForce = reactionForces.segment<3>(i * 3);
+    particle->addForce(reactionForce); // Apply reaction force
+    ++i;
+  }
+
+  // Update velocities and positions
+  i = 0;
   for (const auto& [id, particle] : m_particles) {
     Vector3d acc = accelerations.segment<3>(i * 3);
     if (!particle->isFixed()) {
