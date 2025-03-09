@@ -23,7 +23,19 @@
 
 class Logger {
 public:
-  enum class Level { Debug, Info, Warning, Error };
+  enum class Level {
+    Debug,
+    Info,
+    Warning,
+    Error
+  };
+
+  struct ConsoleConfig {
+    bool showTimestamps = true; // Show timestamps in logs
+    bool showFileNames = true;  // Show file names and line numbers in logs
+    bool showLevel = true;      // Show log level (DEBUG, INFO, etc.)
+    bool enabled = true;        // Enable/disable console logging
+  };
 
   Logger() = delete;
 
@@ -41,30 +53,36 @@ public:
       }
     }
 
-#ifdef _WIN32
-    // Enable ANSI color support for Windows Console
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode = 0;
-    GetConsoleMode(hOut, &mode);
-    SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-#endif
+    #ifdef _WIN32
+      // Enable ANSI color support for Windows Console
+      HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+      DWORD mode = 0;
+      GetConsoleMode(hOut, &mode);
+      SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    #endif
 
     m_initialized = true;
     return m_initialized;
   }
 
   template<typename... Args>
-  static void log(const Level level, const std::string &file, int line,
-                  Args &&...args) {
-    if (level < m_logLevel)
-      return;
+  static void log(
+      const Level level,
+      const std::string &file,
+      int line,
+      Args &&...args) {
+
+    if (level < m_logLevel) return;
 
     const std::string message =
         formatMessage(level, file, line, std::forward<Args>(args)...);
-    const std::string coloredMessage = applyColor(level, message);
+    const std::string coloredMessage =
+        applyColor(level, message);
 
     std::lock_guard lock(m_mutex);
-    std::cout << coloredMessage;
+    if (m_consoleConfig.enabled) {
+      std::cout << coloredMessage;
+    }
 
     if (m_fileOut.is_open()) {
       m_fileOut << message; // No color in file output
@@ -77,11 +95,17 @@ public:
     m_logLevel = level;
   }
 
+  static void setConsoleConfig(const ConsoleConfig& config) {
+    std::lock_guard lock(m_mutex);
+    m_consoleConfig = config;
+  }
+
 private:
   inline static std::ofstream m_fileOut;
   inline static auto m_logLevel = Level::Info;
   inline static bool m_initialized = false;
   inline static std::mutex m_mutex;
+  inline static ConsoleConfig m_consoleConfig = {true, true, true, true}; // Inline initialization
 
   static std::string levelToString(const Level level) {
     switch (level) {
@@ -152,10 +176,15 @@ private:
     const std::string fileName = extractFileName(file);
 
     // White timestamp + log level + file:line + message
-    ss << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S")
-       << "] "
-       << "[" << levelToString(level) << "] "
-       << "[" << fileName << ":" << line << "] ";
+    if (m_consoleConfig.showTimestamps) {
+      ss << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S") << "] ";
+    }
+    if (m_consoleConfig.showLevel) {
+      ss << "[" << levelToString(level) << "] ";
+    }
+    if (m_consoleConfig.showFileNames) {
+      ss << "[" << fileName << ":" << line << "] ";
+    }
 
     // Append all arguments to the stream
     (ss << ... << std::forward<Args>(args)) << "\n";
@@ -173,13 +202,5 @@ private:
   Logger::log(Logger::Level::Warning, __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_ERROR(...)                                                         \
   Logger::log(Logger::Level::Error, __FILE__, __LINE__, __VA_ARGS__)
-
-// Undefine the macros at the end
-#undef RESET
-#undef WHITE
-#undef COLOR_DEBUG
-#undef COLOR_INFO
-#undef COLOR_WARN
-#undef COLOR_ERROR
 
 #endif // LOGGER_H

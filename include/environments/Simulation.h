@@ -1,17 +1,18 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
+#include <DynamicSystem.h>
 #include <graphics/Renderer.h>
 
 #include "environments/Environment.h"
 #include "graphics/Camera.h"
-#include "system/SystemManager.h"
+
+#include "SystemVisualizer.h"
 
 class Simulation final : public Environment {
 public:
   explicit Simulation(const Context &ctx)
-    : Environment(ctx),
-      m_systemManager(ctx.renderer->getShaderManager()) {
+    : Environment(ctx), m_systemVisualizer(ctx.renderer->getShaderManager()) {
   }
 
   bool load() override;
@@ -20,13 +21,13 @@ public:
   void unload() override;
 
 private:
-  SystemManager m_systemManager;
   Camera m_camera;
+  SystemVisualizer m_systemVisualizer;
+  Neutron::DynamicSystem m_system;
 
   void showUI() const;
 
   void handleCameraMovement(float dt);
-  void handleDefaultInputs();
   void showWindowDebug();
 
   float m_displayedFps = 0.0f;

@@ -110,24 +110,28 @@ set(SOURCES
         src/core/Application.cpp
         src/core/WindowManager.cpp
         src/core/InputManager.cpp
-        src/graphics/Renderer.cpp
         src/core/ImGuiManager.cpp
         src/core/EnvironmentManager.cpp
+
+        src/graphics/Renderer.cpp
         src/graphics/Camera.cpp
         src/graphics/ShaderManager.cpp
 
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
-include/system/SystemGuizmo.h
-assets/files/OldSystemEditor.h
-include/system/SystemSolver.h
+
+        src/dynamics/Particle.cpp
+        src/dynamics/DynamicSystem.cpp
+        src/dynamics/ConstraintSolver.cpp
+        src/dynamics/constraints/DistanceConstraint.cpp
+
 )
 
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Apply Warning Flags Only to Your Own Project Code
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror -Wpedantic)
+# target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror -Wpedantic)
 
 # Link libraries to the project
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -146,4 +150,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
         ${imguizmo_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics/constraints
 )

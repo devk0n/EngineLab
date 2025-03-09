@@ -1,5 +1,7 @@
 #include "environments/Simulation.h"
 
+#include <DistanceConstraint.h>
+#include <DynamicSystem.h>
 #include <imgui.h>
 
 #include "core/InputManager.h"
@@ -7,9 +9,6 @@
 #include "core/WindowManager.h"
 
 #include "graphics/Renderer.h"
-
-#include "system/SystemBuilder.h"
-#include "system/SystemManager.h"
 
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
@@ -21,7 +20,45 @@ constexpr glm::vec3 CYAN       = {0.0f,   1.0f, 1.0f};
 constexpr glm::vec3 MAGENTA    = {1.0f,   0.0f, 1.0f};
 constexpr glm::vec3 YELLOW     = {1.0f,   1.0f, 0.0f};
 
+using namespace Neutron;
+
 bool Simulation::load() {
+
+  UniqueID particle_1 = m_system.addParticle(
+    10.0,                    // Mass
+    Vector3d(0.0, 0.0, 0.0) // Position
+  );
+
+  UniqueID particle_2 = m_system.addParticle(
+    10.0,                    // Mass
+    Vector3d(-10.0, 0.0, 0.0) // Position
+  );
+
+  UniqueID particle_3 = m_system.addParticle(
+  10.0,                    // Mass
+  Vector3d(0.0, -10.0, 0.0) // Position
+);
+
+  // Get particle pointers
+  Particle *p1 = m_system.getParticle(particle_1);
+  Particle *p2 = m_system.getParticle(particle_2);
+  Particle *p3 = m_system.getParticle(particle_3);
+
+  p1->setFixed(true);
+
+  // Add a distance constraint between the particles
+  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2, 10.0);
+  m_system.addConstraint(constraint1);
+
+  // auto constraint2 = std::make_shared<DistanceConstraint>(p1, p3, 10.0);
+  // m_system.addConstraint(constraint2);
+
+  // Apply gravity
+  Vector3d gravity(0.0, 0.0, -9.81);
+  p1->addForce(p1->getMass() * gravity);
+  p2->addForce(p2->getMass() * gravity);
+  p3->addForce(p3->getMass() * gravity);
+
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -48,16 +85,15 @@ bool Simulation::load() {
 void Simulation::update(const float dt) {
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
-  handleDefaultInputs();
-  m_systemManager.update(dt);
+  m_system.step(dt);
 }
 
 void Simulation::render() {
   showUI();
   showWindowDebug();
-
-  m_systemManager.render(m_camera.getPosition(), m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
+  m_systemVisualizer.render(m_system, m_camera.getPosition(), m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
   m_ctx.renderer->drawGrid(m_camera);
+
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
@@ -117,36 +153,6 @@ void Simulation::handleCameraMovement(const float dt) {
   m_ctx.input->getScrollDelta(xScrollOffset, yScrollOffset);
   m_camera.processScroll(static_cast<float>(yScrollOffset));
   // Changed to yScrollOffset
-}
-
-void Simulation::handleDefaultInputs() {
-  if (m_ctx.input->isKeyPressed(GLFW_KEY_ESCAPE)) {
-    m_ctx.window->close();
-  }
-  if (ImGui::IsKeyPressed(ImGuiKey_T)) {
-    m_systemManager.getGuizmo().setOperation(ImGuizmo::TRANSLATE);
-    LOG_DEBUG("Guizmo set to TRANSLATE");
-  }
-  if (ImGui::IsKeyPressed(ImGuiKey_R)) {
-    m_systemManager.getGuizmo().setOperation(ImGuizmo::ROTATE);
-    LOG_DEBUG("Guizmo set to ROTATE");
-  }
-  if (ImGui::IsKeyPressed(ImGuiKey_E)) {
-    m_systemManager.getGuizmo().setOperation(ImGuizmo::SCALE);
-    LOG_DEBUG("Guizmo set to SCALE");
-  }
-  if (ImGui::IsKeyPressed(ImGuiKey_G)) {
-    m_systemManager.getGuizmo().setMode(ImGuizmo::LOCAL);
-    LOG_DEBUG("Guizmo set to LOCAL");
-  }
-  if (ImGui::IsKeyPressed(ImGuiKey_H)) {
-    m_systemManager.getGuizmo().setMode(ImGuizmo::WORLD);
-    LOG_DEBUG("Guizmo set to WORLD");
-  }
-  if (ImGui::IsKeyPressed(ImGuiKey_C)) {
-    m_systemManager.getGuizmo().unselectBody();
-    LOG_DEBUG("Guizmo unselected");
-  }
 }
 
 void Simulation::showWindowDebug() {

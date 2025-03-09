@@ -7,7 +7,13 @@ int main() {
   if (!Logger::initialize("log.txt")) {
     return false;
   }
-  Logger::setLogLevel(Logger::Level::Debug);
+  Logger::ConsoleConfig config;
+  config.showTimestamps = false; // Disable timestamps
+  config.showFileNames = false;  // Disable file names
+  config.showLevel = false;      // Disable level
+  config.enabled = false;        // Disable console logger
+  Logger::setConsoleConfig(config);
+  Logger::setLogLevel(Logger::Level::Info);
   LOG_INFO("Logger initialized.");
 
   Application app;

@@ -1,17 +1,14 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
-
 #include <ranges>
-
-#include "SystemConfiguration.h"
+#include "DynamicSystem.h"
 #include "graphics/ShaderManager.h"
-
 #include "utils/Logger.h"
 
 class SystemVisualizer {
 public:
-  explicit SystemVisualizer(const SystemConfiguration &system, ShaderManager &shaderManager) :
-      m_system(system), m_shaderManager(shaderManager) {
+  explicit SystemVisualizer(ShaderManager &shaderManager)
+    : m_shaderManager(shaderManager) {
     LOG_DEBUG("SystemVisualizer created");
     // Initialize the cube mesh (vertices, VAO, VBO, etc.)
     initializeCube();
@@ -23,7 +20,11 @@ public:
     cleanupCube();
   }
 
-  void render(const glm::vec3 &cameraPosition, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) const {
+  void render(
+      const Neutron::DynamicSystem &system,
+      const glm::vec3 &cameraPosition,
+      const glm::mat4 &viewMatrix,
+      const glm::mat4 &projectionMatrix) const {
     m_shaderManager.useShader("cubeShader");
 
     // Set light and material properties
@@ -35,21 +36,18 @@ public:
     m_shaderManager.setUniform("view", viewMatrix);
     m_shaderManager.setUniform("projection", projectionMatrix);
 
-    // Render each body
-    for (auto &body : m_system.bodies() | std::views::values) {
-      auto modelMatrix = glm::mat4(1.0f);
-      modelMatrix = translate(modelMatrix, body.position);
-      modelMatrix = modelMatrix * mat4_cast(body.orientation);
-      modelMatrix = scale(modelMatrix, body.size);
+    // Render each particle
+    for (const auto& particle : system.getParticles()) { // Use const auto& to avoid copying
+      auto modelMatrix = glm::mat4(1.0f); // Start with an identity matrix
+      modelMatrix = glm::translate(modelMatrix, particle.second->getPositionVec3()); // Access the Particle object via particle.second
 
-      m_shaderManager.setUniform("objectColor", body.color); // Color
-      m_shaderManager.setUniform("model", modelMatrix);
-      drawCube();
+      m_shaderManager.setUniform("objectColor", glm::vec4(1.0, 1.0, 1.0, 1.0)); // Set color (white)
+      m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
+      drawCube(); // Render the cube
     }
   }
 
 private:
-  const SystemConfiguration &m_system;
   ShaderManager &m_shaderManager;
   unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
 
