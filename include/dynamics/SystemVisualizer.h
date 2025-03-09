@@ -1,5 +1,6 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
+#include <DistanceConstraint.h>
 #include <ranges>
 #include "DynamicSystem.h"
 #include "graphics/ShaderManager.h"
@@ -12,6 +13,7 @@ public:
     LOG_DEBUG("SystemVisualizer created");
     // Initialize the cube mesh (vertices, VAO, VBO, etc.)
     initializeCube();
+    initializeLine();
   }
 
   ~SystemVisualizer() {
@@ -43,13 +45,55 @@ public:
 
       m_shaderManager.setUniform("objectColor", glm::vec4(1.0, 1.0, 1.0, 1.0)); // Set color (white)
       m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
-      drawCube(); // Render the cube
+      // drawCube(); // Render the cube
+    }
+
+    // Render constraints as lines
+    m_shaderManager.useShader("lineShader");
+    m_shaderManager.setUniform("view", viewMatrix);
+    m_shaderManager.setUniform("projection", projectionMatrix);
+    m_shaderManager.setUniform("lineColor", glm::vec3(0.0f, 1.0f, 1.0f)); // Red lines
+
+    std::vector<glm::vec3> lineVertices;
+    for (const auto& constraint : system.getConstraints()) {
+      if (auto* dc = dynamic_cast<Neutron::DistanceConstraint*>(constraint.get())) {
+        lineVertices.push_back(dc->getParticle1()->getPositionVec3());
+        lineVertices.push_back(dc->getParticle2()->getPositionVec3());
+      }
+    }
+
+    if (!lineVertices.empty()) {
+      glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
+      glBufferData(GL_ARRAY_BUFFER,
+                  lineVertices.size() * sizeof(glm::vec3),
+                  lineVertices.data(),
+                  GL_DYNAMIC_DRAW);
+
+      glBindVertexArray(m_lineVAO);
+      glDrawArrays(GL_LINES, 0, lineVertices.size());
+      glBindVertexArray(0);
     }
   }
 
 private:
   ShaderManager &m_shaderManager;
   unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
+  GLuint m_lineVAO, m_lineVBO;
+  void initializeLine() {
+    glGenVertexArrays(1, &m_lineVAO);
+    glGenBuffers(1, &m_lineVBO);
+
+    glBindVertexArray(m_lineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
+
+    // Initially allocate buffer (size will be updated dynamically)
+    glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+  }
 
   void initializeCube() {
     // Define the vertices of a cube

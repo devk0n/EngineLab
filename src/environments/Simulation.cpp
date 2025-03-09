@@ -26,42 +26,94 @@ bool Simulation::load() {
 
   UniqueID particle_1 = m_system.addParticle(
     10.0,                    // Mass
-    Vector3d(0.0, 0.0, 0.0) // Position
+    Vector3d(0.16, 0.25, 0.14)  // Position
   );
 
   UniqueID particle_2 = m_system.addParticle(
-    10.0,                    // Mass
-    Vector3d(-10.0, 0.0, 0.0) // Position
+    10.0,                     // Mass
+    Vector3d(-0.15, 0.27, 0.15)  // Position
   );
 
   UniqueID particle_3 = m_system.addParticle(
-  10.0,                    // Mass
-  Vector3d(0.0, -10.0, 0.0) // Position
-);
+    10.0,                     // Mass
+    Vector3d(0.005, 0.6, 0.12)   // Position
+  );
+
+  UniqueID particle_4 = m_system.addParticle(
+    10.0,                     // Mass
+    Vector3d(0.16, 0.25, 0.3)   // Position
+  );
+
+  UniqueID particle_5 = m_system.addParticle(
+    10.0,                     // Mass
+    Vector3d(-0.15, 0.27, 0.31)   // Position
+  );
+
+  UniqueID particle_6 = m_system.addParticle(
+    10.0,                     // Mass
+    Vector3d(-0.003, 0.58, 0.29)   // Position
+  );
+
+  UniqueID particle_7 = m_system.addParticle(
+    10.0,                     // Mass
+    Vector3d(-0.06, 0.58, 0.17)   // Position
+  );
+
+  UniqueID particle_8 = m_system.addParticle(
+    10.0,                     // Mass
+    Vector3d(-0.12, 0.2, 0.19)   // Position
+  );
 
   // Get particle pointers
   Particle *p1 = m_system.getParticle(particle_1);
   Particle *p2 = m_system.getParticle(particle_2);
   Particle *p3 = m_system.getParticle(particle_3);
+  Particle *p4 = m_system.getParticle(particle_4);
+  Particle *p5 = m_system.getParticle(particle_5);
+  Particle *p6 = m_system.getParticle(particle_6);
+  Particle *p7 = m_system.getParticle(particle_7);
+  Particle *p8 = m_system.getParticle(particle_8);
 
   p1->setFixed(true);
+  p2->setFixed(true);
+  p4->setFixed(true);
+  p5->setFixed(true);
+  p8->setFixed(true);
 
   // Add a distance constraint between the particles
-  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2, 10.0);
-  m_system.addConstraint(constraint1);
+  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p3);
+  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
+  auto constraint3 = std::make_shared<DistanceConstraint>(p3, p6);
+  auto constraint4 = std::make_shared<DistanceConstraint>(p5, p6);
+  auto constraint5 = std::make_shared<DistanceConstraint>(p4, p6);
+  auto constraint6 = std::make_shared<DistanceConstraint>(p3, p7);
+  auto constraint7 = std::make_shared<DistanceConstraint>(p6, p7);
+  auto constraint8 = std::make_shared<DistanceConstraint>(p7, p8);
 
-  // auto constraint2 = std::make_shared<DistanceConstraint>(p1, p3, 10.0);
-  // m_system.addConstraint(constraint2);
+  m_system.addConstraint(constraint1);
+  m_system.addConstraint(constraint2);
+  m_system.addConstraint(constraint3);
+  m_system.addConstraint(constraint4);
+  m_system.addConstraint(constraint5);
+  m_system.addConstraint(constraint6);
+  m_system.addConstraint(constraint7);
+  m_system.addConstraint(constraint8);
 
   // Apply gravity
   Vector3d gravity(0.0, 0.0, -9.81);
   p1->addForce(p1->getMass() * gravity);
   p2->addForce(p2->getMass() * gravity);
   p3->addForce(p3->getMass() * gravity);
+  p4->addForce(p4->getMass() * gravity);
+  p5->addForce(p5->getMass() * gravity);
+  p6->addForce(p6->getMass() * gravity);
+  p7->addForce(p7->getMass() * gravity);
+  p8->addForce(p8->getMass() * gravity);
 
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  m_camera.setMovementSpeed(5.0f);
 
   if (!m_ctx.renderer->getShaderManager()
     .loadShader("cubeShader",
@@ -79,13 +131,23 @@ bool Simulation::load() {
     return false;
   }
 
+  if (!m_ctx.renderer->getShaderManager()
+        .loadShader("lineShader",
+                    "../assets/shaders/line.vert",
+                    "../assets/shaders/line.frag")) {
+    LOG_ERROR("Failed to load line shader");
+    return false;
+  }
+
   return true;
 }
 
 void Simulation::update(const float dt) {
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
-  m_system.step(dt);
+  if (m_ctx.input->isKeyPressed(GLFW_KEY_SPACE) || m_ctx.input->isKeyHeld(GLFW_KEY_SPACE)) {
+    m_system.step(dt);
+  }
 }
 
 void Simulation::render() {
@@ -93,10 +155,18 @@ void Simulation::render() {
   showWindowDebug();
   m_systemVisualizer.render(m_system, m_camera.getPosition(), m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
   m_ctx.renderer->drawGrid(m_camera);
-
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
+
+void Simulation::showSimulationControls(double dt) {
+  ImGui::Begin("Simulation Debug");
+  ImGui::Text("Simulation Controls");
+  if (!ImGui::Button("Step Simulation")) {
+    m_system.step(dt);
+  }
+  ImGui::End();
+}
 
 void Simulation::showUI() const {
   // Use const references for vectors

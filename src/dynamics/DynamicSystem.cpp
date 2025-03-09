@@ -81,7 +81,7 @@ void DynamicSystem::step(double dt) {
   // Build constraint Jacobian and RHS
   MatrixXd jacobian;
   VectorXd constraintRHS;
-  m_constraintSolver.buildJacobian(particles, jacobian, constraintRHS, 1000.0, 1000.0);
+  m_constraintSolver.buildJacobian(particles, jacobian, constraintRHS, 100.0, 1000.0);
 
   // Solve the constrained system using the two-step model
   VectorXd accelerations;

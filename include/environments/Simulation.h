@@ -20,6 +20,8 @@ public:
   void render() override;
   void unload() override;
 
+  void showSimulationControls(double dt);
+
 private:
   Camera m_camera;
   SystemVisualizer m_systemVisualizer;

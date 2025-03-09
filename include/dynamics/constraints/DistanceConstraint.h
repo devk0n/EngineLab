@@ -15,6 +15,11 @@ public:
       double distance
   );
 
+  DistanceConstraint(
+      Particle* particle1,
+      Particle* particle2
+  );
+
   void computeConstraintEquations(VectorXd& c, int startRow) override;
 
   void computeJacobian(MatrixXd& jacobian, int startRow, const std::map<Particle*, int>& particleToIndex) override;

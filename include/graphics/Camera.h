@@ -40,6 +40,8 @@ public:
   void setFov(float fov) { m_fov = fov; }
   void setAspectRatio(float aspectRatio) { m_aspectRatio = aspectRatio; }
 
+  void setMovementSpeed(float movementSpeed) { m_movementSpeed = movementSpeed; }
+
   static inline glm::vec3 s_forward = {1.0f, 0.0f, 0.0f};
   static inline glm::vec3 s_left = {0.0f, 1.0f, 0.0f};
   static inline glm::vec3 s_up = {0.0f, 0.0f, 1.0f};
