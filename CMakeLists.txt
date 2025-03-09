@@ -117,14 +117,12 @@ set(SOURCES
         src/graphics/Camera.cpp
         src/graphics/ShaderManager.cpp
 
-        src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 
         src/dynamics/Particle.cpp
         src/dynamics/DynamicSystem.cpp
         src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/DistanceConstraint.cpp
-include/dynamics/forces/GravityForceGenerator.h
 )
 
 # Add executable

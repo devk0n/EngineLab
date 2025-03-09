@@ -227,6 +227,7 @@ bool Simulation::load() {
   frontLeft();
   frontRight();
 
+
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -259,11 +260,44 @@ bool Simulation::load() {
   return true;
 }
 
+void Simulation::toggle(bool &b) {
+  b = !b;
+}
+
 void Simulation::update(const float dt) {
+
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
   if (m_ctx.input->isKeyHeld(GLFW_KEY_SPACE)) {
     m_system.step(dt);
+  }
+  if (m_ctx.input->isKeyPressed(GLFW_KEY_F1)) {
+    toggle(m_run);
+  }
+  if (m_run) {
+    m_system.step(dt);
+  }
+  if (m_ctx.input->isKeyPressed(GLFW_KEY_L) || m_ctx.input->isKeyHeld(GLFW_KEY_L)) {
+    Particle* particle1 = m_system.getParticle(7);
+    Vector3d pos1 = particle1->getPosition();
+    pos1 += Vector3d(0.0, 0.00001, 0.0);
+    particle1->setPosition(pos1);
+
+    Particle* particle2 = m_system.getParticle(16);
+    Vector3d pos2 = particle2->getPosition();
+    pos2 += Vector3d(0.0, 0.00001, 0.0);
+    particle2->setPosition(pos2);
+  }
+  if (m_ctx.input->isKeyPressed(GLFW_KEY_J) || m_ctx.input->isKeyHeld(GLFW_KEY_J)) {
+    Particle* particle1 = m_system.getParticle(7);
+    Vector3d pos1 = particle1->getPosition();
+    pos1 += Vector3d(0.0, -0.00001, 0.0);
+    particle1->setPosition(pos1);
+
+    Particle* particle2 = m_system.getParticle(16);
+    Vector3d pos2 = particle2->getPosition();
+    pos2 += Vector3d(0.0, -0.00001, 0.0);
+    particle2->setPosition(pos2);
   }
 }
 
@@ -276,7 +310,7 @@ void Simulation::render() {
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
 
-void Simulation::showSimulationControls(double dt) {
+void Simulation::showSimulationControls(const double dt) {
   ImGui::Begin("Simulation Debug");
   ImGui::Text("Simulation Controls");
   if (!ImGui::Button("Step Simulation")) {

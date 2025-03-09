@@ -2,14 +2,14 @@
 #include "ConstraintSolver.h"
 
 #include <iostream>
+#include <Eigen/LU>
 #include "utils/Logger.h"
-#include <Eigen/LU> // For FullPivLU
 
 namespace Neutron {
 
 ConstraintSolver::ConstraintSolver() = default;
 
-void ConstraintSolver::addConstraint(std::shared_ptr<Constraint> constraint) {
+void ConstraintSolver::addConstraint(const std::shared_ptr<Constraint>& constraint) {
   m_constraints.push_back(constraint);
 }
 
@@ -41,7 +41,7 @@ void ConstraintSolver::buildJacobian(
   }
 
   // Total number of generalized coordinates (3 DOF per particle)
-  int numCoordinates = bodies.size() * 3;
+  int numCoordinates = static_cast<int>(bodies.size()) * 3;
 
   // Resize Jacobian and constraintRHS
   jacobian.resize(numConstraints, numCoordinates);
@@ -89,10 +89,9 @@ void ConstraintSolver::solveConstrainedSystem(
     VectorXd& accelerations,   // Output accelerations
     VectorXd& lambdas          // Output Lagrange multipliers
 ) {
-  int n = M.size();       // Number of generalized coordinates
-  int m = constraintRHS.size(); // Number of constraints
+  // int n = M.size();       // Number of generalized coordinates
 
-  if (m == 0) {
+  if (int m = constraintRHS.size(); m == 0) {
     // No constraints, direct solution
     accelerations = forces.array() / M.array();
     lambdas.resize(0);

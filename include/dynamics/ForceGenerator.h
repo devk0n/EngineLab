@@ -1,7 +1,5 @@
-#ifndef FORCEGENERATOR_H
-#define FORCEGENERATOR_H
-
-#include "Particle.h"
+#ifndef FORCE_GENERATOR_H
+#define FORCE_GENERATOR_H
 
 class ForceGenerator {
 public:
@@ -9,6 +7,4 @@ public:
   virtual void apply(double dt) = 0;
 };
 
-
-
-#endif // FORCEGENERATOR_H
+#endif // FORCE_GENERATOR_H

@@ -22,6 +22,9 @@ public:
   void rearLeft();
 
   bool load() override;
+
+  void toggle(bool &b);
+
   void update(float dt) override;
   void render() override;
   void unload() override;
@@ -33,11 +36,12 @@ private:
   SystemVisualizer m_systemVisualizer;
   Neutron::DynamicSystem m_system;
 
+  bool m_run = false;
+
   void showUI() const;
 
   void handleCameraMovement(float dt);
   void showWindowDebug();
-  double m_g;
   float m_displayedFps = 0.0f;
   float m_fpsUpdateTimer = 0.0f;
   static constexpr float FPS_UPDATE_INTERVAL = 1.0f;

@@ -6,8 +6,10 @@
 class ImGuiManager {
 public:
   bool initialize(GLFWwindow *window);
-  void beginFrame();
-  void endFrame();
+
+  void beginFrame() const;
+
+  void endFrame() const;
   void shutdown();
 
 private:

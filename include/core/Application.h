@@ -18,7 +18,7 @@ public:
   ~Application();
 
   bool initialize();
-  void run();
+  void run() const;
 
 private:
   Context m_ctx;

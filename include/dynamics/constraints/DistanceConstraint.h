@@ -7,7 +7,7 @@
 #include "dynamics/Particle.h"
 
 namespace Neutron {
-class DistanceConstraint : public Constraint {
+class DistanceConstraint final : public Constraint {
 public:
   DistanceConstraint(
       Particle* particle1,
@@ -26,16 +26,14 @@ public:
 
   void computeJacobianDerivative(VectorXd& jdotqdot, int startRow) override;
 
-  Particle* getParticle1() const { return m_particle1; }
-  Particle* getParticle2() const { return m_particle2; }
-  double getDesiredDistance() const { return m_distance; }
+  [[nodiscard]] Particle* getParticle1() const { return m_particle1; }
+  [[nodiscard]] Particle* getParticle2() const { return m_particle2; }
+  [[nodiscard]] double getDesiredDistance() const { return m_distance; }
 
 private:
   Particle* m_particle1;
   Particle* m_particle2;
   double m_distance;
-
-  Vector3d relativePosition;
 };
 } // namespace Neutron
 

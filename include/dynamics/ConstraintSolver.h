@@ -15,7 +15,7 @@ public:
   ConstraintSolver();
 
   // Add constraints to the solver
-  void addConstraint(std::shared_ptr<Constraint> constraint);
+  void addConstraint(const std::shared_ptr<Constraint>& constraint);
   void clearConstraints();
 
   // Build the constraint Jacobian matrix
@@ -26,7 +26,7 @@ public:
   );
 
   // Solve the constrained system
-  void solveConstrainedSystem(
+  static void solveConstrainedSystem(
       const VectorXd& M,         // Mass matrix (diagonal)
       const VectorXd& forces,    // External forces
       const MatrixXd& jacobian,  // Constraint Jacobian
@@ -37,8 +37,8 @@ public:
 
 private:
   std::vector<std::shared_ptr<Constraint>> m_constraints;
-  double m_alpha = 20.0;
-  double m_beta = 20.0;
+  double m_alpha = 200.0;
+  double m_beta = 500.0;
 };
 
 } // namespace Neutron

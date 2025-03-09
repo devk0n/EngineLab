@@ -27,7 +27,7 @@ bool ImGuiManager::initialize(GLFWwindow *window) {
   return m_initialized;
 }
 
-void ImGuiManager::beginFrame() {
+void ImGuiManager::beginFrame() const {
   if (!m_initialized)
     return;
 
@@ -39,7 +39,7 @@ void ImGuiManager::beginFrame() {
   ImGuizmo::BeginFrame();
 }
 
-void ImGuiManager::endFrame() {
+void ImGuiManager::endFrame() const {
   if (!m_initialized)
     return;
 

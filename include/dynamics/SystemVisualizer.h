@@ -78,7 +78,7 @@ public:
 private:
   ShaderManager &m_shaderManager;
   unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
-  GLuint m_lineVAO, m_lineVBO;
+  GLuint m_lineVAO{}, m_lineVBO{};
   void initializeLine() {
     glGenVertexArrays(1, &m_lineVAO);
     glGenBuffers(1, &m_lineVBO);
@@ -89,7 +89,7 @@ private:
     // Initially allocate buffer (size will be updated dynamically)
     glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(nullptr));
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);

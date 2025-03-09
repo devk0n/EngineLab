@@ -4,14 +4,14 @@
 #include "ForceGenerator.h"
 
 namespace Neutron {
-class SpringForceGenerator : public ForceGenerator {
+class SpringForceGenerator final : public ForceGenerator {
 public:
   SpringForceGenerator(
       Particle* p1,
       Particle* p2,
-      double restLength,
-      double stiffness,
-      double damping = 0.1)
+      const double restLength,
+      const double stiffness,
+      const double damping = 0.1)
       : m_p1(p1),
         m_p2(p2),
         m_restLength(restLength),
