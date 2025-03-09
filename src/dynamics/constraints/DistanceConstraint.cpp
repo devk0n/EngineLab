@@ -24,7 +24,7 @@ DistanceConstraint::DistanceConstraint(
 
 void DistanceConstraint::computeConstraintEquations(VectorXd &c, int startRow) {
   // Relative position
-  Vector3d d = m_particle1->getPosition() - m_particle2->getPosition();
+  Vector3d d = m_particle2->getPosition() - m_particle1->getPosition();
 
   // Constraint equation
   c[0] = d.transpose() * d - (m_distance * m_distance);
@@ -45,7 +45,7 @@ void DistanceConstraint::computeJacobianDerivative(
     VectorXd& gamma,
     int startRow) {
   Vector3d v = m_particle2->getVelocity() - m_particle1->getVelocity();
-  const double result = 2 * v.transpose() * v;
+  const double result = - 2 * v.transpose() * v;
   gamma[0] = result;
 }
 

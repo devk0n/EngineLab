@@ -60,8 +60,8 @@ private:
   std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
   ConstraintSolver m_constraintSolver;
 
-  double m_alpha = 1000.0;
-  double m_beta = 100.0;
+  double m_alpha = 1.0;
+  double m_beta = 1.0;
 
   VectorXd m_massMatrix;
   UniqueID m_nextID = 0;
