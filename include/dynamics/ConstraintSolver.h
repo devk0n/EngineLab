@@ -22,9 +22,7 @@ public:
   void buildJacobian(
       const std::vector<Particle*>& bodies,
       MatrixXd& jacobian,
-      VectorXd& constraintRHS,
-      double alpha,
-      double beta
+      VectorXd& constraintRHS
   );
 
   // Solve the constrained system
@@ -37,20 +35,10 @@ public:
       VectorXd& lambdas          // Output Lagrange multipliers
   );
 
-  // Solve method
-  void solve(
-      const VectorXd& M,         // Mass matrix (diagonal)
-      const VectorXd& forces,    // External forces
-      VectorXd& accelerations,   // Output accelerations
-      VectorXd& lambdas,         // Output Lagrange multipliers
-      const VectorXd& q,         // Current positions
-      const VectorXd& qdot,      // Current velocities
-      double alpha = 5.0,        // Baumgarte alpha parameter
-      double beta = 5.0          // Baumgarte beta parameter
-  );
-
 private:
   std::vector<std::shared_ptr<Constraint>> m_constraints;
+  double m_alpha = 1000.0;
+  double m_beta = 1000.0;
 };
 
 } // namespace Neutron

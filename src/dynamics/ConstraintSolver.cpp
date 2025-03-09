@@ -20,9 +20,7 @@ void ConstraintSolver::clearConstraints() {
 void ConstraintSolver::buildJacobian(
     const std::vector<Particle*>& bodies,
     MatrixXd& jacobian,
-    VectorXd& constraintRHS,
-    double alpha,
-    double beta)
+    VectorXd& constraintRHS)
 {
   // Create particle to index map
   std::map<Particle*, int> particleToIndex;
@@ -73,7 +71,7 @@ void ConstraintSolver::buildJacobian(
 
     // Populate RHS: - (beta * C + alpha * C_dot + gamma)
     constraintRHS.segment(startRow, constraint->getDOFs()) =
-      gamma - 2 * alpha * C_dot - beta * c;
+      gamma - 2 * m_alpha * C_dot - m_beta * c;
 
     startRow += constraint->getDOFs();
   }

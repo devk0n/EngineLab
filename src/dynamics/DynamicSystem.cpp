@@ -33,6 +33,10 @@ void DynamicSystem::clearConstraints() {
   m_constraintSolver.clearConstraints();
 }
 
+void DynamicSystem::addForceGenerator(std::shared_ptr<ForceGenerator> generator) {
+  m_forceGenerators.push_back(generator);
+}
+
 void DynamicSystem::buildMassMatrix() {
   int n = m_particles.size() * 3; // 3 DOF per particle
   m_massMatrix.resize(n);
@@ -63,27 +67,36 @@ void DynamicSystem::buildForceVector(VectorXd &forces) {
 void DynamicSystem::step(double dt) {
   if (m_particles.empty()) return;
 
-  // Build mass matrix (if not already built)
+  // Clear accumulated forces from previous frame
+  for (auto& [id, particle] : m_particles) {
+    particle->clearForces();
+  }
+
+  // Apply all force generators (springs, gravity, etc.)
+  for (auto& generator : m_forceGenerators) {
+    generator->apply(dt);
+  }
+
+  // Build mass matrix if needed
   if (m_massMatrix.size() == 0) {
     buildMassMatrix();
   }
 
-  // Build force vector (must be done every step)
+  // Build force vector with current forces
   VectorXd forces;
   buildForceVector(forces);
 
-  // Convert m_particles to a vector of Particle*
+  // Convert particles to vector for constraint solving
   std::vector<Particle*> particles;
   for (const auto& [id, particle] : m_particles) {
     particles.push_back(particle.get());
   }
 
-  // Build constraint Jacobian and RHS
+  // Solve constraints
   MatrixXd jacobian;
   VectorXd constraintRHS;
-  m_constraintSolver.buildJacobian(particles, jacobian, constraintRHS, 100.0, 1000.0);
+  m_constraintSolver.buildJacobian(particles, jacobian, constraintRHS);
 
-  // Solve the constrained system using the two-step model
   VectorXd accelerations;
   VectorXd lambdas;
   m_constraintSolver.solveConstrainedSystem(

@@ -7,6 +7,7 @@
 #include <vector>
 #include "Constraint.h"
 #include "ConstraintSolver.h"
+#include "ForceGenerator.h"
 #include "Particle.h"
 #include "core/types.h"
 
@@ -27,6 +28,8 @@ public:
   // Constraint management
   void addConstraint(std::shared_ptr<Constraint> constraint);
   void clearConstraints();
+
+  void addForceGenerator(std::shared_ptr<ForceGenerator> generator);
 
   // External forces
   // void addForceToBody(UniqueID bodyID, const Vector3d& force, const Vector3d& worldPoint);
@@ -54,7 +57,11 @@ private:
 
   std::unordered_map<UniqueID, std::unique_ptr<Particle>> m_particles;
   std::vector<std::shared_ptr<Constraint>> m_constraints;
+  std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
   ConstraintSolver m_constraintSolver;
+
+  double m_alpha = 1000.0;
+  double m_beta = 100.0;
 
   VectorXd m_massMatrix;
   UniqueID m_nextID = 0;

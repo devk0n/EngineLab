@@ -7,6 +7,8 @@
 #include "core/InputManager.h"
 #include "core/Time.h"
 #include "core/WindowManager.h"
+#include "forces/GravityForceGenerator.h"
+#include "forces/SpringForceGenerator.h"
 
 #include "graphics/Renderer.h"
 
@@ -25,12 +27,12 @@ using namespace Neutron;
 bool Simulation::load() {
 
   UniqueID particle_1 = m_system.addParticle(
-    10.0,                    // Mass
+    1.0,                    // Mass
     Vector3d(0.16, 0.25, 0.14)  // Position
   );
 
   UniqueID particle_2 = m_system.addParticle(
-    10.0,                     // Mass
+    1.0,                     // Mass
     Vector3d(-0.15, 0.27, 0.15)  // Position
   );
 
@@ -40,28 +42,33 @@ bool Simulation::load() {
   );
 
   UniqueID particle_4 = m_system.addParticle(
-    10.0,                     // Mass
+    1.0,                     // Mass
     Vector3d(0.16, 0.25, 0.3)   // Position
   );
 
   UniqueID particle_5 = m_system.addParticle(
-    10.0,                     // Mass
+    1.0,                     // Mass
     Vector3d(-0.15, 0.27, 0.31)   // Position
   );
 
   UniqueID particle_6 = m_system.addParticle(
-    10.0,                     // Mass
+    1.0,                     // Mass
     Vector3d(-0.003, 0.58, 0.29)   // Position
   );
 
   UniqueID particle_7 = m_system.addParticle(
-    10.0,                     // Mass
+    1.0,                     // Mass
     Vector3d(-0.06, 0.58, 0.17)   // Position
   );
 
   UniqueID particle_8 = m_system.addParticle(
-    10.0,                     // Mass
+    1.0,                     // Mass
     Vector3d(-0.12, 0.2, 0.19)   // Position
+  );
+
+  UniqueID particle_9 = m_system.addParticle(
+    1.0,                     // Mass
+    Vector3d(0.0, 0.0, 2)   // Position
   );
 
   // Get particle pointers
@@ -73,12 +80,14 @@ bool Simulation::load() {
   Particle *p6 = m_system.getParticle(particle_6);
   Particle *p7 = m_system.getParticle(particle_7);
   Particle *p8 = m_system.getParticle(particle_8);
+  Particle *p9 = m_system.getParticle(particle_9);
 
   p1->setFixed(true);
   p2->setFixed(true);
   p4->setFixed(true);
   p5->setFixed(true);
   p8->setFixed(true);
+  p9->setFixed(true);
 
   // Add a distance constraint between the particles
   auto constraint1 = std::make_shared<DistanceConstraint>(p1, p3);
@@ -90,6 +99,13 @@ bool Simulation::load() {
   auto constraint7 = std::make_shared<DistanceConstraint>(p6, p7);
   auto constraint8 = std::make_shared<DistanceConstraint>(p7, p8);
 
+  Vector3d d = p6->getPosition() - p9->getPosition();
+  double distance = d.norm();
+  auto spring = std::make_shared<SpringForceGenerator>(p6, p9, distance,
+                                                     3000.0,   // Reduced stiffness
+                                                     10.0);  // Increased damping
+  m_system.addForceGenerator(spring);
+
   m_system.addConstraint(constraint1);
   m_system.addConstraint(constraint2);
   m_system.addConstraint(constraint3);
@@ -99,20 +115,17 @@ bool Simulation::load() {
   m_system.addConstraint(constraint7);
   m_system.addConstraint(constraint8);
 
-  // Apply gravity
-  Vector3d gravity(0.0, 0.0, -9.81);
-  p1->addForce(p1->getMass() * gravity);
-  p2->addForce(p2->getMass() * gravity);
-  p3->addForce(p3->getMass() * gravity);
-  p4->addForce(p4->getMass() * gravity);
-  p5->addForce(p5->getMass() * gravity);
-  p6->addForce(p6->getMass() * gravity);
-  p7->addForce(p7->getMass() * gravity);
-  p8->addForce(p8->getMass() * gravity);
+  // Add gravity as force generator
+  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
+  for (auto& particle : {p1, p2, p3, p4, p5, p6, p7, p8, p9}) {
+    gravityGen->addParticle(particle);
+  }
+  m_system.addForceGenerator(gravityGen);
+
 
   LOG_INFO("Initializing Simulation");
-  m_camera.setPosition(glm::vec3(10.0f, 8.0f, 6.0f));
-  m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  m_camera.setPosition(glm::vec3(1.3f, 1.3f, 1.3f));
+  m_camera.lookAt(glm::vec3(-0.1f, 0.1f, 0.0f));
   m_camera.setMovementSpeed(5.0f);
 
   if (!m_ctx.renderer->getShaderManager()
@@ -148,6 +161,7 @@ void Simulation::update(const float dt) {
   if (m_ctx.input->isKeyPressed(GLFW_KEY_SPACE) || m_ctx.input->isKeyHeld(GLFW_KEY_SPACE)) {
     m_system.step(dt);
   }
+  m_system.step(dt);
 }
 
 void Simulation::render() {

@@ -124,7 +124,7 @@ set(SOURCES
         src/dynamics/DynamicSystem.cpp
         src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/DistanceConstraint.cpp
-
+include/dynamics/forces/GravityForceGenerator.h
 )
 
 # Add executable

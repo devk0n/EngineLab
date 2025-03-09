@@ -30,7 +30,7 @@ public:
   void setVelocity(const Vector3d &velocity) { m_velocity = velocity; }
 
   // Force accumulation
-  void addForce(const Vector3d &force) { m_force += force; }
+  void addForce(const Vector3d &force) { m_force.noalias() += force; }
   void clearForces() { m_force.setZero(); }
 
   // Get the accumulated force
