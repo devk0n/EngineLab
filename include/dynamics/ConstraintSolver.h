@@ -37,8 +37,8 @@ public:
 
 private:
   std::vector<std::shared_ptr<Constraint>> m_constraints;
-  double m_alpha = 1500.0;
-  double m_beta = 2.0;
+  double m_alpha = 20.0;
+  double m_beta = 20.0;
 };
 
 } // namespace Neutron
