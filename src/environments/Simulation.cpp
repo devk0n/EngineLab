@@ -227,7 +227,6 @@ bool Simulation::load() {
   frontLeft();
   frontRight();
 
-
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
