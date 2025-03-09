@@ -55,7 +55,7 @@ bool Application::initialize() {
   m_ctx.imgui = m_imguiManager.get();
 
   // Push the initial environment using the member context
-  m_environmentManager->pushEnvironment(std::make_unique<Dashboard>(m_ctx));
+  m_environmentManager->pushEnvironment(std::make_unique<Simulation>(m_ctx));
 
   m_initialized = true;
   return m_initialized;

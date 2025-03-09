@@ -3,9 +3,7 @@
 int main() {
 
   // Initialize logger
-  if (!Logger::initialize("log.txt")) {
-    return false;
-  }
+  if (!Logger::initialize("log.txt")) { return false; }
   Logger::setLogLevel(Logger::Level::Debug);
   LOG_INFO("Logger initialized.");
 

@@ -94,7 +94,6 @@ set(SOURCES
         src/Core/Camera.cpp
         src/Core/ShaderManager.cpp
 
-        src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 )
 
