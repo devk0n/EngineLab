@@ -85,8 +85,10 @@ void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
 
     // Calculate constraint violations
     VectorXd c(constraintRHS.size());
+    int itt = 0;
     for (const auto &constraint: m_constraints) {
-      constraint->computeConstraintEquations(c, 0);
+      constraint->computeConstraintEquations(c, itt);
+      ++itt;
     }
 
     // Check if constraints are satisfied
@@ -108,7 +110,7 @@ void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
         Vector3d correction = alpha * dx.segment<3>(i * 3);
 
         // Limit correction magnitude
-        double maxCorrection = 0.1; // Maximum position correction per iteration
+        double maxCorrection = 0.01; // Maximum position correction per iteration
         if (correction.norm() > maxCorrection) {
           correction *= maxCorrection / correction.norm();
         }
@@ -163,7 +165,7 @@ void DynamicSystem::solveVelocityConstraints(double epsilon = 1e-6,
         Vector3d correction = alpha * dv.segment<3>(i * 3);
 
         // Limit correction magnitude
-        double maxCorrection = 1.0; // Maximum velocity correction per iteration
+        double maxCorrection = 0.1; // Maximum velocity correction per iteration
         if (correction.norm() > maxCorrection) {
           correction *= maxCorrection / correction.norm();
         }

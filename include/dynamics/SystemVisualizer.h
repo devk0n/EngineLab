@@ -45,7 +45,7 @@ public:
 
       m_shaderManager.setUniform("objectColor", glm::vec4(1.0, 1.0, 1.0, 1.0)); // Set color (white)
       m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
-      drawCube(); // Render the cube
+      // drawCube(); // Render the cube
     }
 
     // Render constraints as lines

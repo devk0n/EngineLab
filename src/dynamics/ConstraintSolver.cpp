@@ -52,8 +52,6 @@ void ConstraintSolver::buildJacobian(
   // Current row in the Jacobian and constraintRHS
   int startRow = 0;
   for (const auto& constraint : m_constraints) {
-    VectorXd c(constraint->getDOFs());
-    constraint->computeConstraintEquations(c, startRow);
 
     // Compute Jacobian with particle indices
     constraint->computeJacobian(jacobian, startRow, particleToIndex);
@@ -99,7 +97,6 @@ void ConstraintSolver::solveConstrainedSystem(
     lambdas.resize(0);
     return;
   }
-
   // Step 1: Solve for Lagrange multipliers (λ)
   MatrixXd J_M_inv_JT = jacobian * M.asDiagonal().inverse() * jacobian.transpose();
   VectorXd rhs = constraintRHS - jacobian * M.asDiagonal().inverse() * forces;

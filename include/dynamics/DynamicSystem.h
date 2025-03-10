@@ -46,15 +46,14 @@ private:
 
   // Update bodies from generalized coordinates
   // void updateBodiesFromState(const VectorXd& q, const VectorXd& qdot);
+  // void buildConstraintRHS(VectorXd& constraintRHS, double alpha, double beta);
 
   // Build system matrices
   void buildMassMatrix(); // Build once
   void buildForceVector(VectorXd& forces); // Build every step
+
   void solvePositionConstraints(double epsilon, int maxIterations);
-
   void solveVelocityConstraints(double epsilon, int maxIterations);
-
-  void buildConstraintRHS(VectorXd& constraintRHS, double alpha, double beta);
 
   // Integration step
   // void integrate(double dt);

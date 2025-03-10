@@ -32,23 +32,31 @@ bool Simulation::load() {
   );
 
   UniqueID particle_2 = m_system.addParticle(
-    10.0,                    // Mass
-    Vector3d(5.0, 0.0, 5.0)  // Position
+    1.0,                    // Mass
+    Vector3d(0.0, 5.0, 5.0)  // Position
+  );
+
+  UniqueID particle_3 = m_system.addParticle(
+    1.0,                    // Mass
+    Vector3d(0.0, 5.0, 8.0)  // Position
   );
 
   // Get particle pointers
   Particle *p1 = m_system.getParticle(particle_1);
   Particle *p2 = m_system.getParticle(particle_2);
+  Particle *p3 = m_system.getParticle(particle_3);
 
-  p2->setFixed(true);
+  p1->setFixed(true);
 
-  auto constraint = std::make_shared<DistanceConstraint>(p1, p2, 5.0);
+  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2);
+  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
 
-  m_system.addConstraint(constraint);
+  m_system.addConstraint(constraint1);
+  m_system.addConstraint(constraint2);
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p1, p2}) { gravityGen->addParticle(particle); }
+  for (auto& particle : {p1, p2, p3}) { gravityGen->addParticle(particle); }
   m_system.addForceGenerator(gravityGen);
 
   LOG_INFO("Initializing Simulation");
