@@ -2,8 +2,8 @@
 #include "ConstraintSolver.h"
 
 #include <iostream>
+#include <Eigen/LU>
 #include "utils/Logger.h"
-#include <Eigen/LU> // For FullPivLU
 
 namespace Neutron {
 
@@ -71,7 +71,8 @@ void ConstraintSolver::buildJacobian(
 
     // Populate RHS:
     constraintRHS.segment(startRow, constraint->getDOFs()) =
-      gamma - (2 * m_alpha * C_dot) - ((m_beta * m_beta) * c);
+      gamma;
+    // gamma - (2 * m_alpha * C_dot) - ((m_beta * m_beta) * c)
 
     startRow += constraint->getDOFs();
   }

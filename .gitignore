@@ -1,4 +1,5 @@
 /.idea
 /build-debug
+/build-release
 
 Combined.txt

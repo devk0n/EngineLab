@@ -186,6 +186,7 @@ private:
       ss << "[" << fileName << ":" << line << "] ";
     }
 
+
     // Append all arguments to the stream
     (ss << ... << std::forward<Args>(args)) << "\n";
 

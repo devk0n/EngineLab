@@ -26,10 +26,10 @@ public:
   Particle* getParticle(UniqueID id);
 
   // Constraint management
-  void addConstraint(std::shared_ptr<Constraint> constraint);
+  void addConstraint(const std::shared_ptr<Constraint> &constraint);
   void clearConstraints();
 
-  void addForceGenerator(std::shared_ptr<ForceGenerator> generator);
+  void addForceGenerator(const std::shared_ptr<ForceGenerator> &generator);
 
   // External forces
   // void addForceToBody(UniqueID bodyID, const Vector3d& force, const Vector3d& worldPoint);
@@ -50,6 +50,10 @@ private:
   // Build system matrices
   void buildMassMatrix(); // Build once
   void buildForceVector(VectorXd& forces); // Build every step
+  void solvePositionConstraints(double epsilon, int maxIterations);
+
+  void solveVelocityConstraints(double epsilon, int maxIterations);
+
   void buildConstraintRHS(VectorXd& constraintRHS, double alpha, double beta);
 
   // Integration step
