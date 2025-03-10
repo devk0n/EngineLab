@@ -35,6 +35,10 @@ private:
   float m_displayedFps = 0.0f;
   float m_fpsUpdateTimer = 0.0f;
   static constexpr float FPS_UPDATE_INTERVAL = 1.0f;
+
+  mutable double m_potentialEnergy = 0.0;
+  mutable double m_kineticEnergy = 0.0;
+  mutable double m_totalEnergy = 0.0;
 };
 
 #endif // SIMULATION_H

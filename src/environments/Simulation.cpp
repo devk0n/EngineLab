@@ -37,8 +37,8 @@ bool Simulation::load() {
   );
 
   UniqueID particle_3 = m_system.addParticle(
-    1.0,                    // Mass
-    Vector3d(0.0, 5.0, 8.0)  // Position
+    1.0,                       // Mass
+    Vector3d(5.0, 5.0, 8.0)  // Position
   );
 
   // Get particle pointers
@@ -49,7 +49,7 @@ bool Simulation::load() {
   p1->setFixed(true);
 
   auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2);
-  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
+  auto constraint2 = std::make_shared<DistanceConstraint>(p3, p2);
 
   m_system.addConstraint(constraint1);
   m_system.addConstraint(constraint2);
@@ -96,6 +96,20 @@ void Simulation::update(const float dt) {
   handleCameraMovement(dt);
   if (m_ctx.input->isKeyPressed(GLFW_KEY_SPACE) || m_ctx.input->isKeyHeld(GLFW_KEY_SPACE)) {
     m_system.step(dt);
+
+    // In Simulation::update()
+    m_totalEnergy = 0.0;
+    m_kineticEnergy = 0.0;
+    m_potentialEnergy = 0.0;
+
+    for (const auto& [id, particle] : m_system.getParticles()) {
+      const double ke = 0.5 * particle->getMass() * particle->getVelocity().squaredNorm();
+      const double pe = particle->getMass() * 9.81 * particle->getPosition().z();
+      m_kineticEnergy += ke;         // Accumulate kinetic energy
+      m_potentialEnergy += pe;       // Accumulate potential energy
+    }
+    m_totalEnergy = m_kineticEnergy + m_potentialEnergy;
+
   }
   //m_system.step(dt);
 }
@@ -119,6 +133,13 @@ void Simulation::showSimulationControls(double dt) {
 }
 
 void Simulation::showUI() const {
+
+  ImGui::Begin("Energy Debug");
+  ImGui::Text("Potential Energy: %.2f, J", m_potentialEnergy);
+  ImGui::Text("Kinetic Energy: %.2f, J", m_kineticEnergy);
+  ImGui::Text("Total Energy: %.2f J", m_totalEnergy);
+  ImGui::End();
+
   // Use const references for vectors
   const glm::vec3 position = m_camera.getPosition();
   const glm::quat orientation = m_camera.getOrientation();
