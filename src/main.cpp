@@ -1,5 +1,5 @@
-#include "core/Application.h"
-#include "utils/Logger.h"
+#include "Application.h"
+#include "Logger.h"
 
 int main() {
 
@@ -11,11 +11,12 @@ int main() {
   config.showTimestamps = false; // Disable timestamps
   config.showFileNames = false;  // Disable file names
   config.showLevel = false;      // Disable level
-  config.enabled = false;        // Disable console logger
+  config.enabled = true;        // Disable console logger
   Logger::setConsoleConfig(config);
-  Logger::setLogLevel(Logger::Level::Info);
+  Logger::setLogLevel(Logger::Level::Debug);
   LOG_INFO("Logger initialized.");
 
+  // Initialize application
   Application app;
   if (!app.initialize()) {
     LOG_ERROR("Failed to initialize application.");

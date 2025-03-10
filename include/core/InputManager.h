@@ -2,8 +2,7 @@
 #define INPUTMANAGER_H
 
 #include <unordered_set>
-
-#include "utils/OpenGLSetup.h"
+#include "OpenGLSetup.h"
 
 class InputManager {
 public:

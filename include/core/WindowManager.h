@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include "utils/OpenGLSetup.h"
 
 struct WindowData {
   int width = 0;
@@ -19,14 +18,14 @@ public:
 
   // Core Interface
   bool initialize();
-  bool shouldClose() const;
+  [[nodiscard]] bool shouldClose() const;
 
   void swapBuffers() const;
   void close() const;
 
   static void pollEvents();
 
-  GLFWwindow *getNativeWindow() const;
+  [[nodiscard]] GLFWwindow *getNativeWindow() const;
 
 private:
   // Member Variables

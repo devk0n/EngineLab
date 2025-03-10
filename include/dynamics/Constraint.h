@@ -3,15 +3,14 @@
 #define CONSTRAINT_H
 
 #include <map>
-
 #include "Particle.h"
-#include "core/types.h"
+#include "types.h"
 
 namespace Neutron {
 
 class Constraint {
 public:
-  Constraint(int dofs) : m_dofs(dofs) {}
+  explicit Constraint(const int dofs) : m_dofs(dofs) {}
   virtual ~Constraint() = default;
 
   // Compute constraint equation value (C)
@@ -26,7 +25,7 @@ public:
   virtual void computeJacobianDerivative(VectorXd& jdotqdot, int startRow) = 0;
 
   // Number of constraint equations
-  int getDOFs() const { return m_dofs; }
+  [[nodiscard]] int getDOFs() const { return m_dofs; }
 
 protected:
   int m_dofs; // Degrees of freedom removed by this constraint

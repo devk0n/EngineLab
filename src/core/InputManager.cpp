@@ -40,8 +40,12 @@ void InputManager::update() {
 }
 
 // Keyboard handling
-void InputManager::keyCallback(GLFWwindow *window, int key, int scancode,
-                               int action, int mods) {
+void InputManager::keyCallback(
+    GLFWwindow *window,
+    const int key,
+    int scancode,
+    const int action,
+    int mods) {
   auto *input = static_cast<InputManager *>(glfwGetWindowUserPointer(window));
 
   if (action == GLFW_PRESS) {
@@ -54,8 +58,11 @@ void InputManager::keyCallback(GLFWwindow *window, int key, int scancode,
 }
 
 // Mouse button handling
-void InputManager::mouseButtonCallback(GLFWwindow *window, int button,
-                                       int action, int mods) {
+void InputManager::mouseButtonCallback(
+    GLFWwindow *window,
+    const int button,
+    const int action,
+    int mods) {
   auto *input = static_cast<InputManager *>(glfwGetWindowUserPointer(window));
 
   if (action == GLFW_PRESS) {
@@ -68,30 +75,32 @@ void InputManager::mouseButtonCallback(GLFWwindow *window, int button,
 }
 
 // Scroll handling
-void InputManager::scrollCallback(GLFWwindow *window, double xOffset,
-                                  double yOffset) {
+void InputManager::scrollCallback(
+    GLFWwindow *window,
+    const double xOffset,
+    const double yOffset) {
   auto *input = static_cast<InputManager *>(glfwGetWindowUserPointer(window));
   input->m_scrollX += xOffset;
   input->m_scrollY += yOffset;
 }
 
 // Keyboard state checks
-bool InputManager::isKeyPressed(int key) const {
+bool InputManager::isKeyPressed(const int key) const {
   return m_pressedKeys.contains(key);
 }
-bool InputManager::isKeyHeld(int key) const { return m_heldKeys.contains(key); }
-bool InputManager::isKeyReleased(int key) const {
+bool InputManager::isKeyHeld(const int key) const { return m_heldKeys.contains(key); }
+bool InputManager::isKeyReleased(const int key) const {
   return m_releasedKeys.contains(key);
 }
 
 // Mouse state checks
-bool InputManager::isMouseButtonPressed(int button) const {
+bool InputManager::isMouseButtonPressed(const int button) const {
   return m_pressedMouseButtons.contains(button);
 }
-bool InputManager::isMouseButtonHeld(int button) const {
+bool InputManager::isMouseButtonHeld(const int button) const {
   return m_heldMouseButtons.contains(button);
 }
-bool InputManager::isMouseButtonReleased(int button) const {
+bool InputManager::isMouseButtonReleased(const int button) const {
   return m_releasedMouseButtons.contains(button);
 }
 
