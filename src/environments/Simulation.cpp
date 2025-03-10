@@ -36,7 +36,6 @@ bool Simulation::load() {
     Vector3d(5.0, 0.0, 5.0)  // Position
   );
 
-
   // Get particle pointers
   Particle *p1 = m_system.getParticle(particle_1);
   Particle *p2 = m_system.getParticle(particle_2);
@@ -49,11 +48,8 @@ bool Simulation::load() {
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p1, p2}) {
-    gravityGen->addParticle(particle);
-  }
+  for (auto& particle : {p1, p2}) { gravityGen->addParticle(particle); }
   m_system.addForceGenerator(gravityGen);
-
 
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(10.0f, 8.0f, 4.0f));
@@ -93,7 +89,7 @@ void Simulation::update(const float dt) {
   if (m_ctx.input->isKeyPressed(GLFW_KEY_SPACE) || m_ctx.input->isKeyHeld(GLFW_KEY_SPACE)) {
     m_system.step(dt);
   }
-  m_system.step(dt);
+  //m_system.step(dt);
 }
 
 void Simulation::render() {
