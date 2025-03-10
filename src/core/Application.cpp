@@ -59,7 +59,7 @@ bool Application::initialize() {
   return m_initialized;
 }
 
-void Application::run() {
+void Application::run() const {
   if (!m_initialized) {
     LOG_ERROR("Application not initialized!");
     return;

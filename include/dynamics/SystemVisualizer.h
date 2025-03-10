@@ -1,10 +1,10 @@
-#ifndef SYSTEMVISUALIZER_H
-#define SYSTEMVISUALIZER_H
-#include <DistanceConstraint.h>
+#ifndef SYSTEM_VISUALIZER_H
+#define SYSTEM_VISUALIZER_H
+#include "DistanceConstraint.h"
 #include <ranges>
 #include "DynamicSystem.h"
-#include "graphics/ShaderManager.h"
-#include "utils/Logger.h"
+#include "ShaderManager.h"
+#include "Logger.h"
 
 class SystemVisualizer {
 public:
@@ -45,7 +45,7 @@ public:
 
       m_shaderManager.setUniform("objectColor", glm::vec4(1.0, 1.0, 1.0, 1.0)); // Set color (white)
       m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
-      drawCube(); // Render the cube
+      // drawCube(); // Render the cube
     }
 
     // Render constraints as lines
@@ -78,7 +78,7 @@ public:
 private:
   ShaderManager &m_shaderManager;
   unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
-  GLuint m_lineVAO, m_lineVBO;
+  GLuint m_lineVAO{}, m_lineVBO{};
   void initializeLine() {
     glGenVertexArrays(1, &m_lineVAO);
     glGenBuffers(1, &m_lineVBO);
@@ -89,7 +89,7 @@ private:
     // Initially allocate buffer (size will be updated dynamically)
     glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(nullptr));
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
@@ -191,4 +191,4 @@ private:
   }
 };
 
-#endif // SYSTEMVISUALIZER_H
+#endif // SYSTEM_VISUALIZER_H

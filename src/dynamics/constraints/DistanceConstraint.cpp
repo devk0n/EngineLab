@@ -46,7 +46,7 @@ void DistanceConstraint::computeJacobianDerivative(
     int startRow) {
   Vector3d v = m_particle2->getVelocity() - m_particle1->getVelocity();
   const double result = 2.0 * v.squaredNorm(); // Correct sign to positive
-  jdotqdot[startRow] = result;
+  jdotqdot[0] = result;
 }
 
 

@@ -1,7 +1,7 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "core/Context.h"
+#include "Context.h"
 
 class Environment {
 public:

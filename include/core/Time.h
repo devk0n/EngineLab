@@ -9,13 +9,13 @@ public:
 
   void update() {
     const double currentTime = glfwGetTime();
-    m_deltaTime = static_cast<float>(currentTime - m_lastFrameTime);
+    m_deltaTime = currentTime - m_lastFrameTime;
     m_lastFrameTime = currentTime;
     m_elapsedTime += m_deltaTime;
   }
 
-  double getDeltaTime() const { return m_deltaTime; }
-  double getElapsedTime() const { return m_elapsedTime; }
+  [[nodiscard]] double getDeltaTime() const { return m_deltaTime; }
+  [[nodiscard]] double getElapsedTime() const { return m_elapsedTime; }
 
 private:
   double m_lastFrameTime;

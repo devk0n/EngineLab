@@ -7,6 +7,7 @@ graphics rendering and physical simulations.
 ## Current State
 
 ![Engine Interface](./assets/images/Screenshot%202025-02-28%20192523.png)
+![Engine Interface](./assets/images/img.png)
 *Current development state showing the engine interface*
 
 ## 🎯 Features

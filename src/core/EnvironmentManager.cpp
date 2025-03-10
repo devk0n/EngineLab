@@ -1,5 +1,5 @@
-#include "core/EnvironmentManager.h"
-#include "utils/Logger.h"
+#include "EnvironmentManager.h"
+#include "Logger.h"
 
 void EnvironmentManager::pushEnvironment(
     std::unique_ptr<Environment> environment) {
@@ -35,7 +35,7 @@ void EnvironmentManager::popEnvironment() {
   }
 }
 
-void EnvironmentManager::update(float dt) {
+void EnvironmentManager::update(const float dt) {
   if (m_environments.empty()) {
     LOG_WARN("No scenes to update");
     return;
