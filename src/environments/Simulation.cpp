@@ -3,17 +3,14 @@
 #include <DistanceConstraint.h>
 #include <DynamicSystem.h>
 #include <imgui.h>
-
-#include "core/InputManager.h"
-#include "core/Time.h"
-#include "core/WindowManager.h"
+#include "InputManager.h"
+#include "Logger.h"
+#include "NewtonRaphson.h"
+#include "OpenGLSetup.h"
+#include "Renderer.h"
+#include "Time.h"
+#include "WindowManager.h"
 #include "forces/GravityForceGenerator.h"
-#include "forces/SpringForceGenerator.h"
-
-#include "graphics/Renderer.h"
-
-#include "utils/Logger.h"
-#include "utils/OpenGLSetup.h"
 
 constexpr glm::vec3 ORANGE     = {1.0f, 0.647f, 0.0f};
 constexpr glm::vec3 BLUE       = {0.0f, 0.647f, 1.0f};
@@ -24,211 +21,71 @@ constexpr glm::vec3 YELLOW     = {1.0f,   1.0f, 0.0f};
 
 using namespace Neutron;
 
-void Simulation::frontLeft() {
-  UniqueID particle_1 = m_system.addParticle(
-    1.0,                    // Mass
-    Vector3d(0.16, 0.25, 0.14)  // Position
-  );
-
-  UniqueID particle_2 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.15, 0.27, 0.15)  // Position
-  );
-
-  UniqueID particle_3 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(0.005, 0.6, 0.12)   // Position
-  );
-
-  UniqueID particle_4 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(0.16, 0.25, 0.3)   // Position
-  );
-
-  UniqueID particle_5 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.15, 0.27, 0.31)   // Position
-  );
-
-  UniqueID particle_6 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.003, 0.58, 0.29)   // Position
-  );
-
-  UniqueID particle_7 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.06, 0.58, 0.17)   // Position
-  );
-
-  UniqueID particle_8 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.12, 0.2, 0.19)   // Position
-  );
-
-  UniqueID particle_9 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(0.0, 0.0, 2)   // Position
-  );
+void Simulation::initSystem() {
+  // Add particles
+  UniqueID particle_1 = m_system.addParticle(1.0, Vector3d(0.0, 0.0, 0.0));
+  UniqueID particle_2 = m_system.addParticle(1.0, Vector3d(1.0, 0.0, 0.0));
 
   // Get particle pointers
   Particle *p1 = m_system.getParticle(particle_1);
   Particle *p2 = m_system.getParticle(particle_2);
-  Particle *p3 = m_system.getParticle(particle_3);
-  Particle *p4 = m_system.getParticle(particle_4);
-  Particle *p5 = m_system.getParticle(particle_5);
-  Particle *p6 = m_system.getParticle(particle_6);
-  Particle *p7 = m_system.getParticle(particle_7);
-  Particle *p8 = m_system.getParticle(particle_8);
-  Particle *p9 = m_system.getParticle(particle_9);
-
   p1->setFixed(true);
-  p2->setFixed(true);
-  p4->setFixed(true);
-  p5->setFixed(true);
-  p8->setFixed(true);
-  p9->setFixed(true);
 
   // Add a distance constraint between the particles
-  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p3);
-  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
-  auto constraint3 = std::make_shared<DistanceConstraint>(p3, p6);
-  auto constraint4 = std::make_shared<DistanceConstraint>(p5, p6);
-  auto constraint5 = std::make_shared<DistanceConstraint>(p4, p6);
-  auto constraint6 = std::make_shared<DistanceConstraint>(p3, p7);
-  auto constraint7 = std::make_shared<DistanceConstraint>(p6, p7);
-  auto constraint8 = std::make_shared<DistanceConstraint>(p7, p8);
-
+  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2, 2.5);
   m_system.addConstraint(constraint1);
-  m_system.addConstraint(constraint2);
-  m_system.addConstraint(constraint3);
-  m_system.addConstraint(constraint4);
-  m_system.addConstraint(constraint5);
-  m_system.addConstraint(constraint6);
-  m_system.addConstraint(constraint7);
-  m_system.addConstraint(constraint8);
 
-  Vector3d d = p6->getPosition() - p9->getPosition();
-  double distance = d.norm();
-  auto spring = std::make_shared<SpringForceGenerator>(p6, p9, distance,
-                                                     7500.0,   // Reduced stiffness
-                                                     150.0);  // Increased damping
-  m_system.addForceGenerator(spring);
+  // Define the constraint function for Newton-Raphson
+  auto constraintFunction = [&](const VectorXd& q) -> VectorXd {
+    VectorXd c(1); // Single constraint
+    constraint1->computeConstraintEquations(c, 0);
+    return c;
+  };
+
+  // Define the Jacobian function for Newton-Raphson
+  auto jacobianFunction = [&](const VectorXd& q) -> MatrixXd {
+    MatrixXd jacobian(1, 6); // 1 constraint, 6 DOF (3 for each particle)
+    std::map<Particle*, int> particleToIndex = {{p1, 0}, {p2, 1}};
+    constraint1->computeJacobian(jacobian, 0, particleToIndex);
+    return jacobian;
+  };
+
+  // Initial guess for particle positions
+  VectorXd initialGuess(6);
+  initialGuess << p1->getPosition(), p2->getPosition();
+
+  // Create Newton-Raphson solver
+  NewtonRaphson<double, decltype(constraintFunction), decltype(jacobianFunction)> solver;
+
+  // Solve for positions that satisfy the constraint
+  try {
+    VectorXd solution = solver.solve(
+      initialGuess,
+      constraintFunction,
+      jacobianFunction,
+      1e-6, // Convergence tolerance
+      100   // Max iterations
+    );
+
+    // Update particle positions
+    p2->setPosition(solution.segment<3>(3));
+    LOG_INFO("Newton-Raphson converged to a valid configuration.");
+  } catch (const std::runtime_error& e) {
+    LOG_ERROR("Newton-Raphson failed to converge: ", e.what());
+  }
 
   // Add gravity as force generator
-  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p1, p2, p3, p4, p5, p6, p7, p8, p9}) {
-    gravityGen->addParticle(particle);
-  }
+  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, std::numbers::pi * std::numbers::pi));
+  gravityGen->addParticle(p2);
   m_system.addForceGenerator(gravityGen);
 }
-
-void Simulation::frontRight() {
-  UniqueID particle_1 = m_system.addParticle(
-    1.0,                    // Mass
-    Vector3d(0.16, -0.25, 0.14)  // Position
-  );
-
-  UniqueID particle_2 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.15, -0.27, 0.15)  // Position
-  );
-
-  UniqueID particle_3 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(0.005, -0.6, 0.12)   // Position
-  );
-
-  UniqueID particle_4 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(0.16, -0.25, 0.3)   // Position
-  );
-
-  UniqueID particle_5 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.15, -0.27, 0.31)   // Position
-  );
-
-  UniqueID particle_6 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.003, -0.58, 0.29)   // Position
-  );
-
-  UniqueID particle_7 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.06, -0.58, 0.17)   // Position
-  );
-
-  UniqueID particle_8 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(-0.12, -0.2, 0.19)   // Position
-  );
-
-  UniqueID particle_9 = m_system.addParticle(
-    1.0,                     // Mass
-    Vector3d(0.0, -0.0, 2)   // Position
-  );
-
-  // Get particle pointers
-  Particle *p1 = m_system.getParticle(particle_1);
-  Particle *p2 = m_system.getParticle(particle_2);
-  Particle *p3 = m_system.getParticle(particle_3);
-  Particle *p4 = m_system.getParticle(particle_4);
-  Particle *p5 = m_system.getParticle(particle_5);
-  Particle *p6 = m_system.getParticle(particle_6);
-  Particle *p7 = m_system.getParticle(particle_7);
-  Particle *p8 = m_system.getParticle(particle_8);
-  Particle *p9 = m_system.getParticle(particle_9);
-
-  p1->setFixed(true);
-  p2->setFixed(true);
-  p4->setFixed(true);
-  p5->setFixed(true);
-  p8->setFixed(true);
-  p9->setFixed(true);
-
-  // Add a distance constraint between the particles
-  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p3);
-  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
-  auto constraint3 = std::make_shared<DistanceConstraint>(p3, p6);
-  auto constraint4 = std::make_shared<DistanceConstraint>(p5, p6);
-  auto constraint5 = std::make_shared<DistanceConstraint>(p4, p6);
-  auto constraint6 = std::make_shared<DistanceConstraint>(p3, p7);
-  auto constraint7 = std::make_shared<DistanceConstraint>(p6, p7);
-  auto constraint8 = std::make_shared<DistanceConstraint>(p7, p8);
-
-  m_system.addConstraint(constraint1);
-  m_system.addConstraint(constraint2);
-  m_system.addConstraint(constraint3);
-  m_system.addConstraint(constraint4);
-  m_system.addConstraint(constraint5);
-  m_system.addConstraint(constraint6);
-  m_system.addConstraint(constraint7);
-  m_system.addConstraint(constraint8);
-
-  Vector3d d = p6->getPosition() - p9->getPosition();
-  double distance = d.norm();
-  auto spring = std::make_shared<SpringForceGenerator>(p6, p9, distance,
-                                                     7500.0,   // Reduced stiffness
-                                                     1500.0);  // Increased damping
-  m_system.addForceGenerator(spring);
-
-  // Add gravity as force generator
-  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p1, p2, p3, p4, p5, p6, p7, p8, p9}) {
-    gravityGen->addParticle(particle);
-  }
-  m_system.addForceGenerator(gravityGen);
-}
-
-
 
 bool Simulation::load() {
 
-  frontLeft();
-  frontRight();
+  initSystem();
 
   LOG_INFO("Initializing Simulation");
-  m_camera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+  m_camera.setPosition(glm::vec3(10.0f, 8.0f, 4.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
   m_camera.setMovementSpeed(10.0f);
 

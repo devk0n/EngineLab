@@ -1,15 +1,15 @@
 #ifndef IMGUIMANAGER_H
 #define IMGUIMANAGER_H
 
-#include "utils/OpenGLSetup.h"
+#include "OpenGLSetup.h"
 
 class ImGuiManager {
 public:
   bool initialize(GLFWwindow *window);
 
   void beginFrame() const;
-
   void endFrame() const;
+
   void shutdown();
 
 private:

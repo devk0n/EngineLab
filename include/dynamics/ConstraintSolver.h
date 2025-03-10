@@ -6,7 +6,7 @@
 #include <vector>
 #include "Constraint.h"
 #include "Particle.h"
-#include "core/types.h"
+#include "types.h"
 
 namespace Neutron {
 
@@ -37,7 +37,7 @@ public:
 
 private:
   std::vector<std::shared_ptr<Constraint>> m_constraints;
-  double m_alpha = 200.0;
+  double m_alpha = 100.0;
   double m_beta = 500.0;
 };
 

@@ -3,9 +3,8 @@
 #define CONSTRAINT_H
 
 #include <map>
-
 #include "Particle.h"
-#include "core/types.h"
+#include "types.h"
 
 namespace Neutron {
 

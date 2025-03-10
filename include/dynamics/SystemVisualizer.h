@@ -1,10 +1,10 @@
-#ifndef SYSTEMVISUALIZER_H
-#define SYSTEMVISUALIZER_H
-#include <DistanceConstraint.h>
+#ifndef SYSTEM_VISUALIZER_H
+#define SYSTEM_VISUALIZER_H
+#include "DistanceConstraint.h"
 #include <ranges>
 #include "DynamicSystem.h"
-#include "graphics/ShaderManager.h"
-#include "utils/Logger.h"
+#include "ShaderManager.h"
+#include "Logger.h"
 
 class SystemVisualizer {
 public:
@@ -191,4 +191,4 @@ private:
   }
 };
 
-#endif // SYSTEMVISUALIZER_H
+#endif // SYSTEM_VISUALIZER_H

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <Eigen/LU>
-#include "utils/Logger.h"
+#include "Logger.h"
 
 namespace Neutron {
 ConstraintSolver::ConstraintSolver() = default;
@@ -84,7 +84,7 @@ void ConstraintSolver::solveConstrainedSystem(
   VectorXd &accelerations,       // Output accelerations
   VectorXd &lambdas              // Output Lagrange multipliers
 ) {
-  // int n = M.size();       // Number of generalized coordinates
+  // int n = M.size();       // Number of generalized coordinate
 
   if (int m = constraintRHS.size(); m == 0) {
     // No constraints, direct solution

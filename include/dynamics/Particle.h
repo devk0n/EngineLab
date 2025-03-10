@@ -1,7 +1,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
-#include <core/types.h>
-#include "glm/vec3.hpp"
+#include <glm/vec3.hpp>
+#include "types.h"
 
 namespace Neutron {
 

@@ -145,9 +145,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics/constraints
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/environments
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/graphics
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
         ${imguizmo_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics/constraints
+
 )

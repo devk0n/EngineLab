@@ -1,12 +1,10 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <DynamicSystem.h>
-#include <graphics/Renderer.h>
-
-#include "environments/Environment.h"
-#include "graphics/Camera.h"
-
+#include "Camera.h"
+#include "DynamicSystem.h"
+#include "Environment.h"
+#include "Renderer.h"
 #include "SystemVisualizer.h"
 
 class Simulation final : public Environment {
@@ -15,11 +13,7 @@ public:
     : Environment(ctx), m_systemVisualizer(ctx.renderer->getShaderManager()) {
   }
 
-  void frontLeft();
-
-  void frontRight();
-
-  void rearLeft();
+  void initSystem();
 
   bool load() override;
 

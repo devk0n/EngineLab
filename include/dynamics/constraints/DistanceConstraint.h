@@ -2,9 +2,8 @@
 #define DISTANCE_CONSTRAINT_H
 
 #include <map>
-
-#include "dynamics/Constraint.h"
-#include "dynamics/Particle.h"
+#include "Constraint.h"
+#include "Particle.h"
 
 namespace Neutron {
 class DistanceConstraint final : public Constraint {

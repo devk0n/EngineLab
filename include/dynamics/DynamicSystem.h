@@ -9,7 +9,7 @@
 #include "ConstraintSolver.h"
 #include "ForceGenerator.h"
 #include "Particle.h"
-#include "core/types.h"
+#include "types.h"
 
 namespace Neutron {
 

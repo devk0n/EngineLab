@@ -9,11 +9,11 @@ class ImGuiManager;
 class Time;
 
 struct Context {
-  WindowManager *window;
-  InputManager *input;
-  Renderer *renderer;
-  EnvironmentManager *environments;
-  ImGuiManager *imgui;
+  WindowManager *window{};
+  InputManager *input{};
+  Renderer *renderer{};
+  EnvironmentManager *environments{};
+  ImGuiManager *imgui{};
   Time *time = nullptr;
 };
 

@@ -1,7 +1,8 @@
 // dynamics/DynamicSystem.cpp
 #include "DynamicSystem.h"
+
 #include <algorithm>
-#include "utils/Logger.h"
+#include "Logger.h"
 
 namespace Neutron {
 DynamicSystem::DynamicSystem() = default;
