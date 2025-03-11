@@ -124,9 +124,8 @@ set(SOURCES
         src/dynamics/DynamicSystem.cpp
         src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/DistanceConstraint.cpp
-include/dynamics/forces/GravityForceGenerator.h
-include/dynamics/constraints/TranslationalConstraint.h
-src/dynamics/constraints/TranslationalConstraint.cpp
+        src/dynamics/constraints/TranslationalConstraint.cpp
+
 )
 
 # Add executable

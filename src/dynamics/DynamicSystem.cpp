@@ -121,6 +121,7 @@ void DynamicSystem::solvePositionConstraints(
   }
 }
 
+
 void DynamicSystem::solveVelocityConstraints(
     const double epsilon = 1e-6,
     const int maxIterations = 10,
@@ -175,74 +176,130 @@ void DynamicSystem::solveVelocityConstraints(
   }
 }
 
-// NEW INTEGRATOR IMPLEMENTATION
+
 void DynamicSystem::step(const double dt) {
   if (m_particles.empty()) return;
 
-  // --- Stage 1: Velocity Verlet Position Update ---
-  std::vector<Vector3d> initialPositions;
-  std::vector<Vector3d> initialVelocities;
-  VectorXd initialForces;
+  // Define a state structure for RK4
+  struct State {
+    Vector3d position;
+    Vector3d velocity;
+  };
 
-  // Store initial state
+  // Store initial states
+  std::vector<State> initialStates;
   for (const auto &[id, particle] : m_particles) {
-    initialPositions.push_back(particle->getPosition());
-    initialVelocities.push_back(particle->getVelocity());
+    initialStates.push_back({particle->getPosition(), particle->getVelocity()});
   }
 
-  // Compute initial forces
-  buildForceVector(initialForces);
+  // Lambda function to evaluate forces
+  auto evaluateForces = [this]() {
+    VectorXd forces;
+    buildForceVector(forces);
+    return forces;
+  };
 
-  // Update positions
+  // Lambda function to compute derivatives (velocity and acceleration)
+  auto computeDerivatives = [this](const std::vector<State> &states, const VectorXd &forces) {
+    std::vector<State> derivatives;
+    int i = 0;
+    for (const auto &[id, particle] : m_particles) {
+      Vector3d acc = forces.segment<3>(i * 3) / particle->getMass();
+      derivatives.push_back({states[i].velocity, acc}); // Derivative of position is velocity, derivative of velocity is acceleration
+      ++i;
+    }
+    return derivatives;
+  };
+
+  // --- RK4 Stages ---
+
+  // Stage 1: Compute k1
+  for (auto &[id, particle] : m_particles) particle->clearForces();
+  for (auto &generator : m_forceGenerators) generator->apply(dt);
+  VectorXd k1Forces = evaluateForces();
+  auto k1Derivatives = computeDerivatives(initialStates, k1Forces);
+
+  // Stage 2: Compute k2
+  std::vector<State> k2States;
+  for (size_t i = 0; i < initialStates.size(); ++i) {
+    k2States.push_back({
+      initialStates[i].position + 0.5 * dt * k1Derivatives[i].position,
+      initialStates[i].velocity + 0.5 * dt * k1Derivatives[i].velocity
+    });
+  }
+  for (auto &[id, particle] : m_particles) particle->clearForces();
+  for (auto &generator : m_forceGenerators) generator->apply(dt);
+  VectorXd k2Forces = evaluateForces();
+  auto k2Derivatives = computeDerivatives(k2States, k2Forces);
+
+  // Stage 3: Compute k3
+  std::vector<State> k3States;
+  for (size_t i = 0; i < initialStates.size(); ++i) {
+    k3States.push_back({
+      initialStates[i].position + 0.5 * dt * k2Derivatives[i].position,
+      initialStates[i].velocity + 0.5 * dt * k2Derivatives[i].velocity
+    });
+  }
+  for (auto &[id, particle] : m_particles) particle->clearForces();
+  for (auto &generator : m_forceGenerators) generator->apply(dt);
+  VectorXd k3Forces = evaluateForces();
+  auto k3Derivatives = computeDerivatives(k3States, k3Forces);
+
+  // Stage 4: Compute k4
+  std::vector<State> k4States;
+  for (size_t i = 0; i < initialStates.size(); ++i) {
+    k4States.push_back({
+      initialStates[i].position + dt * k3Derivatives[i].position,
+      initialStates[i].velocity + dt * k3Derivatives[i].velocity
+    });
+  }
+  for (auto &[id, particle] : m_particles) particle->clearForces();
+  for (auto &generator : m_forceGenerators) generator->apply(dt);
+  VectorXd k4Forces = evaluateForces();
+  auto k4Derivatives = computeDerivatives(k4States, k4Forces);
+
+  // --- Combine Results ---
   int i = 0;
   for (auto &[id, particle] : m_particles) {
     if (!particle->isFixed()) {
-      Vector3d acc = initialForces.segment<3>(i*3) / particle->getMass();
-      Vector3d newPos = particle->getPosition() +
-                       particle->getVelocity() * dt +
-                       0.5 * acc * dt * dt;
+      Vector3d newPos = initialStates[i].position + (dt / 6.0) *
+          (k1Derivatives[i].position + 2.0 * k2Derivatives[i].position +
+           2.0 * k3Derivatives[i].position + k4Derivatives[i].position);
+      Vector3d newVel = initialStates[i].velocity + (dt / 6.0) *
+          (k1Derivatives[i].velocity + 2.0 * k2Derivatives[i].velocity +
+           2.0 * k3Derivatives[i].velocity + k4Derivatives[i].velocity);
       particle->setPosition(newPos);
-    }
-    ++i;
-  }
-
-  // --- Stage 2: Compute New Forces ---
-  for (auto &[id, particle] : m_particles) particle->clearForces();
-  for (auto &generator : m_forceGenerators) generator->apply(dt);
-
-  VectorXd newForces;
-  buildForceVector(newForces);
-
-  // --- Stage 3: Velocity Update ---
-  i = 0;
-  for (auto &[id, particle] : m_particles) {
-    if (!particle->isFixed()) {
-      Vector3d oldAcc = initialForces.segment<3>(i*3) / particle->getMass();
-      Vector3d newAcc = newForces.segment<3>(i*3) / particle->getMass();
-      Vector3d avgAcc = 0.5 * (oldAcc + newAcc);
-
-      particle->setVelocity(initialVelocities[i] + avgAcc * dt);
+      particle->setVelocity(newVel);
     }
     ++i;
   }
 
   // --- Constraint Stabilization ---
-  // MODIFIED: Added explicit parameters
   solvePositionConstraints(
     1e-6,    // epsilon
-    3,       // maxIterations (increased)
-    0.2,      // alpha (reduced from 0.5)
-    1e-8,     // lambda (reduced damping)
-    0.05      // maxCorrection
+    10,       // maxIterations
+    1.0,     // alpha
+    1e-6,    // lambda
+    0.05     // maxCorrection
   );
 
   solveVelocityConstraints(
     1e-6,    // epsilon
-    3,       // maxIterations
-    0.2,      // alpha
-    1e-8,     // lambda
-    0.05      // maxCorrection
+    10,       // maxIterations
+    1.0,     // alpha
+    1e-6,    // lambda
+    0.05     // maxCorrection
   );
-
+  /*
+  // --- Velocity Update Based on Corrected Positions ---
+  i = 0;
+  for (auto &[id, particle] : m_particles) {
+    if (!particle->isFixed()) {
+      Vector3d correctedVelocity = (particle->getPosition() - initialStates[i].position) / dt;
+      particle->setVelocity(correctedVelocity);
+    }
+    ++i;
+  }
+  */
 }
 } // namespace Neutron
