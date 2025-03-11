@@ -230,7 +230,7 @@ void DynamicSystem::step(const double dt) {
   // MODIFIED: Added explicit parameters
   solvePositionConstraints(
     1e-6,    // epsilon
-    10,       // maxIterations (increased)
+    3,       // maxIterations (increased)
     0.2,      // alpha (reduced from 0.5)
     1e-8,     // lambda (reduced damping)
     0.05      // maxCorrection
@@ -238,7 +238,7 @@ void DynamicSystem::step(const double dt) {
 
   solveVelocityConstraints(
     1e-6,    // epsilon
-    10,       // maxIterations
+    3,       // maxIterations
     0.2,      // alpha
     1e-8,     // lambda
     0.05      // maxCorrection

@@ -1,16 +1,15 @@
 #include "environments/Simulation.h"
 
-#include <DistanceConstraint.h>
-#include <DynamicSystem.h>
 #include <imgui.h>
-
+#include "DistanceConstraint.h"
+#include "DynamicSystem.h"
+#include "TranslationalConstraint.h"
 #include "core/InputManager.h"
 #include "core/Time.h"
 #include "core/WindowManager.h"
 #include "forces/GravityForceGenerator.h"
-
+#include "forces/SpringForceGenerator.h"
 #include "graphics/Renderer.h"
-
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
@@ -26,47 +25,48 @@ using namespace Neutron;
 bool Simulation::load() {
 
   UniqueID particle_1 = m_system.addParticle(
-    1.0,                    // Mass
-    Vector3d(0.0, 0.0, 5.0)  // Position
+    10.0,                    // Mass
+    Vector3d(0.16, 0.25, 0.14)  // Position
   );
 
   UniqueID particle_2 = m_system.addParticle(
-    1.0,                    // Mass
-    Vector3d(0.0, 0.1, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(-0.15, 0.27, 0.15)  // Position
   );
 
   UniqueID particle_3 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.2, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(0.005, 0.6, 0.12)   // Position
   );
 
   UniqueID particle_4 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.3, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(0.16, 0.25, 0.3)   // Position
   );
+
   UniqueID particle_5 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.4, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(-0.15, 0.27, 0.31)   // Position
   );
+
   UniqueID particle_6 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.5, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(-0.003, 0.58, 0.29)   // Position
   );
+
   UniqueID particle_7 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.6, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(-0.06, 0.58, 0.17)   // Position
   );
+
   UniqueID particle_8 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.7, 5.0)  // Position
+    1.0,                     // Mass
+    Vector3d(-0.12, 0.2, 0.19)   // Position
   );
+
   UniqueID particle_9 = m_system.addParticle(
-    1.0,                       // Mass
-    Vector3d(0.0, 0.8, 5.0)  // Position
-  );
-  UniqueID particle_10 = m_system.addParticle(
-    10.0,                       // Mass
-    Vector3d(0.0, 0.9, 5.0)  // Position
+    10.0,                     // Mass
+    Vector3d(0.0, 0.0, 2)   // Position
   );
 
   // Get particle pointers
@@ -79,20 +79,37 @@ bool Simulation::load() {
   Particle *p7 = m_system.getParticle(particle_7);
   Particle *p8 = m_system.getParticle(particle_8);
   Particle *p9 = m_system.getParticle(particle_9);
-  Particle *p10 = m_system.getParticle(particle_10);
-
 
   p1->setFixed(true);
+  p2->setFixed(true);
+  p4->setFixed(true);
+  p5->setFixed(true);
+  // p8->setFixed(true);
+  p9->setFixed(true);
 
-  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2);
+  // Add a distance constraint between the particles
+  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p3);
   auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
-  auto constraint3 = std::make_shared<DistanceConstraint>(p3, p4);
-  auto constraint4 = std::make_shared<DistanceConstraint>(p4, p5);
-  auto constraint5 = std::make_shared<DistanceConstraint>(p5, p6);
-  auto constraint6 = std::make_shared<DistanceConstraint>(p6, p7);
-  auto constraint7 = std::make_shared<DistanceConstraint>(p7, p8);
-  auto constraint8 = std::make_shared<DistanceConstraint>(p8, p9);
-  auto constraint9 = std::make_shared<DistanceConstraint>(p9, p10);
+  auto constraint3 = std::make_shared<DistanceConstraint>(p3, p6);
+  auto constraint4 = std::make_shared<DistanceConstraint>(p5, p6);
+  auto constraint5 = std::make_shared<DistanceConstraint>(p4, p6);
+  auto constraint6 = std::make_shared<DistanceConstraint>(p3, p7);
+  auto constraint7 = std::make_shared<DistanceConstraint>(p6, p7);
+  auto constraint8 = std::make_shared<DistanceConstraint>(p7, p8);
+
+  Vector3d d = p6->getPosition() - p9->getPosition();
+  double distance = d.norm();
+  auto spring = std::make_shared<SpringForceGenerator>(p6, p9, distance,
+                                                     43781.0,   // Reduced stiffness
+                                                     2780.0);  // Increased damping
+  m_system.addForceGenerator(spring);
+
+  auto translationalConstraint1 = std::make_shared<TranslationalConstraint>(
+    p8, Vector3d(0, 1, 0),  // Constrain along X-axis
+    0.2                    // Target position (X = 0.19)
+  );
+
+  m_system.addConstraint(translationalConstraint1);
 
   m_system.addConstraint(constraint1);
   m_system.addConstraint(constraint2);
@@ -102,18 +119,18 @@ bool Simulation::load() {
   m_system.addConstraint(constraint6);
   m_system.addConstraint(constraint7);
   m_system.addConstraint(constraint8);
-  m_system.addConstraint(constraint9);
-
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p2, p3, p4, p5, p6, p7, p8, p9, p10}) { gravityGen->addParticle(particle); }
+  for (auto& particle : {p1, p2, p3, p4, p5, p6, p7, p8, p9}) {
+    gravityGen->addParticle(particle);
+  }
   m_system.addForceGenerator(gravityGen);
 
   LOG_INFO("Initializing Simulation");
-  m_camera.setPosition(glm::vec3(10.0f, 8.0f, 4.0f));
+  m_camera.setPosition(glm::vec3(2.0f, 2.0f, 2.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-  m_camera.setMovementSpeed(20.0f);
+  m_camera.setMovementSpeed(10.0f);
 
   if (!m_ctx.renderer->getShaderManager()
     .loadShader("cubeShader",
@@ -205,7 +222,7 @@ void Simulation::showUI() const {
   ImGui::Text("Kinetic: %.3f J", m_kineticEnergy);
   ImGui::Text("Potential: %.3f J", m_potentialEnergy);
   ImGui::Text("Total: %.3f J", m_totalEnergy);
-  ImGui::Text("Delta: %.6f J", m_deltaEnergy); // Show delta energy
+  ImGui::Text("Delta: %.6f J", abs(m_deltaEnergy)); // Show delta energy
   ImGui::End();
 
   // Use const references for vectors

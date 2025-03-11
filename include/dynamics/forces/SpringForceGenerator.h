@@ -4,7 +4,7 @@
 #include "ForceGenerator.h"
 
 namespace Neutron {
-class SpringForceGenerator : public ForceGenerator {
+class SpringForceGenerator final : public ForceGenerator {
 public:
   SpringForceGenerator(
       Particle* p1,
@@ -23,7 +23,7 @@ public:
   void apply(double dt) override {
     Vector3d delta = m_p2->getPosition() - m_p1->getPosition();
     double currentLength = delta.norm();
-    if (currentLength < 1e-6 || currentLength <= m_restLength) {
+    if (currentLength < 1e-6) {
       return; // Prevent division by zero and no compression force
     }
 
