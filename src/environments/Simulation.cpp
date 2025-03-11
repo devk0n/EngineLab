@@ -130,7 +130,7 @@ bool Simulation::load() {
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(2.0f, 2.0f, 2.0f));
   m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-  m_camera.setMovementSpeed(10.0f);
+  m_camera.setMovementSpeed(5.0f);
 
   if (!m_ctx.renderer->getShaderManager()
     .loadShader("cubeShader",
