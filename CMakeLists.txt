@@ -125,6 +125,8 @@ set(SOURCES
         src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/DistanceConstraint.cpp
         src/dynamics/constraints/TranslationalConstraint.cpp
+include/dynamics/Body.h
+include/dynamics/Body.h
 
 )
 

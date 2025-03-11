@@ -1,47 +1,45 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
-#include <core/types.h>
 
-#include "glm/vec3.hpp"
+#include <glm/vec3.hpp>
+#include "core/types.h"
 
 namespace Neutron {
 
 class Particle {
 public:
   Particle(
-      UniqueID id,
+      UniqueID ID,
       double mass,
       const Vector3d &position
   );
 
-  // Getters for state
-  UniqueID getID() const { return m_id; }
-  const Vector3d &getPosition() const { return m_position; }
-  glm::vec3 getPositionVec3() const {
-    return glm::vec3(m_position[0], m_position[1], m_position[2]);
-  }
-  const Vector3d &getVelocity() const { return m_velocity; }
+  UniqueID getID() const;
 
-  // Mass properties
-  double getMass() const { return m_mass; }
+  // Physical properties
+  double getMass() const;
 
-  // Sets the current position/velocity vector
-  void setPosition(const Vector3d &position) { m_position = position; }
-  void setVelocity(const Vector3d &velocity) { m_velocity = velocity; }
+  // State variables
+  const Vector3d &getPosition() const;
+  const Vector3d &getVelocity() const;
+
+  void setPosition(const Vector3d &position);
+  void setVelocity(const Vector3d &velocity);
 
   // Force accumulation
-  void addForce(const Vector3d &force) { m_force.noalias() += force; }
-  void clearForces() { m_force.setZero(); }
+  void addForce(const Vector3d &force);
+  void clearForces();
+  const Vector3d &getForce() const;
 
-  // Get the accumulated force
-  const Vector3d &getForce() const { return m_force; }
+  // Configuration
+  void setFixed(bool fixed);
+  bool isFixed() const;
 
-  // Fixed
-  void setFixed(bool fixed) { m_fixed = fixed; }
-  bool isFixed() const { return m_fixed; }
+  // Visualization convertion
+  glm::vec3 getPositionVec3() const;
 
 private:
-  UniqueID m_id;
+  UniqueID m_ID;
 
   // Physical properties
   double m_mass;
