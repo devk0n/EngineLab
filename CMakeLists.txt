@@ -121,13 +121,11 @@ set(SOURCES
         src/environments/Simulation.cpp
 
         src/dynamics/Particle.cpp
+        src/dynamics/Body.cpp
         src/dynamics/DynamicSystem.cpp
         src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/DistanceConstraint.cpp
         src/dynamics/constraints/TranslationalConstraint.cpp
-include/dynamics/Body.h
-include/dynamics/Body.h
-
 )
 
 # Add executable
