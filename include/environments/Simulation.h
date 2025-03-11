@@ -36,9 +36,13 @@ private:
   float m_fpsUpdateTimer = 0.0f;
   static constexpr float FPS_UPDATE_INTERVAL = 1.0f;
 
-  mutable double m_potentialEnergy = 0.0;
-  mutable double m_kineticEnergy = 0.0;
-  mutable double m_totalEnergy = 0.0;
+  mutable bool m_run = false;
+
+  mutable double m_deltaEnergy = 0.0;
+  mutable double m_totalEnergy = 0.0;  // Total mechanical energy
+  mutable double m_kineticEnergy = 0.0; // Kinetic energy
+  mutable double m_potentialEnergy = 0.0; // Potential energy
+  mutable double m_prevEnergy = 0.0;  // NEW: Previous frame's energy
 };
 
 #endif // SIMULATION_H

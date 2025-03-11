@@ -64,8 +64,13 @@ void DynamicSystem::buildForceVector(VectorXd &forces) {
   LOG_DEBUG("Force vector: \n", forces);
 }
 
-void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
-                                             int maxIterations = 10) {
+void DynamicSystem::solvePositionConstraints(
+    const double epsilon = 1e-6,
+    const int maxIterations = 10,
+    const double alpha = 0.5,         // Relaxation parameter
+    const double lambda = 1e-6,       // Use damped least squares
+    const double maxCorrection = 0.1) // Maximum velocity correction per iteration
+{
   if (m_particles.empty()) return;
 
   std::vector<Particle *> particles;
@@ -73,10 +78,7 @@ void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
     particles.push_back(particle.get());
   }
 
-  // Relaxation parameter to prevent overshooting
-  const double alpha = 0.5;
   // Smaller value = more stable but slower convergence
-
   for (int iter = 0; iter < maxIterations; ++iter) {
     // Build Jacobian and constraint equations
     MatrixXd jacobian;
@@ -98,7 +100,6 @@ void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
     }
 
     // Use damped least squares (Levenberg-Marquardt)
-    const double lambda = 1e-6; // Damping factor
     MatrixXd JTJ = jacobian.transpose() * jacobian;
     MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
     VectorXd dx = H.ldlt().solve(jacobian.transpose() * (-c));
@@ -110,11 +111,9 @@ void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
         Vector3d correction = alpha * dx.segment<3>(i * 3);
 
         // Limit correction magnitude
-        double maxCorrection = 0.01; // Maximum position correction per iteration
         if (correction.norm() > maxCorrection) {
           correction *= maxCorrection / correction.norm();
         }
-
         particle->setPosition(particle->getPosition() + correction);
       }
       i++;
@@ -122,16 +121,19 @@ void DynamicSystem::solvePositionConstraints(double epsilon = 1e-6,
   }
 }
 
-void DynamicSystem::solveVelocityConstraints(double epsilon = 1e-6,
-                                             int maxIterations = 10) {
+void DynamicSystem::solveVelocityConstraints(
+    const double epsilon = 1e-6,
+    const int maxIterations = 10,
+    const double alpha = 0.5,         // Relaxation parameter
+    const double lambda = 1e-6,       // Use damped least squares
+    const double maxCorrection = 0.1) // Maximum velocity correction per iteration
+{
   if (m_particles.empty()) return;
 
   std::vector<Particle *> particles;
   for (const auto &[id, particle]: m_particles) {
     particles.push_back(particle.get());
   }
-
-  const double alpha = 0.5; // Relaxation parameter
 
   for (int iter = 0; iter < maxIterations; ++iter) {
     // Build Jacobian
@@ -152,8 +154,6 @@ void DynamicSystem::solveVelocityConstraints(double epsilon = 1e-6,
       break;
     }
 
-    // Use damped least squares
-    const double lambda = 1e-6;
     MatrixXd JTJ = jacobian.transpose() * jacobian;
     MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
     VectorXd dv = H.ldlt().solve(jacobian.transpose() * (-cdot));
@@ -165,11 +165,9 @@ void DynamicSystem::solveVelocityConstraints(double epsilon = 1e-6,
         Vector3d correction = alpha * dv.segment<3>(i * 3);
 
         // Limit correction magnitude
-        double maxCorrection = 0.1; // Maximum velocity correction per iteration
         if (correction.norm() > maxCorrection) {
           correction *= maxCorrection / correction.norm();
         }
-
         particle->setVelocity(particle->getVelocity() + correction);
       }
       i++;
@@ -177,67 +175,74 @@ void DynamicSystem::solveVelocityConstraints(double epsilon = 1e-6,
   }
 }
 
+// NEW INTEGRATOR IMPLEMENTATION
 void DynamicSystem::step(const double dt) {
   if (m_particles.empty()) return;
 
-  // Store previous positions and velocities
-  std::vector<Vector3d> prevPositions;
-  std::vector<Vector3d> prevVelocities;
-  for (const auto &[id, particle]: m_particles) {
-    prevPositions.push_back(particle->getPosition());
-    prevVelocities.push_back(particle->getVelocity());
+  // --- Stage 1: Velocity Verlet Position Update ---
+  std::vector<Vector3d> initialPositions;
+  std::vector<Vector3d> initialVelocities;
+  VectorXd initialForces;
+
+  // Store initial state
+  for (const auto &[id, particle] : m_particles) {
+    initialPositions.push_back(particle->getPosition());
+    initialVelocities.push_back(particle->getVelocity());
   }
 
-  // Clear and apply forces
-  for (auto &[id, particle]: m_particles) {
-    particle->clearForces();
-  }
-  for (auto &generator: m_forceGenerators) {
-    generator->apply(dt);
-  }
+  // Compute initial forces
+  buildForceVector(initialForces);
 
-  // Build system matrices
-  if (m_massMatrix.size() == 0) {
-    buildMassMatrix();
-  }
-  VectorXd forces;
-  buildForceVector(forces);
-
-  // Solve dynamics
-  std::vector<Particle *> particles;
-  for (const auto &[id, particle]: m_particles) {
-    particles.push_back(particle.get());
-  }
-
-  MatrixXd jacobian;
-  VectorXd constraintRHS;
-  m_constraintSolver.buildJacobian(particles, jacobian, constraintRHS);
-
-  VectorXd accelerations;
-  VectorXd lambdas;
-  m_constraintSolver.solveConstrainedSystem(
-    m_massMatrix, forces, jacobian, constraintRHS, accelerations, lambdas
-  );
-
-  // Semi-implicit Euler integration
+  // Update positions
   int i = 0;
-  for (const auto &[id, particle]: m_particles) {
+  for (auto &[id, particle] : m_particles) {
     if (!particle->isFixed()) {
-      Vector3d acc = accelerations.segment<3>(i * 3);
-
-      // Update velocity first
-      Vector3d newVel = prevVelocities[i] + acc * dt;
-      particle->setVelocity(newVel);
-
-      // Then update position using new velocity
-      Vector3d newPos = prevPositions[i] + newVel * dt;
+      Vector3d acc = initialForces.segment<3>(i*3) / particle->getMass();
+      Vector3d newPos = particle->getPosition() +
+                       particle->getVelocity() * dt +
+                       0.5 * acc * dt * dt;
       particle->setPosition(newPos);
     }
     ++i;
   }
 
-  // Stabilize constraints with relaxation
-  solvePositionConstraints(1e-6, 5); // Reduced iterations
-  solveVelocityConstraints(1e-6, 5); // Reduced iterations
+  // --- Stage 2: Compute New Forces ---
+  for (auto &[id, particle] : m_particles) particle->clearForces();
+  for (auto &generator : m_forceGenerators) generator->apply(dt);
+
+  VectorXd newForces;
+  buildForceVector(newForces);
+
+  // --- Stage 3: Velocity Update ---
+  i = 0;
+  for (auto &[id, particle] : m_particles) {
+    if (!particle->isFixed()) {
+      Vector3d oldAcc = initialForces.segment<3>(i*3) / particle->getMass();
+      Vector3d newAcc = newForces.segment<3>(i*3) / particle->getMass();
+      Vector3d avgAcc = 0.5 * (oldAcc + newAcc);
+
+      particle->setVelocity(initialVelocities[i] + avgAcc * dt);
+    }
+    ++i;
+  }
+
+  // --- Constraint Stabilization ---
+  // MODIFIED: Added explicit parameters
+  solvePositionConstraints(
+    1e-6,    // epsilon
+    10,       // maxIterations (increased)
+    0.2,      // alpha (reduced from 0.5)
+    1e-8,     // lambda (reduced damping)
+    0.05      // maxCorrection
+  );
+
+  solveVelocityConstraints(
+    1e-6,    // epsilon
+    10,       // maxIterations
+    0.2,      // alpha
+    1e-8,     // lambda
+    0.05      // maxCorrection
+  );
+
 }
 } // namespace Neutron

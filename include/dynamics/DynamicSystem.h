@@ -52,8 +52,10 @@ private:
   void buildMassMatrix(); // Build once
   void buildForceVector(VectorXd& forces); // Build every step
 
-  void solvePositionConstraints(double epsilon, int maxIterations);
-  void solveVelocityConstraints(double epsilon, int maxIterations);
+  void solvePositionConstraints(double epsilon, int maxIterations, double alpha, double lambda, double
+                                maxCorrection);
+  void solveVelocityConstraints(double epsilon, int maxIterations, double alpha, double lambda, double
+                                maxCorrection);
 
   // Integration step
   // void integrate(double dt);

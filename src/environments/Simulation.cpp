@@ -8,7 +8,6 @@
 #include "core/Time.h"
 #include "core/WindowManager.h"
 #include "forces/GravityForceGenerator.h"
-#include "forces/SpringForceGenerator.h"
 
 #include "graphics/Renderer.h"
 
@@ -33,30 +32,82 @@ bool Simulation::load() {
 
   UniqueID particle_2 = m_system.addParticle(
     1.0,                    // Mass
-    Vector3d(0.0, 5.0, 5.0)  // Position
+    Vector3d(0.0, 0.1, 5.0)  // Position
   );
 
   UniqueID particle_3 = m_system.addParticle(
     1.0,                       // Mass
-    Vector3d(5.0, 5.0, 8.0)  // Position
+    Vector3d(0.0, 0.2, 5.0)  // Position
+  );
+
+  UniqueID particle_4 = m_system.addParticle(
+    1.0,                       // Mass
+    Vector3d(0.0, 0.3, 5.0)  // Position
+  );
+  UniqueID particle_5 = m_system.addParticle(
+    1.0,                       // Mass
+    Vector3d(0.0, 0.4, 5.0)  // Position
+  );
+  UniqueID particle_6 = m_system.addParticle(
+    1.0,                       // Mass
+    Vector3d(0.0, 0.5, 5.0)  // Position
+  );
+  UniqueID particle_7 = m_system.addParticle(
+    1.0,                       // Mass
+    Vector3d(0.0, 0.6, 5.0)  // Position
+  );
+  UniqueID particle_8 = m_system.addParticle(
+    1.0,                       // Mass
+    Vector3d(0.0, 0.7, 5.0)  // Position
+  );
+  UniqueID particle_9 = m_system.addParticle(
+    1.0,                       // Mass
+    Vector3d(0.0, 0.8, 5.0)  // Position
+  );
+  UniqueID particle_10 = m_system.addParticle(
+    10.0,                       // Mass
+    Vector3d(0.0, 0.9, 5.0)  // Position
   );
 
   // Get particle pointers
   Particle *p1 = m_system.getParticle(particle_1);
   Particle *p2 = m_system.getParticle(particle_2);
   Particle *p3 = m_system.getParticle(particle_3);
+  Particle *p4 = m_system.getParticle(particle_4);
+  Particle *p5 = m_system.getParticle(particle_5);
+  Particle *p6 = m_system.getParticle(particle_6);
+  Particle *p7 = m_system.getParticle(particle_7);
+  Particle *p8 = m_system.getParticle(particle_8);
+  Particle *p9 = m_system.getParticle(particle_9);
+  Particle *p10 = m_system.getParticle(particle_10);
+
 
   p1->setFixed(true);
 
   auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2);
-  auto constraint2 = std::make_shared<DistanceConstraint>(p3, p2);
+  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
+  auto constraint3 = std::make_shared<DistanceConstraint>(p3, p4);
+  auto constraint4 = std::make_shared<DistanceConstraint>(p4, p5);
+  auto constraint5 = std::make_shared<DistanceConstraint>(p5, p6);
+  auto constraint6 = std::make_shared<DistanceConstraint>(p6, p7);
+  auto constraint7 = std::make_shared<DistanceConstraint>(p7, p8);
+  auto constraint8 = std::make_shared<DistanceConstraint>(p8, p9);
+  auto constraint9 = std::make_shared<DistanceConstraint>(p9, p10);
 
   m_system.addConstraint(constraint1);
   m_system.addConstraint(constraint2);
+  m_system.addConstraint(constraint3);
+  m_system.addConstraint(constraint4);
+  m_system.addConstraint(constraint5);
+  m_system.addConstraint(constraint6);
+  m_system.addConstraint(constraint7);
+  m_system.addConstraint(constraint8);
+  m_system.addConstraint(constraint9);
+
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p1, p2, p3}) { gravityGen->addParticle(particle); }
+  for (auto& particle : {p2, p3, p4, p5, p6, p7, p8, p9, p10}) { gravityGen->addParticle(particle); }
   m_system.addForceGenerator(gravityGen);
 
   LOG_INFO("Initializing Simulation");
@@ -91,27 +142,43 @@ bool Simulation::load() {
   return true;
 }
 
+void toggle(bool &value) {
+  value = !value;
+}
+
 void Simulation::update(const float dt) {
   // m_ctx.renderer->drawSky(m_camera);
   handleCameraMovement(dt);
-  if (m_ctx.input->isKeyPressed(GLFW_KEY_SPACE) || m_ctx.input->isKeyHeld(GLFW_KEY_SPACE)) {
+  if (m_ctx.input->isKeyPressed(GLFW_KEY_SPACE)) { toggle(m_run); }
+
+  if (m_run) {
     m_system.step(dt);
 
-    // In Simulation::update()
-    m_totalEnergy = 0.0;
+    // Reset energy accumulators
     m_kineticEnergy = 0.0;
     m_potentialEnergy = 0.0;
 
-    for (const auto& [id, particle] : m_system.getParticles()) {
-      const double ke = 0.5 * particle->getMass() * particle->getVelocity().squaredNorm();
-      const double pe = particle->getMass() * 9.81 * particle->getPosition().z();
-      m_kineticEnergy += ke;         // Accumulate kinetic energy
-      m_potentialEnergy += pe;       // Accumulate potential energy
+    // Calculate kinetic and potential energy
+    const auto& particles = m_system.getParticles();
+    for (const auto& [id, particle] : particles) {
+      // Kinetic energy: 1/2 mv²
+      m_kineticEnergy += 0.5 * particle->getMass() *
+                         particle->getVelocity().squaredNorm();
+
+      // Potential energy: mgh (assuming gravity is (0, 0, -9.81))
+      m_potentialEnergy += particle->getMass() * 9.81 *
+                            particle->getPosition().z();
     }
+
+    // Calculate total energy
     m_totalEnergy = m_kineticEnergy + m_potentialEnergy;
 
+    // NEW: Compute delta energy before updating m_prevEnergy
+    m_deltaEnergy = m_totalEnergy - m_prevEnergy;
+
+    // Update previous energy for the next frame
+    m_prevEnergy = m_totalEnergy;
   }
-  //m_system.step(dt);
 }
 
 void Simulation::render() {
@@ -135,9 +202,10 @@ void Simulation::showSimulationControls(double dt) {
 void Simulation::showUI() const {
 
   ImGui::Begin("Energy Debug");
-  ImGui::Text("Potential Energy: %.2f, J", m_potentialEnergy);
-  ImGui::Text("Kinetic Energy: %.2f, J", m_kineticEnergy);
-  ImGui::Text("Total Energy: %.2f J", m_totalEnergy);
+  ImGui::Text("Kinetic: %.3f J", m_kineticEnergy);
+  ImGui::Text("Potential: %.3f J", m_potentialEnergy);
+  ImGui::Text("Total: %.3f J", m_totalEnergy);
+  ImGui::Text("Delta: %.6f J", m_deltaEnergy); // Show delta energy
   ImGui::End();
 
   // Use const references for vectors
