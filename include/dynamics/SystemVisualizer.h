@@ -1,6 +1,5 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
-#include <DistanceConstraint.h>
 #include <ranges>
 #include "DynamicSystem.h"
 #include "graphics/ShaderManager.h"
@@ -23,51 +22,66 @@ public:
   }
 
   void render(
-      const Neutron::DynamicSystem &system,
-      const glm::vec3 &cameraPosition,
-      const glm::mat4 &viewMatrix,
-      const glm::mat4 &projectionMatrix) const {
+    const Neutron::DynamicSystem &system,
+    const glm::vec3 &cameraPosition,
+    const glm::mat4 &viewMatrix,
+    const glm::mat4 &projectionMatrix) const {
     m_shaderManager.useShader("cubeShader");
 
     // Set light and material properties
-    m_shaderManager.setUniform("lightPos", glm::vec3(200.0f, 400.0f, 100.0f)); // Light position
+    m_shaderManager.setUniform("lightPos", glm::vec3(200.0f, 400.0f, 100.0f));
+    // Light position
     m_shaderManager.setUniform("viewPos", cameraPosition); // Camera position
-    m_shaderManager.setUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f)); // White light
+    m_shaderManager.setUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+    // White light
 
     // Set transformation matrices
     m_shaderManager.setUniform("view", viewMatrix);
     m_shaderManager.setUniform("projection", projectionMatrix);
 
-    // Render each particle
-    for (const auto& particle : system.getParticles()) { // Use const auto& to avoid copying
+    // Render each body
+    for (const auto &body: system.getBodies()) {
       auto modelMatrix = glm::mat4(1.0f); // Start with an identity matrix
-      modelMatrix = glm::translate(modelMatrix, particle.second->getPositionVec3()); // Access the Particle object via particle.second
 
-      m_shaderManager.setUniform("objectColor", glm::vec4(1.0, 1.0, 1.0, 1.0)); // Set color (white)
+      // Apply translation
+      modelMatrix = glm::translate(modelMatrix, body.second->getPositionVec3());
+
+      // Apply orientation (rotation)
+      glm::quat orientation = body.second->getOrientationQuat();
+      modelMatrix = modelMatrix * glm::mat4_cast(orientation);
+      // Convert quaternion to matrix and apply
+
+      m_shaderManager.setUniform("objectColor",
+                                 glm::vec4(0.98, 0.98, 0.96, 1.0));
+      // Set color (white)
       m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
-      // drawCube(); // Render the cube
+      drawCube();                                       // Render the cube
     }
 
-    // Render constraints as lines
+    // Render constraints as lines (unchanged)
     m_shaderManager.useShader("lineShader");
     m_shaderManager.setUniform("view", viewMatrix);
     m_shaderManager.setUniform("projection", projectionMatrix);
-    m_shaderManager.setUniform("lineColor", glm::vec3(0.0f, 1.0f, 1.0f)); // Red lines
+    m_shaderManager.setUniform("lineColor", glm::vec3(0.0f, 1.0f, 1.0f));
+    // Red lines
 
     std::vector<glm::vec3> lineVertices;
-    for (const auto& constraint : system.getConstraints()) {
-      if (auto* dc = dynamic_cast<Neutron::DistanceConstraint*>(constraint.get())) {
-        lineVertices.push_back(dc->getParticle1()->getPositionVec3());
-        lineVertices.push_back(dc->getParticle2()->getPositionVec3());
+    for (const auto &constraint: system.getConstraints()) {
+      /*
+      if (auto *dc = dynamic_cast<Neutron::DistanceConstraint *>(constraint.
+        get())) {
+        lineVertices.push_back(dc->getBody1()->getPositionVec3());
+        lineVertices.push_back(dc->getBody2()->getPositionVec3());
       }
+      */
     }
 
     if (!lineVertices.empty()) {
       glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
       glBufferData(GL_ARRAY_BUFFER,
-                  lineVertices.size() * sizeof(glm::vec3),
-                  lineVertices.data(),
-                  GL_DYNAMIC_DRAW);
+                   lineVertices.size() * sizeof(glm::vec3),
+                   lineVertices.data(),
+                   GL_DYNAMIC_DRAW);
 
       glBindVertexArray(m_lineVAO);
       glDrawArrays(GL_LINES, 0, lineVertices.size());
@@ -77,8 +91,11 @@ public:
 
 private:
   ShaderManager &m_shaderManager;
+
   unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
+
   GLuint m_lineVAO, m_lineVBO;
+
   void initializeLine() {
     glGenVertexArrays(1, &m_lineVAO);
     glGenBuffers(1, &m_lineVBO);
@@ -89,7 +106,8 @@ private:
     // Initially allocate buffer (size will be updated dynamically)
     glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          static_cast<void *>(nullptr));
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
@@ -100,41 +118,41 @@ private:
     constexpr float vertices[] = {
       // Positions          // Normals
       // Back face
-      -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Bottom-left
-       0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Bottom-right
-       0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Top-right
-      -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Top-left
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, // Bottom-left
+      0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,  // Bottom-right
+      0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,   // Top-right
+      -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,  // Top-left
 
       // Front face
-      -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Bottom-left
-       0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Bottom-right
-       0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Top-right
-      -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Top-left
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Bottom-left
+      0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,  // Bottom-right
+      0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,   // Top-right
+      -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,  // Top-left
 
       // Left face
-      -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // Top-right
-      -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // Top-left
-      -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // Bottom-left
-      -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // Bottom-right
+      -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,   // Top-right
+      -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,  // Top-left
+      -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, // Bottom-left
+      -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,  // Bottom-right
 
       // Right face
-       0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // Top-left
-       0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // Top-right
-       0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // Bottom-right
-       0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // Bottom-left
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // Top-left
+      0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  // Top-right
+      0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, // Bottom-right
+      0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,  // Bottom-left
 
       // Bottom face
-      -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // Bottom-right
-       0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // Bottom-left
-       0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // Top-left
-      -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // Top-right
+      -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, // Bottom-right
+      0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,  // Bottom-left
+      0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,   // Top-left
+      -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,  // Top-right
 
       // Top face
-      -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // Top-left
-       0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // Top-right
-       0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, // Bottom-right
-      -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f  // Bottom-left
-  };
+      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Top-left
+      0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // Top-right
+      0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,   // Bottom-right
+      -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f   // Bottom-left
+    };
 
     // Define the indices for the cube
     const unsigned int indices[] = {
@@ -150,7 +168,7 @@ private:
       16, 17, 18, 18, 19, 16,
       // Top face
       20, 21, 22, 22, 23, 20
-  };
+    };
 
     // Generate and bind the VAO and VBO
     glGenVertexArrays(1, &m_cubeVAO);
@@ -165,14 +183,17 @@ private:
 
     // Bind index data
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_cubeEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+                 GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), static_cast<void *>(nullptr));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          static_cast<void *>(nullptr));
     glEnableVertexAttribArray(0);
 
     // Normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          reinterpret_cast<void *>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);

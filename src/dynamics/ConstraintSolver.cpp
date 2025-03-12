@@ -5,6 +5,8 @@
 #include <Eigen/LU>
 #include "utils/Logger.h"
 
+// TODO: Rename/Refactor ConstraintSolver to Solver
+
 namespace Neutron {
 
 ConstraintSolver::ConstraintSolver() = default;
@@ -18,20 +20,21 @@ void ConstraintSolver::clearConstraints() {
 }
 
 void ConstraintSolver::buildJacobian(
-    const std::vector<Particle*>& bodies,
+    const std::vector<Body*>& bodies,
     MatrixXd& jacobian,
     VectorXd& constraintRHS)
 {
-  // Create particle to index map
-  std::map<Particle*, int> particleToIndex;
+  // Create body to index map
+  std::map<Body*, int> bodyToIndex;
   for (int i = 0; i < bodies.size(); ++i) {
-    particleToIndex[bodies[i]] = i;
+    bodyToIndex[bodies[i]] = i;
   }
 
   // Collect qdot (velocities)
-  VectorXd qdot(bodies.size() * 3);
+  VectorXd qdot(bodies.size() * 6);
   for (int i = 0; i < bodies.size(); ++i) {
-    qdot.segment<3>(i * 3) = bodies[i]->getVelocity();
+    qdot.segment<3>(i * 6) = bodies[i]->getVelocity();
+    qdot.segment<3>(i * 6 + 3) = bodies[i]->getAngularVelocity();
   }
 
   // Total number of constraints
@@ -40,8 +43,8 @@ void ConstraintSolver::buildJacobian(
     numConstraints += constraint->getDOFs();
   }
 
-  // Total number of generalized coordinates (3 DOF per particle)
-  int numCoordinates = bodies.size() * 3;
+  // Total number of generalized coordinates (6 DOF per body)
+  int numCoordinates = bodies.size() * 6;
 
   // Resize Jacobian and constraintRHS
   jacobian.resize(numConstraints, numCoordinates);
@@ -54,13 +57,11 @@ void ConstraintSolver::buildJacobian(
   for (const auto& constraint : m_constraints) {
 
     // Compute Jacobian with particle indices
-    constraint->computeJacobian(jacobian, startRow, particleToIndex);
+    constraint->computeJacobian(jacobian, startRow, bodyToIndex);
 
     // Compute C_dot = J_block * qdot
-    MatrixXd J_block =
-      jacobian.block(startRow, 0, constraint->getDOFs(), jacobian.cols());
-    VectorXd C_dot =
-      J_block * qdot;
+    MatrixXd J_block = jacobian.block(startRow, 0, constraint->getDOFs(), jacobian.cols());
+    VectorXd C_dot = J_block * qdot;
 
     // Compute Jdot*qdot
     VectorXd gamma(constraint->getDOFs());
@@ -70,26 +71,21 @@ void ConstraintSolver::buildJacobian(
     // Populate RHS:
     constraintRHS.segment(startRow, constraint->getDOFs()) =
       gamma;
-    // gamma - (2 * m_alpha * C_dot) - ((m_beta * m_beta) * c)
 
     startRow += constraint->getDOFs();
   }
-
-  LOG_DEBUG("Jacobian: \n", jacobian);
-  LOG_DEBUG("RHS: \n", constraintRHS);
-
 }
 
-void ConstraintSolver::solveConstrainedSystem(
-    const VectorXd& M,         // Mass matrix (diagonal)
-    const VectorXd& forces,    // External forces
-    const MatrixXd& jacobian,  // Constraint Jacobian
-    const VectorXd& constraintRHS, // Constraint right-hand side
-    VectorXd& accelerations,   // Output accelerations
-    VectorXd& lambdas          // Output Lagrange multipliers
+void ConstraintSolver::solveSystem(
+    const VectorXd& M,                  // Mass matrix (diagonal) containing N and J
+    const VectorXd& forces,             // Vector of forces for a system (g)  with coriolis
+    const MatrixXd& jacobian,           // Constraint Jacobian
+    const VectorXd& constraintRHS,      // Constraint right-hand side
+    VectorXd& accelerations,            // Output accelerations
+    VectorXd& lambdas                   // Output Lagrange multipliers
 ) {
-  int n = M.size();       // Number of generalized coordinates
-  int m = constraintRHS.size(); // Number of constraints
+  int n = static_cast<int>(M.size());             // Number of generalized coordinates
+  int m = static_cast<int>(constraintRHS.size()); // Number of constraints
 
   if (m == 0) {
     // No constraints, direct solution
@@ -97,6 +93,7 @@ void ConstraintSolver::solveConstrainedSystem(
     lambdas.resize(0);
     return;
   }
+
   // Step 1: Solve for Lagrange multipliers (λ)
   MatrixXd J_M_inv_JT = jacobian * M.asDiagonal().inverse() * jacobian.transpose();
   VectorXd rhs = constraintRHS - jacobian * M.asDiagonal().inverse() * forces;
@@ -104,9 +101,6 @@ void ConstraintSolver::solveConstrainedSystem(
 
   // Step 2: Solve for accelerations (q̈)
   accelerations = M.asDiagonal().inverse() * (forces + jacobian.transpose() * lambdas);
-
-  LOG_DEBUG("Accelerations: \n", accelerations);
-  LOG_DEBUG("Lambdas: \n", lambdas);
 }
 
-} // namespace neutron
+} // namespace Neutron

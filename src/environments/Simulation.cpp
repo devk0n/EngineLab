@@ -1,14 +1,12 @@
 #include "environments/Simulation.h"
 
 #include <imgui.h>
-#include "DistanceConstraint.h"
 #include "DynamicSystem.h"
-#include "TranslationalConstraint.h"
+#include "SphericalJoint.h"
 #include "core/InputManager.h"
 #include "core/Time.h"
 #include "core/WindowManager.h"
 #include "forces/GravityForceGenerator.h"
-#include "forces/SpringForceGenerator.h"
 #include "graphics/Renderer.h"
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
@@ -22,47 +20,35 @@ constexpr glm::vec3 YELLOW     = {1.0f,   1.0f, 0.0f};
 
 using namespace Neutron;
 
+void Simulation::setupDynamics() {
+  UniqueID body_1 = m_system.addBody(
+      10.0,
+      Vector3d(10.0, 10.0, 10.0),
+      Vector3d(10.0, 0.0, 10.0),
+      Quaterniond(1.0, 0.0, 0.0, 0.0)
+  );
+
+  UniqueID body_2 = m_system.addBody(
+    10.0,
+    Vector3d(10.0, 10.0, 10.0),
+    Vector3d(0.0, 0.0, 10.0),
+    Quaterniond(1.0, 0.0, 0.0, 0.0)
+);
+
+  Body *b1 = m_system.getBody(body_1);
+  Body *b2 = m_system.getBody(body_2);
+
+  auto constraint1 = std::make_shared<SphericalJoint>(b1, b2, Vector3d(5.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
+  m_system.addConstraint(constraint1);
+}
+
 bool Simulation::load() {
 
-  UniqueID particle_1 = m_system.addParticle(
-    10.0,                    // Mass
-    Vector3d(0.0, 0.0, 10.0)  // Position
-  );
-
-  UniqueID particle_2 = m_system.addParticle(
-    10.0,                     // Mass
-    Vector3d(0.0, 10.0, 10.0)  // Position
-  );
-
-  UniqueID particle_3 = m_system.addParticle(
-    10.0,                     // Mass
-    Vector3d(0.0, 15.0, 10.0)  // Position
-  );
-
-  // Get particle pointers
-  Particle *p1 = m_system.getParticle(particle_1);
-  Particle *p2 = m_system.getParticle(particle_2);
-  Particle *p3 = m_system.getParticle(particle_3);
-
-  p1->setFixed(true);
-
-  // Add a distance constraint between the particles
-  auto constraint1 = std::make_shared<DistanceConstraint>(p1, p2);
-  auto constraint2 = std::make_shared<DistanceConstraint>(p2, p3);
-
-  m_system.addConstraint(constraint1);
-  m_system.addConstraint(constraint2);
-
-  // Add gravity as force generator
-  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {p2, p3}) {
-    gravityGen->addParticle(particle);
-  }
-  m_system.addForceGenerator(gravityGen);
+  setupDynamics();
 
   LOG_INFO("Initializing Simulation");
-  m_camera.setPosition(glm::vec3(2.0f, 2.0f, 2.0f));
-  m_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  m_camera.setPosition(glm::vec3(12.0f, 20.0f, 20.0f));
+  m_camera.lookAt(glm::vec3(0.0f, -1.0f, 0.0f));
   m_camera.setMovementSpeed(5.0f);
 
   if (!m_ctx.renderer->getShaderManager()
@@ -104,6 +90,7 @@ void Simulation::update(const float dt) {
   if (m_run) {
     m_system.step(dt);
 
+
     // Reset energy accumulators
     m_kineticEnergy = 0.0;
     m_potentialEnergy = 0.0;
@@ -141,15 +128,6 @@ void Simulation::render() {
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
-
-void Simulation::showSimulationControls(double dt) {
-  ImGui::Begin("Simulation Debug");
-  ImGui::Text("Simulation Controls");
-  if (!ImGui::Button("Step Simulation")) {
-    m_system.step(dt);
-  }
-  ImGui::End();
-}
 
 void Simulation::showUI() const {
   ImGui::Begin("Simulation Debug");

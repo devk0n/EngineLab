@@ -16,6 +16,10 @@ using VectorXd = Eigen::VectorXd;
 using MatrixXd = Eigen::MatrixXd;
 using Quaterniond = Eigen::Quaterniond;
 
+inline void skew(const Vector3d&) {
+
+}
+
 } // namespace Neutron
 
 #endif // TYPES_H

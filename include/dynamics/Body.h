@@ -1,7 +1,8 @@
 #ifndef BODY_H
 #define BODY_H
 
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "core/types.h"
 
 namespace Neutron {
@@ -11,7 +12,7 @@ public:
   Body(
       UniqueID ID,
       double mass,
-      const Matrix3d &inertia,
+      const Vector3d &inertia,
       const Vector3d &position,
       const Quaterniond &orientation
   );
@@ -20,7 +21,7 @@ public:
 
   // Physical properties
   double getMass() const;
-  const Matrix3d &getInertia() const;
+  const Vector3d &getInertia() const;
 
   // State variables
   const Vector3d &getPosition() const;
@@ -44,13 +45,48 @@ public:
 
   // Visualization convertion
   glm::vec3 getPositionVec3() const;
+  glm::quat getOrientationQuat() const;
+
+  static Matrix3d skewSymmetric(Vector3d vector) {
+    Matrix3d skew;
+    skew <<           0, -vector.z(),  vector.y(),
+             vector.z(),           0, -vector.x(),
+            -vector.y(),  vector.x(),           0;
+    return skew;
+  }
+
+  static Eigen::Matrix<double, 3, 4> transformationG(Quaterniond e) {
+    Eigen::Matrix<double, 3, 4> G;
+    G << -e.x(),  e.w(), -e.z(),  e.y(),
+         -e.y(),  e.z(),  e.w(), -e.x(),
+         -e.z(), -e.y(),  e.x(),  e.w();
+    return G;
+  }
+
+  static Eigen::Matrix<double, 3, 4> transformationL(Quaterniond e) {
+    Eigen::Matrix<double, 3, 4> G;
+    G << -e.x(),  e.w(),  e.z(), -e.y(),
+         -e.y(), -e.z(),  e.w(),  e.x(),
+         -e.z(),  e.y(), -e.x(),  e.w();
+    return G;
+  }
+
+  [[nodiscard]] Matrix3d getRotationA() const {
+    return m_orientation.toRotationMatrix();
+  }
+
+  [[nodiscard]] Vector3d getGyroscopicTorque() const {
+    Vector3d b = skewSymmetric(m_angularVelocity) * m_inertia.asDiagonal() *
+                 m_angularVelocity;
+    return b;
+  }
 
 private:
   UniqueID m_ID;
 
   // Physical properties
   double m_mass;
-  Matrix3d m_inertia;
+  Vector3d m_inertia;
 
   // State variables
   Vector3d m_position;

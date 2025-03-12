@@ -4,25 +4,23 @@
 #include "ForceGenerator.h"
 
 namespace Neutron {
-class GravityForceGenerator : public ForceGenerator {
+class GravityForceGenerator final : public ForceGenerator {
 public:
   explicit GravityForceGenerator(const Vector3d& gravity) : gravity(gravity) {}
 
   void apply(double dt) override {
-    for (auto& [id, particle] : particles) {
-      if (!particle->isFixed()) {
-        particle->addForce(particle->getMass() * gravity);
-      }
+    for (auto& [id, body] : m_bodies) {
+      body->addForce(body->getMass() * gravity);
     }
   }
 
-  void addParticle(Particle* particle) {
-    particles.emplace(particle->getID(), particle);
+  void addBody(Body* body) {
+    m_bodies.emplace(body->getID(), body);
   }
 
 private:
   Vector3d gravity;
-  std::unordered_map<UniqueID, Particle*> particles;
+  std::unordered_map<UniqueID, Body*> m_bodies;
 };
 } // namespace Neutron
 

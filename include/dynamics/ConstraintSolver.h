@@ -4,8 +4,8 @@
 
 #include <memory>
 #include <vector>
+#include "Body.h"
 #include "Constraint.h"
-#include "Particle.h"
 #include "core/types.h"
 
 namespace Neutron {
@@ -20,15 +20,15 @@ public:
 
   // Build the constraint Jacobian matrix
   void buildJacobian(
-      const std::vector<Particle*>& bodies,
+      const std::vector<Body*>& bodies,
       MatrixXd& jacobian,
       VectorXd& constraintRHS
   );
 
   // Solve the constrained system
-  void solveConstrainedSystem(
+  void solveSystem(
       const VectorXd& M,         // Mass matrix (diagonal)
-      const VectorXd& forces,    // External forces
+      const VectorXd& forces,    // External forces and internal moments
       const MatrixXd& jacobian,  // Constraint Jacobian
       const VectorXd& constraintRHS, // Constraint right-hand side
       VectorXd& accelerations,   // Output accelerations

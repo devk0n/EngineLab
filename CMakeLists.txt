@@ -124,8 +124,7 @@ set(SOURCES
         src/dynamics/Body.cpp
         src/dynamics/DynamicSystem.cpp
         src/dynamics/ConstraintSolver.cpp
-        src/dynamics/constraints/DistanceConstraint.cpp
-        src/dynamics/constraints/TranslationalConstraint.cpp
+        src/dynamics/constraints/SphericalJoint.cpp
 )
 
 # Add executable

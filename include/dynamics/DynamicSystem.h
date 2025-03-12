@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include "Body.h"
 #include "Constraint.h"
 #include "ConstraintSolver.h"
 #include "ForceGenerator.h"
@@ -23,7 +24,16 @@ public:
       double mass,
       const Vector3d& position
   );
-  Particle* getParticle(UniqueID id);
+  Particle* getParticle(UniqueID ID);
+
+  // Body management
+  UniqueID addBody(
+      double mass,
+      const Vector3d &inertia,
+      const Vector3d &position,
+      const Quaterniond &orientation
+  );
+  Body* getBody(UniqueID ID);
 
   // Constraint management
   void addConstraint(const std::shared_ptr<Constraint> &constraint);
@@ -31,41 +41,43 @@ public:
 
   void addForceGenerator(const std::shared_ptr<ForceGenerator> &generator);
 
-  // External forces
-  // void addForceToBody(UniqueID bodyID, const Vector3d& force, const Vector3d& worldPoint);
+  void buildMassInertiaTensor();
 
   // Simulation
   void step(double dt);
 
   const auto& getParticles() const { return m_particles; }
+  const auto& getBodies() const { return m_bodies; }
   const auto& getConstraints() const { return m_constraints; }
 
 private:
-  // Gather system state into generalized coordinates
-  // void getSystemState(VectorXd& q, VectorXd& qdot);
-
-  // Update bodies from generalized coordinates
-  // void updateBodiesFromState(const VectorXd& q, const VectorXd& qdot);
-  // void buildConstraintRHS(VectorXd& constraintRHS, double alpha, double beta);
-
   // Build system matrices
-  void buildMassMatrix(); // Build once
-  void buildForceVector(VectorXd& forces); // Build every step
+  void buildWrench(VectorXd &wrench); // Build every step
 
-  void solvePositionConstraints(double epsilon, int maxIterations, double alpha, double lambda, double
-                                maxCorrection);
-  void solveVelocityConstraints(double epsilon, int maxIterations, double alpha, double lambda, double
-                                maxCorrection);
+  void solvePositionConstraints(
+      double epsilon,
+      int maxIterations,
+      double alpha,
+      double lambda,
+      double maxCorrection
+  );
 
-  // Integration step
-  // void integrate(double dt);
+  void solveVelocityConstraints(
+      double epsilon,
+      int maxIterations,
+      double alpha,
+      double lambda,
+      double maxCorrection
+  );
 
   std::unordered_map<UniqueID, std::unique_ptr<Particle>> m_particles;
+  std::unordered_map<UniqueID, std::unique_ptr<Body>> m_bodies;
   std::vector<std::shared_ptr<Constraint>> m_constraints;
   std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
   ConstraintSolver m_constraintSolver;
 
-  VectorXd m_massMatrix;
+  VectorXd m_massInertiaTensor;
+
   UniqueID m_nextID = 0;
 };
 

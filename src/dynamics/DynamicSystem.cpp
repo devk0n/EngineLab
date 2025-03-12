@@ -22,6 +22,25 @@ Particle *DynamicSystem::getParticle(const UniqueID id) {
   return nullptr;
 }
 
+UniqueID DynamicSystem::addBody(
+  double mass,
+  const Vector3d &inertia,
+  const Vector3d &position,
+  const Quaterniond &orientation
+) {
+  UniqueID id = m_nextID++;
+  auto body = std::make_unique<Body>(id, mass, inertia, position, orientation);
+  m_bodies[id] = std::move(body);
+  return id;
+}
+
+Body *DynamicSystem::getBody(const UniqueID id) {
+  if (auto it = m_bodies.find(id); it != m_bodies.end()) {
+    return it->second.get();
+  }
+  return nullptr;
+}
+
 void DynamicSystem::addConstraint(
   const std::shared_ptr<Constraint> &constraint) {
   m_constraints.push_back(constraint);
@@ -38,32 +57,113 @@ void DynamicSystem::addForceGenerator(
   m_forceGenerators.push_back(generator);
 }
 
-void DynamicSystem::buildMassMatrix() {
-  int n = m_particles.size() * 3; // 3 DOF per particle
-  m_massMatrix.resize(n);
-  m_massMatrix.setZero();
+void DynamicSystem::buildMassInertiaTensor() {
+  int n = static_cast<int>(m_bodies.size()) * 6; // 6 DOF per body
+  m_massInertiaTensor.resize(n);
+  m_massInertiaTensor.setZero();
 
   int i = 0;
-  for (const auto &[id, particle]: m_particles) {
-    m_massMatrix.segment<3>(i * 3).setConstant(particle->getMass());
+  for (const auto &[id, body]: m_bodies) {
+    m_massInertiaTensor.segment<3>(i * 6).setConstant(body->getMass());
+    m_massInertiaTensor.segment<3>(i * 6 + 3) = body->getInertia();
     ++i;
   }
-  LOG_DEBUG("Mass matrix: \n", m_massMatrix);
 }
 
-void DynamicSystem::buildForceVector(VectorXd &forces) {
-  int n = m_particles.size() * 3; // 3 DOF per particle
-  forces.resize(n);
-  forces.setZero();
+void DynamicSystem::buildWrench(VectorXd &wrench) {
+  int n = static_cast<int>(m_bodies.size()) * 6; // 6 DOF per body
+  wrench.resize(n);
+  wrench.setZero();
 
   int i = 0;
-  for (const auto &[id, particle]: m_particles) {
-    forces.segment<3>(i * 3) = particle->getForce();
+  for (const auto &[id, body]: m_bodies) {
+    wrench.segment<3>(i * 6) = body->getForce();
+    wrench.segment<3>(i * 6 + 3) = body->getTorque() - body->getGyroscopicTorque();
     ++i;
   }
-  LOG_DEBUG("Force vector: \n", forces);
 }
 
+void DynamicSystem::step(const double dt) {
+  if (m_bodies.empty()) return;
+
+  // Clear and apply forces
+  for (auto &[id, body]: m_bodies) { body->clearForces(); }
+  for (auto &generator: m_forceGenerators) { generator->apply(dt); }
+
+  // Build system matrices
+  if (m_massInertiaTensor.size() == 0) { buildMassInertiaTensor(); }
+
+  // Solve dynamics
+  std::vector<Body *> bodies;
+  for (const auto &[id, body]: m_bodies) {
+    bodies.push_back(body.get());
+  }
+
+  VectorXd forces;
+  buildWrench(forces);
+
+  MatrixXd jacobian;
+  VectorXd constraintRHS;
+  m_constraintSolver.buildJacobian(
+      bodies,
+      jacobian,
+      constraintRHS
+  );
+
+  VectorXd accelerations;
+  VectorXd lambdas;
+  m_constraintSolver.solveSystem(
+      m_massInertiaTensor,
+      forces,
+      jacobian,
+      constraintRHS,
+      accelerations,
+      lambdas
+  );
+
+  // Update positions and velocities
+  for (int i = 0; i < bodies.size(); ++i) {
+    bodies[i]->setVelocity(bodies[i]->getVelocity() + accelerations.segment<3>(i * 6) * dt);
+    bodies[i]->setAngularVelocity(bodies[i]->getAngularVelocity() + accelerations.segment<3>(i * 6 + 3) * dt);
+    bodies[i]->setPosition(bodies[i]->getPosition() + bodies[i]->getVelocity() * dt);
+
+    // Update orientation using quaternion integration
+    Vector3d angularVelocity = bodies[i]->getAngularVelocity();
+    double angularSpeed = angularVelocity.norm();
+
+    if (angularSpeed > 1e-10) { // Avoid division by zero
+      Vector3d axis = angularVelocity / angularSpeed; // Normalized rotation axis
+      double angle = angularSpeed * dt; // Angle of rotation
+
+      // Create a quaternion representing the rotation
+      Quaterniond deltaQ;
+      deltaQ = Eigen::AngleAxisd(angle, axis);
+
+      // Update the orientation
+      Quaterniond currentOrientation = bodies[i]->getOrientation();
+      Quaterniond newOrientation = currentOrientation * deltaQ;
+      newOrientation.normalize(); // Normalize to ensure it remains a unit quaternion
+      bodies[i]->setOrientation(newOrientation);
+    }
+  }
+
+  // --- Constraint Stabilization ---
+  solvePositionConstraints(
+    1e-6,    // epsilon
+    100,       // maxIterations
+    0.1,     // alpha
+    1e-6,    // lambda
+    0.05     // maxCorrection
+  );
+
+  solveVelocityConstraints(
+    1e-6,    // epsilon
+    100,       // maxIterations
+    0.1,     // alpha
+    1e-6,    // lambda
+    0.05     // maxCorrection
+  );
+}
 void DynamicSystem::solvePositionConstraints(
     const double epsilon = 1e-6,
     const int maxIterations = 10,
@@ -71,11 +171,11 @@ void DynamicSystem::solvePositionConstraints(
     const double lambda = 1e-6,       // Use damped least squares
     const double maxCorrection = 0.1) // Maximum velocity correction per iteration
 {
-  if (m_particles.empty()) return;
+  if (m_bodies.empty()) return;
 
-  std::vector<Particle *> particles;
-  for (const auto &[id, particle]: m_particles) {
-    particles.push_back(particle.get());
+  std::vector<Body *> bodies;
+  for (const auto &[id, body]: m_bodies) {
+    bodies.push_back(body.get());
   }
 
   // Smaller value = more stable but slower convergence
@@ -83,7 +183,7 @@ void DynamicSystem::solvePositionConstraints(
     // Build Jacobian and constraint equations
     MatrixXd jacobian;
     VectorXd constraintRHS;
-    m_constraintSolver.buildJacobian(particles, jacobian, constraintRHS);
+    m_constraintSolver.buildJacobian(bodies, jacobian, constraintRHS);
 
     // Calculate constraint violations
     VectorXd c(constraintRHS.size());
@@ -106,21 +206,18 @@ void DynamicSystem::solvePositionConstraints(
 
     // Apply scaled corrections to positions
     int i = 0;
-    for (auto &particle: particles) {
-      if (!particle->isFixed()) {
-        Vector3d correction = alpha * dx.segment<3>(i * 3);
+    for (auto &body: bodies) {
+      Vector3d correction = alpha * dx.segment<3>(i * 6);
 
-        // Limit correction magnitude
-        if (correction.norm() > maxCorrection) {
-          correction *= maxCorrection / correction.norm();
-        }
-        particle->setPosition(particle->getPosition() + correction);
+      // Limit correction magnitude
+      if (correction.norm() > maxCorrection) {
+        correction *= maxCorrection / correction.norm();
       }
+      body->setPosition(body->getPosition() + correction);
       i++;
     }
   }
 }
-
 
 void DynamicSystem::solveVelocityConstraints(
     const double epsilon = 1e-6,
@@ -129,23 +226,24 @@ void DynamicSystem::solveVelocityConstraints(
     const double lambda = 1e-6,       // Use damped least squares
     const double maxCorrection = 0.1) // Maximum velocity correction per iteration
 {
-  if (m_particles.empty()) return;
+  if (m_bodies.empty()) return;
 
-  std::vector<Particle *> particles;
-  for (const auto &[id, particle]: m_particles) {
-    particles.push_back(particle.get());
+  std::vector<Body *> bodies;
+  for (const auto &[id, body]: m_bodies) {
+    bodies.push_back(body.get());
   }
 
   for (int iter = 0; iter < maxIterations; ++iter) {
     // Build Jacobian
     MatrixXd jacobian;
     VectorXd dummy;
-    m_constraintSolver.buildJacobian(particles, jacobian, dummy);
+    m_constraintSolver.buildJacobian(bodies, jacobian, dummy);
 
     // Compute current velocity constraint violation
-    VectorXd qdot(particles.size() * 3);
-    for (int i = 0; i < particles.size(); ++i) {
-      qdot.segment<3>(i * 3) = particles[i]->getVelocity();
+    VectorXd qdot(bodies.size() * 6);
+    for (int i = 0; i < bodies.size(); ++i) {
+      qdot.segment<3>(i * 6) = bodies[i]->getVelocity();
+      qdot.segment<3>(i * 6 + 3) = bodies[i]->getAngularVelocity();
     }
 
     VectorXd cdot = jacobian * qdot;
@@ -161,145 +259,18 @@ void DynamicSystem::solveVelocityConstraints(
 
     // Apply scaled corrections to velocities
     int i = 0;
-    for (auto &particle: particles) {
-      if (!particle->isFixed()) {
-        Vector3d correction = alpha * dv.segment<3>(i * 3);
+    for (auto &body: bodies) {
+      Vector3d correction = alpha * dv.segment<3>(i * 6);
 
-        // Limit correction magnitude
-        if (correction.norm() > maxCorrection) {
-          correction *= maxCorrection / correction.norm();
-        }
-        particle->setVelocity(particle->getVelocity() + correction);
+      // Limit correction magnitude
+      if (correction.norm() > maxCorrection) {
+        correction *= maxCorrection / correction.norm();
       }
+      body->setVelocity(body->getVelocity() + correction);
+      body->setAngularVelocity(body->getAngularVelocity() + dv.segment<3>(i * 6 + 3));
       i++;
     }
   }
 }
 
-
-void DynamicSystem::step(const double dt) {
-  if (m_particles.empty()) return;
-
-  // Define a state structure for RK4
-  struct State {
-    Vector3d position;
-    Vector3d velocity;
-  };
-
-  // Store initial states
-  std::vector<State> initialStates;
-  for (const auto &[id, particle] : m_particles) {
-    initialStates.push_back({particle->getPosition(), particle->getVelocity()});
-  }
-
-  // Lambda function to evaluate forces
-  auto evaluateForces = [this]() {
-    VectorXd forces;
-    buildForceVector(forces);
-    return forces;
-  };
-
-  // Lambda function to compute derivatives (velocity and acceleration)
-  auto computeDerivatives = [this](const std::vector<State> &states, const VectorXd &forces) {
-    std::vector<State> derivatives;
-    int i = 0;
-    for (const auto &[id, particle] : m_particles) {
-      Vector3d acc = forces.segment<3>(i * 3) / particle->getMass();
-      derivatives.push_back({states[i].velocity, acc}); // Derivative of position is velocity, derivative of velocity is acceleration
-      ++i;
-    }
-    return derivatives;
-  };
-
-  // --- RK4 Stages ---
-
-  // Stage 1: Compute k1
-  for (auto &[id, particle] : m_particles) particle->clearForces();
-  for (auto &generator : m_forceGenerators) generator->apply(dt);
-  VectorXd k1Forces = evaluateForces();
-  auto k1Derivatives = computeDerivatives(initialStates, k1Forces);
-
-  // Stage 2: Compute k2
-  std::vector<State> k2States;
-  for (size_t i = 0; i < initialStates.size(); ++i) {
-    k2States.push_back({
-      initialStates[i].position + 0.5 * dt * k1Derivatives[i].position,
-      initialStates[i].velocity + 0.5 * dt * k1Derivatives[i].velocity
-    });
-  }
-  for (auto &[id, particle] : m_particles) particle->clearForces();
-  for (auto &generator : m_forceGenerators) generator->apply(dt);
-  VectorXd k2Forces = evaluateForces();
-  auto k2Derivatives = computeDerivatives(k2States, k2Forces);
-
-  // Stage 3: Compute k3
-  std::vector<State> k3States;
-  for (size_t i = 0; i < initialStates.size(); ++i) {
-    k3States.push_back({
-      initialStates[i].position + 0.5 * dt * k2Derivatives[i].position,
-      initialStates[i].velocity + 0.5 * dt * k2Derivatives[i].velocity
-    });
-  }
-  for (auto &[id, particle] : m_particles) particle->clearForces();
-  for (auto &generator : m_forceGenerators) generator->apply(dt);
-  VectorXd k3Forces = evaluateForces();
-  auto k3Derivatives = computeDerivatives(k3States, k3Forces);
-
-  // Stage 4: Compute k4
-  std::vector<State> k4States;
-  for (size_t i = 0; i < initialStates.size(); ++i) {
-    k4States.push_back({
-      initialStates[i].position + dt * k3Derivatives[i].position,
-      initialStates[i].velocity + dt * k3Derivatives[i].velocity
-    });
-  }
-  for (auto &[id, particle] : m_particles) particle->clearForces();
-  for (auto &generator : m_forceGenerators) generator->apply(dt);
-  VectorXd k4Forces = evaluateForces();
-  auto k4Derivatives = computeDerivatives(k4States, k4Forces);
-
-  // --- Combine Results ---
-  int i = 0;
-  for (auto &[id, particle] : m_particles) {
-    if (!particle->isFixed()) {
-      Vector3d newPos = initialStates[i].position + (dt / 6.0) *
-          (k1Derivatives[i].position + 2.0 * k2Derivatives[i].position +
-           2.0 * k3Derivatives[i].position + k4Derivatives[i].position);
-      Vector3d newVel = initialStates[i].velocity + (dt / 6.0) *
-          (k1Derivatives[i].velocity + 2.0 * k2Derivatives[i].velocity +
-           2.0 * k3Derivatives[i].velocity + k4Derivatives[i].velocity);
-      particle->setPosition(newPos);
-      particle->setVelocity(newVel);
-    }
-    ++i;
-  }
-
-  // --- Constraint Stabilization ---
-  solvePositionConstraints(
-    1e-6,    // epsilon
-    10,       // maxIterations
-    1.0,     // alpha
-    1e-6,    // lambda
-    0.05     // maxCorrection
-  );
-
-  solveVelocityConstraints(
-    1e-6,    // epsilon
-    10,       // maxIterations
-    1.0,     // alpha
-    1e-6,    // lambda
-    0.05     // maxCorrection
-  );
-  /*
-  // --- Velocity Update Based on Corrected Positions ---
-  i = 0;
-  for (auto &[id, particle] : m_particles) {
-    if (!particle->isFixed()) {
-      Vector3d correctedVelocity = (particle->getPosition() - initialStates[i].position) / dt;
-      particle->setVelocity(correctedVelocity);
-    }
-    ++i;
-  }
-  */
-}
 } // namespace Neutron

@@ -5,7 +5,7 @@ namespace Neutron {
 Body::Body(
   const UniqueID ID,
   const double mass,
-  const Matrix3d &inertia,
+  const Vector3d &inertia,
   const Vector3d &position,
   const Quaterniond &orientation)
     : m_ID(ID),
@@ -20,7 +20,7 @@ UniqueID Body::getID() const { return m_ID; }
 
 // Physical properties
 double Body::getMass() const { return m_mass; }
-const Matrix3d &Body::getInertia() const { return m_inertia; }
+const Vector3d &Body::getInertia() const { return m_inertia; }
 
 // State variables
 const Vector3d &Body::getPosition() const { return m_position; }
@@ -44,9 +44,16 @@ const Vector3d &Body::getTorque() const { return m_torque; }
 
 // Visualization convertion
 glm::vec3 Body::getPositionVec3() const {
-  return glm::vec3(m_position.x(), m_position.y(), m_position.z());
+  return {m_position.x(), m_position.y(), m_position.z()};
 }
 
-
+glm::quat Body::getOrientationQuat() const {
+  return {
+    static_cast<float>(m_orientation.w()), // Cast w to float
+    static_cast<float>(m_orientation.x()), // Cast x to float
+    static_cast<float>(m_orientation.y()), // Cast y to float
+    static_cast<float>(m_orientation.z())  // Cast z to float
+};
+}
 
 } // namespace Neutron

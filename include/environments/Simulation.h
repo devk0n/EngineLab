@@ -15,6 +15,8 @@ public:
     : Environment(ctx), m_systemVisualizer(ctx.renderer->getShaderManager()) {
   }
 
+  void setupDynamics();
+
   bool load() override;
   void update(float dt) override;
   void render() override;
