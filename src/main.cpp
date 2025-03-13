@@ -9,11 +9,11 @@ int main() {
   }
   Logger::ConsoleConfig config;
   config.showTimestamps = false; // Disable timestamps
-  config.showFileNames = false;  // Disable file names
+  config.showFileNames = true;  // Disable file names
   config.showLevel = false;      // Disable level
-  config.enabled = false;        // Disable console logger
+  config.enabled = true;        // Disable console logger
   Logger::setConsoleConfig(config);
-  Logger::setLogLevel(Logger::Level::Info);
+  Logger::setLogLevel(Logger::Level::Debug);
   LOG_INFO("Logger initialized.");
 
   Application app;

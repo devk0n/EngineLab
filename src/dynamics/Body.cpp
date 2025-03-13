@@ -14,12 +14,14 @@ Body::Body(
       m_position(position),
       m_orientation(orientation),
       m_velocity(Vector3d::Zero()),
-      m_angularVelocity(Vector3d::Zero()) {}
+      m_angularVelocity(Vector3d::Zero()),
+      m_force(Vector3d::Zero()),
+      m_torque(Vector3d::Zero()) {}
 
 UniqueID Body::getID() const { return m_ID; }
 
 // Physical properties
-double Body::getMass() const { return m_mass; }
+const double &Body::getMass() const { return m_mass; }
 const Vector3d &Body::getInertia() const { return m_inertia; }
 
 // State variables

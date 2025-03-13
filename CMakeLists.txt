@@ -125,6 +125,9 @@ set(SOURCES
         src/dynamics/DynamicSystem.cpp
         src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/SphericalJoint.cpp
+        src/dynamics/Solver.cpp
+include/core/Integrator.h
+
 )
 
 # Add executable

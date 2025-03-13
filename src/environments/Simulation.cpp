@@ -22,24 +22,28 @@ using namespace Neutron;
 
 void Simulation::setupDynamics() {
   UniqueID body_1 = m_system.addBody(
-      10.0,
-      Vector3d(10.0, 10.0, 10.0),
-      Vector3d(10.0, 0.0, 10.0),
-      Quaterniond(1.0, 0.0, 0.0, 0.0)
+    10.0,
+    Vector3d(10.0, 10.0, 10.0),
+    Vector3d(0.0, 0.0, 0.0),
+    Quaterniond(1.0, 0.0, 0.0, 0.0)
   );
 
   UniqueID body_2 = m_system.addBody(
     10.0,
     Vector3d(10.0, 10.0, 10.0),
-    Vector3d(0.0, 0.0, 10.0),
+    Vector3d(10.0, 0.0, 0.0),
     Quaterniond(1.0, 0.0, 0.0, 0.0)
-);
+  );
 
   Body *b1 = m_system.getBody(body_1);
   Body *b2 = m_system.getBody(body_2);
 
-  auto constraint1 = std::make_shared<SphericalJoint>(b1, b2, Vector3d(5.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
-  m_system.addConstraint(constraint1);
+  // Add gravity as force generator
+  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
+  for (auto& body : {b1}) {
+    gravityGen->addBody(body);
+  }
+  m_system.addForceGenerator(gravityGen);
 }
 
 bool Simulation::load() {
@@ -89,34 +93,6 @@ void Simulation::update(const float dt) {
 
   if (m_run) {
     m_system.step(dt);
-
-
-    // Reset energy accumulators
-    m_kineticEnergy = 0.0;
-    m_potentialEnergy = 0.0;
-
-    // Calculate kinetic and potential energy
-    const auto& particles = m_system.getParticles();
-    for (const auto& [id, particle] : particles) {
-      if (!particle->isFixed()) {
-        // Kinetic energy: 1/2 mv²
-        m_kineticEnergy += 0.5 * particle->getMass() *
-                           particle->getVelocity().squaredNorm();
-
-        // Potential energy: mgh (assuming gravity is (0, 0, -9.81) and z increases upwards)
-        m_potentialEnergy += particle->getMass() * 9.81 *
-                             particle->getPosition().z(); // Adjust if z increases downwards
-      }
-    }
-
-    // Calculate total energy
-    m_totalEnergy = m_kineticEnergy + m_potentialEnergy;
-
-    // NEW: Compute delta energy before updating m_prevEnergy
-    m_deltaEnergy = m_totalEnergy - m_prevEnergy;
-
-    // Update previous energy for the next frame
-    m_prevEnergy = m_totalEnergy;
   }
 }
 
@@ -130,17 +106,6 @@ void Simulation::render() {
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
 
 void Simulation::showUI() const {
-  ImGui::Begin("Simulation Debug");
-  const auto& particles = m_system.getParticles();
-  for (const auto& [id, particle] : particles) {
-    if (!particle->isFixed()) {
-      ImGui::Text("Velocity: %.2f, %.2f, %.2f ", particle->getVelocity().x(), particle->getVelocity().y(), particle->getVelocity().z());
-      ImGui::Text("Squared: %.2f ", particle->getVelocity().squaredNorm());
-      ImGui::Text("Mass: %.2f", particle->getMass());
-    }
- }
-  ImGui::End();
-
   ImGui::Begin("Energy Debug");
   ImGui::Text("Kinetic: %.3f J", m_kineticEnergy);
   ImGui::Text("Potential: %.3f J", m_potentialEnergy);

@@ -57,36 +57,6 @@ public:
       m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
       drawCube();                                       // Render the cube
     }
-
-    // Render constraints as lines (unchanged)
-    m_shaderManager.useShader("lineShader");
-    m_shaderManager.setUniform("view", viewMatrix);
-    m_shaderManager.setUniform("projection", projectionMatrix);
-    m_shaderManager.setUniform("lineColor", glm::vec3(0.0f, 1.0f, 1.0f));
-    // Red lines
-
-    std::vector<glm::vec3> lineVertices;
-    for (const auto &constraint: system.getConstraints()) {
-      /*
-      if (auto *dc = dynamic_cast<Neutron::DistanceConstraint *>(constraint.
-        get())) {
-        lineVertices.push_back(dc->getBody1()->getPositionVec3());
-        lineVertices.push_back(dc->getBody2()->getPositionVec3());
-      }
-      */
-    }
-
-    if (!lineVertices.empty()) {
-      glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
-      glBufferData(GL_ARRAY_BUFFER,
-                   lineVertices.size() * sizeof(glm::vec3),
-                   lineVertices.data(),
-                   GL_DYNAMIC_DRAW);
-
-      glBindVertexArray(m_lineVAO);
-      glDrawArrays(GL_LINES, 0, lineVertices.size());
-      glBindVertexArray(0);
-    }
   }
 
 private:

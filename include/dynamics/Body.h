@@ -20,14 +20,14 @@ public:
   UniqueID getID() const;
 
   // Physical properties
-  double getMass() const;
-  const Vector3d &getInertia() const;
+  [[nodiscard]] const double &getMass() const;
+  [[nodiscard]] const Vector3d &getInertia() const;
 
   // State variables
-  const Vector3d &getPosition() const;
-  const Quaterniond &getOrientation() const;
-  const Vector3d &getVelocity() const;
-  const Vector3d &getAngularVelocity() const;
+  [[nodiscard]] const Vector3d &getPosition() const;
+  [[nodiscard]] const Quaterniond &getOrientation() const;
+  [[nodiscard]] const Vector3d &getVelocity() const;
+  [[nodiscard]] const Vector3d &getAngularVelocity() const;
 
   void setPosition(const Vector3d &position);
   void setOrientation(const Quaterniond &orientation);
@@ -44,8 +44,12 @@ public:
   const Vector3d &getTorque() const;
 
   // Visualization convertion
-  glm::vec3 getPositionVec3() const;
-  glm::quat getOrientationQuat() const;
+  [[nodiscard]] glm::vec3 getPositionVec3() const;
+  [[nodiscard]] glm::quat getOrientationQuat() const;
+
+  [[nodiscard]] double getMassInverse() const {
+    return 1.0 / m_mass;
+  }
 
   static Matrix3d skewSymmetric(Vector3d vector) {
     Matrix3d skew;
@@ -55,35 +59,22 @@ public:
     return skew;
   }
 
-  static Eigen::Matrix<double, 3, 4> transformationG(Quaterniond e) {
-    Eigen::Matrix<double, 3, 4> G;
-    G << -e.x(),  e.w(), -e.z(),  e.y(),
-         -e.y(),  e.z(),  e.w(), -e.x(),
-         -e.z(), -e.y(),  e.x(),  e.w();
-    return G;
-  }
-
-  static Eigen::Matrix<double, 3, 4> transformationL(Quaterniond e) {
-    Eigen::Matrix<double, 3, 4> G;
-    G << -e.x(),  e.w(),  e.z(), -e.y(),
-         -e.y(), -e.z(),  e.w(),  e.x(),
-         -e.z(),  e.y(), -e.x(),  e.w();
-    return G;
-  }
-
-  [[nodiscard]] Matrix3d getRotationA() const {
-    return m_orientation.toRotationMatrix();
-  }
-
   [[nodiscard]] Vector3d getGyroscopicTorque() const {
     Vector3d b = skewSymmetric(m_angularVelocity) * m_inertia.asDiagonal() *
                  m_angularVelocity;
     return b;
   }
 
+  // Configuration
+  void setFixed(bool fixed);
+  bool isFixed() const;
+
+  [[nodiscard]] Matrix3d getInverseInertiaTensor() const { return m_inertia.asDiagonal().inverse(); }
+
 private:
   UniqueID m_ID;
 
+  bool m_fixed = true;
   // Physical properties
   double m_mass;
   Vector3d m_inertia;

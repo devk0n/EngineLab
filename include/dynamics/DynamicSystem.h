@@ -9,7 +9,7 @@
 #include "Constraint.h"
 #include "ConstraintSolver.h"
 #include "ForceGenerator.h"
-#include "Particle.h"
+#include "Solver.h"
 #include "core/types.h"
 
 namespace Neutron {
@@ -19,62 +19,32 @@ public:
   DynamicSystem();
   ~DynamicSystem() = default;
 
-  // Particle management
-  UniqueID addParticle(
-      double mass,
-      const Vector3d& position
-  );
-  Particle* getParticle(UniqueID ID);
-
   // Body management
   UniqueID addBody(
-      double mass,
-      const Vector3d &inertia,
-      const Vector3d &position,
-      const Quaterniond &orientation
+    const double &mass,
+    const Vector3d &inertia,
+    const Vector3d &position,
+    const Quaterniond &orientation
   );
   Body* getBody(UniqueID ID);
 
-  // Constraint management
-  void addConstraint(const std::shared_ptr<Constraint> &constraint);
-  void clearConstraints();
-
+  // Force and Torque management
   void addForceGenerator(const std::shared_ptr<ForceGenerator> &generator);
-
-  void buildMassInertiaTensor();
 
   // Simulation
   void step(double dt);
 
-  const auto& getParticles() const { return m_particles; }
+  // Utilities
+  void buildMassInertiaTensor();
   const auto& getBodies() const { return m_bodies; }
-  const auto& getConstraints() const { return m_constraints; }
 
 private:
   // Build system matrices
   void buildWrench(VectorXd &wrench); // Build every step
 
-  void solvePositionConstraints(
-      double epsilon,
-      int maxIterations,
-      double alpha,
-      double lambda,
-      double maxCorrection
-  );
-
-  void solveVelocityConstraints(
-      double epsilon,
-      int maxIterations,
-      double alpha,
-      double lambda,
-      double maxCorrection
-  );
-
-  std::unordered_map<UniqueID, std::unique_ptr<Particle>> m_particles;
   std::unordered_map<UniqueID, std::unique_ptr<Body>> m_bodies;
-  std::vector<std::shared_ptr<Constraint>> m_constraints;
   std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
-  ConstraintSolver m_constraintSolver;
+  Solver m_solver;
 
   VectorXd m_massInertiaTensor;
 

@@ -6,11 +6,11 @@
 namespace Neutron {
 class GravityForceGenerator final : public ForceGenerator {
 public:
-  explicit GravityForceGenerator(const Vector3d& gravity) : gravity(gravity) {}
+  explicit GravityForceGenerator(const Vector3d& gravity) : m_gravity(gravity) {}
 
   void apply(double dt) override {
     for (auto& [id, body] : m_bodies) {
-      body->addForce(body->getMass() * gravity);
+      body->addForce(body->getMass() * m_gravity);
     }
   }
 
@@ -19,7 +19,7 @@ public:
   }
 
 private:
-  Vector3d gravity;
+  Vector3d m_gravity;
   std::unordered_map<UniqueID, Body*> m_bodies;
 };
 } // namespace Neutron

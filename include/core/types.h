@@ -16,8 +16,28 @@ using VectorXd = Eigen::VectorXd;
 using MatrixXd = Eigen::MatrixXd;
 using Quaterniond = Eigen::Quaterniond;
 
-inline void skew(const Vector3d&) {
+inline Eigen::Matrix<double, 3, 4> GMatrix(Quaterniond e) {
+  Eigen::Matrix<double, 3, 4> G;
+  G << -e.x(),  e.w(), -e.z(),  e.y(),
+       -e.y(),  e.z(),  e.w(), -e.x(),
+       -e.z(), -e.y(),  e.x(),  e.w();
+  return G;
+}
 
+inline Eigen::Matrix<double, 3, 4> LMatrix(Quaterniond e) {
+  Eigen::Matrix<double, 3, 4> L;
+  L << -e.x(),  e.w(),  e.z(), -e.y(),
+       -e.y(), -e.z(),  e.w(),  e.x(),
+       -e.z(),  e.y(), -e.x(),  e.w();
+  return L;
+}
+
+inline Matrix3d skew(Vector3d v) {
+  Matrix3d skew;
+  skew <<  0,    -v.z(),  v.y(),
+           v.z(),  0,    -v.x(),
+          -v.y(),  v.x(),  0;
+  return skew;
 }
 
 } // namespace Neutron

@@ -1,7 +1,6 @@
 // dynamics/ConstraintSolver.cpp
 #include "ConstraintSolver.h"
 
-#include <iostream>
 #include <Eigen/LU>
 #include "utils/Logger.h"
 
@@ -69,8 +68,7 @@ void ConstraintSolver::buildJacobian(
     constraint->computeJacobianDerivative(gamma, startRow);
 
     // Populate RHS:
-    constraintRHS.segment(startRow, constraint->getDOFs()) =
-      gamma;
+    constraintRHS.segment(startRow, constraint->getDOFs()) = gamma;
 
     startRow += constraint->getDOFs();
   }
@@ -78,7 +76,7 @@ void ConstraintSolver::buildJacobian(
 
 void ConstraintSolver::solveSystem(
     const VectorXd& M,                  // Mass matrix (diagonal) containing N and J
-    const VectorXd& forces,             // Vector of forces for a system (g)  with coriolis
+    const VectorXd& forces,             // Vector of forces for a system (g) with coriolis
     const MatrixXd& jacobian,           // Constraint Jacobian
     const VectorXd& constraintRHS,      // Constraint right-hand side
     VectorXd& accelerations,            // Output accelerations
