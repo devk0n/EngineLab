@@ -30,27 +30,15 @@ DistanceConstraint::DistanceConstraint(
 
 }
 
-void DistanceConstraint::computePhi(
-    VectorXd &phi,
-    const int startRow) {
-  // Relative position
+void DistanceConstraint::computePhi(VectorXd &phi, const int startRow) {
   Vector3d d = m_body2->getPosition() - m_body1->getPosition();
-
-  // Constraint equation
-  phi[startRow] = d.transpose() * d - (m_distance * m_distance);
-
+  phi[startRow] = d.squaredNorm() - (m_distance * m_distance);
 }
 
-void DistanceConstraint::computeJacobian(
-    MatrixXd &jacobian,
-    const int startRow) {
-
+void DistanceConstraint::computeJacobian(MatrixXd &jacobian, const int startRow) {
   Vector3d d = m_body2->getPosition() - m_body1->getPosition();
-
-  // Fill the Jacobian matrix
-  jacobian.block<1, 3>(startRow, 6 * m_index2) = -2 * d.transpose();               // Translational part of body 1
-  jacobian.block<1, 3>(startRow, 6 * m_index1) = 2 * d.transpose();               // Translational part of body 2
-
+  jacobian.block<1, 3>(startRow, 6 * m_index1) = -2 * d.transpose();
+  jacobian.block<1, 3>(startRow, 6 * m_index2) = 2 * d.transpose();
 }
 
 void DistanceConstraint::computeGamma(

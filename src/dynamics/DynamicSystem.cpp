@@ -15,6 +15,7 @@ UniqueID DynamicSystem::addBody(
   UniqueID ID = m_nextID++;
   auto body = std::make_unique<Body>(ID, mass, inertia, position, orientation);
   m_bodies[ID] = std::move(body);
+  m_bodyOrder.push_back(ID);
   return ID;
 }
 
@@ -69,6 +70,7 @@ void DynamicSystem::buildWrench(VectorXd &wrench) {
 
 void DynamicSystem::step(const double dt) {
   if (m_bodies.empty()) return;
+
 
   // --- 1. Clear Forces and Apply External Forces ---
   for (auto &[id, body]: m_bodies) {
@@ -144,33 +146,37 @@ void DynamicSystem::step(const double dt) {
     }
   }
 
+  // Store calculation data for debugging
+  m_lastJacobian = jacobian;
+  m_lastGamma = gamma;
+  m_lastForces = forces;
+
+
   // --- Constraint Stabilization ---
   solvePositionConstraints(
-    1e-6,    // epsilon
-    10,      // maxIterations
+    1e-10,    // epsilon
+    100,      // maxIterations
     0.3,     // alpha
     1e-6,    // lambda
-    0.5     // maxCorrection
+    0.05     // maxCorrection
   );
 
-
   solveVelocityConstraints(
-    1e-6,    // epsilon
-    10,      // maxIterations
+    1e-10,    // epsilon
+    100,      // maxIterations
     0.3,     // alpha
     1e-6,    // lambda
-    0.5     // maxCorrection
+    0.05     // maxCorrection
   );
 
 }
 
 void DynamicSystem::solvePositionConstraints(
-    const double epsilon = 1e-6,
-    const int maxIterations = 10,
-    const double alpha = 0.5,         // Relaxation parameter
-    const double lambda = 1e-6,       // Use damped least squares
-    const double maxCorrection = 0.1) // Maximum velocity correction per iteration
-{
+    const double epsilon,
+    const int maxIterations,
+    const double alpha,
+    const double lambda,
+    const double maxCorrection) {
   if (m_bodies.empty()) return;
 
   std::vector<Body *> bodies;
@@ -178,33 +184,32 @@ void DynamicSystem::solvePositionConstraints(
     bodies.emplace_back(body.get());
   }
 
-  // Smaller value = more stable but slower convergence
   for (int iter = 0; iter < maxIterations; ++iter) {
-    // Build Jacobian and constraint equations
-    MatrixXd jacobian;
-    VectorXd constraintRHS;
-    m_solver.buildJacobian(jacobian, constraintRHS, bodies.size() * 6);
-
-    // Calculate constraint violations
-    VectorXd c(constraintRHS.size());
-    int itt = 0;
+    // Compute constraint violations
+    VectorXd c(m_constraints.size());
+    int constraintIndex = 0;
     for (const auto &constraint: m_constraints) {
-      constraint->computePhi(c, itt);
-      ++itt;
+      constraint->computePhi(c, constraintIndex);
+      constraintIndex++;
     }
 
-    // Check if constraints are satisfied
+    // Check convergence
     double error = c.norm();
     if (error < epsilon) {
       break;
     }
 
-    // Use damped least squares (Levenberg-Marquardt)
+    // Build Jacobian and solve for corrections
+    MatrixXd jacobian;
+    VectorXd dummy;
+    m_solver.buildJacobian(jacobian, dummy, bodies.size() * 6);
+
+    // Use damped least squares to solve for corrections
     MatrixXd JTJ = jacobian.transpose() * jacobian;
     MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
     VectorXd dx = H.ldlt().solve(jacobian.transpose() * (-c));
 
-    // Apply scaled corrections to positions
+    // Apply corrections with relaxation and clamping
     int i = 0;
     for (auto &body: bodies) {
       if (!body->isFixed()) {
@@ -214,6 +219,8 @@ void DynamicSystem::solvePositionConstraints(
         if (correction.norm() > maxCorrection) {
           correction *= maxCorrection / correction.norm();
         }
+
+        // Apply correction to position
         body->setPosition(body->getPosition() + correction);
       }
       i++;
@@ -222,12 +229,11 @@ void DynamicSystem::solvePositionConstraints(
 }
 
 void DynamicSystem::solveVelocityConstraints(
-    const double epsilon = 1e-6,
-    const int maxIterations = 10,
-    const double alpha = 0.5,         // Relaxation parameter
-    const double lambda = 1e-6,       // Use damped least squares
-    const double maxCorrection = 0.1) // Maximum velocity correction per iteration
-{
+    const double epsilon,
+    const int maxIterations,
+    const double alpha,
+    const double lambda,
+    const double maxCorrection) {
   if (m_bodies.empty()) return;
 
   std::vector<Body *> bodies;
@@ -241,34 +247,43 @@ void DynamicSystem::solveVelocityConstraints(
     VectorXd dummy;
     m_solver.buildJacobian(jacobian, dummy, bodies.size() * 6);
 
-    // Compute current velocity constraint violation
+    // Compute velocity constraint violations
     VectorXd qdot(bodies.size() * 6);
     for (int i = 0; i < bodies.size(); ++i) {
       qdot.segment<3>(i * 6) = bodies[i]->getVelocity();
+      qdot.segment<3>(i * 6 + 3) = bodies[i]->getAngularVelocity();
     }
 
     VectorXd cdot = jacobian * qdot;
 
-    // Check if velocity constraints are satisfied
+    // Check convergence
     if (cdot.norm() < epsilon) {
       break;
     }
 
+    // Use damped least squares to solve for velocity corrections
     MatrixXd JTJ = jacobian.transpose() * jacobian;
     MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
     VectorXd dv = H.ldlt().solve(jacobian.transpose() * (-cdot));
 
-    // Apply scaled corrections to velocities
+    // Apply corrections with relaxation and clamping
     int i = 0;
     for (auto &body: bodies) {
       if (!body->isFixed()) {
-        Vector3d correction = alpha * dv.segment<3>(i * 6);
+        Vector3d linearCorrection = alpha * dv.segment<3>(i * 6);
+        Vector3d angularCorrection = alpha * dv.segment<3>(i * 6 + 3);
 
         // Limit correction magnitude
-        if (correction.norm() > maxCorrection) {
-          correction *= maxCorrection / correction.norm();
+        if (linearCorrection.norm() > maxCorrection) {
+          linearCorrection *= maxCorrection / linearCorrection.norm();
         }
-        body->setVelocity(body->getVelocity() + correction);
+        if (angularCorrection.norm() > maxCorrection) {
+          angularCorrection *= maxCorrection / angularCorrection.norm();
+        }
+
+        // Apply corrections to velocities
+        body->setVelocity(body->getVelocity() + linearCorrection);
+        body->setAngularVelocity(body->getAngularVelocity() + angularCorrection);
       }
       i++;
     }

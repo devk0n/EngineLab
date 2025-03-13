@@ -19,11 +19,11 @@ public:
 
   bool load() override;
 
-  void showPhysicsDebug() const;
-
   void update(float dt) override;
   void render() override;
   void unload() override;
+
+  void showSolverData() const;
 
   void showSimulationControls(double dt);
 
@@ -36,6 +36,8 @@ private:
 
   void handleCameraMovement(float dt);
   void showWindowDebug();
+
+  void showPhysicsDebug() const;
 
   float m_displayedFps = 0.0f;
   float m_fpsUpdateTimer = 0.0f;

@@ -29,27 +29,39 @@ void Simulation::setupDynamics() {
     Quaterniond(1.0, 0.0, 0.0, 0.0)
   );
 
+  UniqueID body_3 = m_system.addBody(
+    30.0,
+    Vector3d(10.0, 10.0, 10.0),
+    Vector3d(10.0, 10.0, 0.0),
+    Quaterniond(1.0, 0.0, 0.0, 0.0)
+  );
+
+
   Body *b1 = m_system.getBody(body_1);
   Body *b2 = m_system.getBody(body_2);
+  Body *b3 = m_system.getBody(body_3);
 
-  auto constraint1 = std::make_shared<DistanceConstraint>(b2, b1, 10);
+  auto constraint1 = std::make_shared<DistanceConstraint>(b1, b2, 10);
+  auto constraint2 = std::make_shared<DistanceConstraint>(b1, b3);
 
   m_system.addConstraint(constraint1);
+  // m_system.addConstraint(constraint2);
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {b1, b2}) {
+  for (auto& particle : {b1, b2, b3}) {
     gravityGen->addBody(particle);
   }
   m_system.addForceGenerator(gravityGen);
 
   b1->setFixed(true);
+
 }
 
 bool Simulation::load() {
 
   setupDynamics();
-
+  m_system.step(0);
   LOG_INFO("Initializing Simulation");
   m_camera.setPosition(glm::vec3(12.0f, 20.0f, 20.0f));
   m_camera.lookAt(glm::vec3(0.0f, -1.0f, 0.0f));
@@ -96,17 +108,105 @@ void Simulation::update(const float dt) {
   if (m_run) {
     m_system.step(dt);
   }
+
 }
 
 void Simulation::render() {
   showUI();
   showWindowDebug();
-  showPhysicsDebug();
+
+  showSolverData();
   m_systemVisualizer.render(m_system, m_camera.getPosition(), m_camera.getViewMatrix(), m_camera.getProjectionMatrix());
   m_ctx.renderer->drawGrid(m_camera);
 }
 
 void Simulation::unload() { LOG_INFO("Unloading hardcoded simulation..."); }
+
+// In Simulation.cpp
+void Simulation::showSolverData() const {
+  ImGui::Begin("Solver Calculations");
+
+  const auto& J = m_system.getLastJacobian();
+  const auto& gamma = m_system.getLastGamma();
+  const auto& bodies = m_system.getBodies();
+  const auto& bodyOrder = m_system.getBodyOrder();
+
+  // Gamma Vector Display
+  if (ImGui::CollapsingHeader("Gamma (Constraint RHS)", ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::BeginChild("Gamma", ImVec2(0, 150), true);
+    ImGui::Columns(2, "gammaColumns");
+    ImGui::Text("Constraint"); ImGui::NextColumn();
+    ImGui::Text("Value"); ImGui::NextColumn();
+    ImGui::Separator();
+
+    for (int i = 0; i < gamma.size(); ++i) {
+      ImGui::Text("%d", i); ImGui::NextColumn();
+      ImGui::Text("%.6f", gamma[i]); ImGui::NextColumn();
+    }
+    ImGui::EndChild();
+  }
+
+  // Jacobian Matrix Display
+  if (ImGui::CollapsingHeader("Jacobian Matrix")) {
+    const char* dofLabels[] = {"X", "Y", "Z", "Rx", "Ry", "Rz"};
+    constexpr float cellWidth = 30.0f; // Fixed width for each cell
+
+    // Calculate total width needed
+    const int numCols = static_cast<int>(bodyOrder.size()) * 6;
+    const float tableWidth = numCols * cellWidth + 130; // +100 for row labels
+
+    ImGui::BeginChild("Jacobian", ImVec2(tableWidth, 400), true,
+                     ImGuiWindowFlags_HorizontalScrollbar);
+
+    // Column headers
+    ImGui::Columns(1 + numCols, "jacobianColumns", false); // +1 for row labels
+    ImGui::SetColumnWidth(0, 100); // Wider first column for row labels
+    ImGui::Text("Row\\Body"); ImGui::NextColumn();
+
+    for (size_t bodyIdx = 0; bodyIdx < bodyOrder.size(); ++bodyIdx) {
+      for (int dof = 0; dof < 6; ++dof) {
+        ImGui::SetColumnWidth(1 + bodyIdx * 6 + dof, cellWidth);
+        if (dof == 0) {
+          ImGui::Text("Body %zu", bodyOrder[bodyIdx]);
+        } else {
+          ImGui::Text(""); // Empty cell for continuation
+        }
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(1,1,0,1), "%s", dofLabels[dof]);
+        ImGui::NextColumn();
+      }
+    }
+
+    // Matrix values
+    for (int row = 0; row < J.rows(); ++row) {
+      ImGui::Text("%d", row); ImGui::NextColumn();
+      for (int col = 0; col < J.cols(); ++col) {
+        float value = static_cast<float>(J(row, col));
+        ImGui::Text("%.0f", value);
+        ImGui::NextColumn();
+      }
+    }
+    ImGui::EndChild();
+  }
+
+  // Mass Matrix Display
+  if (ImGui::CollapsingHeader("Mass Matrix")) {
+    const auto& M = m_system.getMassInertiaTensor();
+    ImGui::BeginChild("MassMatrix", ImVec2(0, 150), true);
+    ImGui::Columns(2, "massColumns");
+    ImGui::Text("DOF"); ImGui::NextColumn();
+    ImGui::Text("Value"); ImGui::NextColumn();
+    ImGui::Separator();
+
+    for (int i = 0; i < M.size(); ++i) {
+      ImGui::Text("%d", i); ImGui::NextColumn();
+      ImGui::Text("%.4f", M[i]); ImGui::NextColumn();
+    }
+    ImGui::EndChild();
+  }
+
+  ImGui::End();
+}
 
 void Simulation::showUI() const {
   ImGui::Begin("Energy Debug");

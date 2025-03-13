@@ -49,6 +49,11 @@ public:
 
   const std::vector<std::shared_ptr<ForceGenerator>>& getForceGenerators() const { return m_forceGenerators; }
   const std::vector<std::shared_ptr<Constraint>>& getConstraints() const { return m_constraints; }
+
+  const MatrixXd& getLastJacobian() const { return m_lastJacobian; }
+  const VectorXd& getLastGamma() const { return m_lastGamma; }
+  const VectorXd& getMassInertiaTensor() const { return m_massInertiaTensor; }
+  const std::vector<UniqueID>& getBodyOrder() const { return m_bodyOrder; }
 private:
   // Build system matrices
   void buildWrench(VectorXd &wrench); // Build every step
@@ -57,10 +62,14 @@ private:
   std::vector<std::shared_ptr<Constraint>> m_constraints;
   std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
   Solver m_solver;
-
+  std::vector<UniqueID> m_bodyOrder;
   VectorXd m_massInertiaTensor;
 
   UniqueID m_nextID = 0;
+
+  MatrixXd m_lastJacobian;
+  VectorXd m_lastGamma;
+  VectorXd m_lastForces;
 };
 
 } // namespace Neutron
