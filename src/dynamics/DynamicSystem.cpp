@@ -143,7 +143,7 @@ void DynamicSystem::step(const double dt) {
       }
     }
   }
-/*
+
   // --- Constraint Stabilization ---
   solvePositionConstraints(
     1e-6,    // epsilon
@@ -161,7 +161,7 @@ void DynamicSystem::step(const double dt) {
     1e-6,    // lambda
     0.5     // maxCorrection
   );
-*/
+
 }
 
 void DynamicSystem::solvePositionConstraints(
@@ -202,7 +202,7 @@ void DynamicSystem::solvePositionConstraints(
     // Use damped least squares (Levenberg-Marquardt)
     MatrixXd JTJ = jacobian.transpose() * jacobian;
     MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
-    VectorXd dx = H.ldlt().solve(jacobian.transpose() * (c));
+    VectorXd dx = H.ldlt().solve(jacobian.transpose() * (-c));
 
     // Apply scaled corrections to positions
     int i = 0;

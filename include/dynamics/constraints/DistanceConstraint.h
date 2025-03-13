@@ -8,7 +8,13 @@ public:
   DistanceConstraint(
       Body* body1,
       Body* body2,
-      const double distance);
+      const double distance
+  );
+
+  DistanceConstraint(
+      Body* body1,
+      Body* body2
+  );
 
   void computePhi(VectorXd &phi, int startRow) override;
   void computeJacobian(MatrixXd &jacobian, int startRow) override;
