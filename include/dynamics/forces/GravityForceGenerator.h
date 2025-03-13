@@ -4,7 +4,7 @@
 #include "ForceGenerator.h"
 
 namespace Neutron {
-class GravityForceGenerator : public ForceGenerator {
+class GravityForceGenerator final : public ForceGenerator {
 public:
   explicit GravityForceGenerator(const Vector3d& gravity) : m_gravity(gravity) {}
 

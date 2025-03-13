@@ -36,21 +36,18 @@ void Simulation::setupDynamics() {
     Quaterniond(1.0, 0.0, 0.0, 0.0)
   );
 
-
   Body *b1 = m_system.getBody(body_1);
   Body *b2 = m_system.getBody(body_2);
   Body *b3 = m_system.getBody(body_3);
 
   auto constraint1 = std::make_shared<DistanceConstraint>(b1, b2, 10);
-  auto constraint2 = std::make_shared<DistanceConstraint>(b1, b3);
 
   m_system.addConstraint(constraint1);
-  // m_system.addConstraint(constraint2);
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& particle : {b1, b2, b3}) {
-    gravityGen->addBody(particle);
+  for (auto& body : {b1, b2, b3}) {
+    gravityGen->addBody(body);
   }
   m_system.addForceGenerator(gravityGen);
 

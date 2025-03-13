@@ -37,14 +37,14 @@ void DistanceConstraint::computePhi(VectorXd &phi, const int startRow) {
 
 void DistanceConstraint::computeJacobian(MatrixXd &jacobian, const int startRow) {
   Vector3d d = m_body2->getPosition() - m_body1->getPosition();
-  jacobian.block<1, 3>(startRow, 6 * m_index1) = -2 * d.transpose();
-  jacobian.block<1, 3>(startRow, 6 * m_index2) = 2 * d.transpose();
+  jacobian.block<1, 3>(startRow, 6 * m_index2) = - 2 * d.transpose();
+  jacobian.block<1, 3>(startRow, 6 * m_index1) = 2 * d.transpose();
 }
 
 void DistanceConstraint::computeGamma(
     VectorXd &gamma,
     const int startRow) {
-  Vector3d d = m_body2->getVelocity() - m_body1->getVelocity();
+  Vector3d d = m_body2->getPosition() - m_body1->getPosition();
   const double result = - 2.0 * d.transpose() * d;
   gamma[startRow] = result;
 
