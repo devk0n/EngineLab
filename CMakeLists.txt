@@ -123,10 +123,9 @@ set(SOURCES
         src/dynamics/Particle.cpp
         src/dynamics/Body.cpp
         src/dynamics/DynamicSystem.cpp
-        src/dynamics/ConstraintSolver.cpp
         src/dynamics/constraints/SphericalJoint.cpp
         src/dynamics/Solver.cpp
-src/dynamics/constraints/DistanceConstraint.cpp
+        src/dynamics/constraints/DistanceConstraint.cpp
 )
 
 # Add executable

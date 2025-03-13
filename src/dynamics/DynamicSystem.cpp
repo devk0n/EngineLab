@@ -27,11 +27,11 @@ Body *DynamicSystem::getBody(const UniqueID ID) {
 
 void DynamicSystem::addForceGenerator(
   const std::shared_ptr<ForceGenerator> &generator) {
-  m_forceGenerators.push_back(generator);
+  m_forceGenerators.emplace_back(generator);
 }
 
 void DynamicSystem::addConstraint(const std::shared_ptr<Constraint> &constraint) {
-  m_constraints.push_back(constraint);
+  m_constraints.emplace_back(constraint);
   m_solver.addConstraint(constraint);
 }
 
@@ -76,8 +76,13 @@ void DynamicSystem::step(const double dt) {
     body->clearTorques();
   }
 
-  for (auto &generator: m_forceGenerators) { generator->apply(dt); }
-  if (m_massInertiaTensor.size() == 0) { buildMassInertiaTensor(); }
+  for (auto &generator: m_forceGenerators) {
+    generator->apply(dt);
+  }
+
+  if (m_massInertiaTensor.size() == 0) {
+    buildMassInertiaTensor();
+  }
 
   VectorXd forces, gamma, accelerations, lambdas;
   MatrixXd jacobian;
@@ -97,11 +102,13 @@ void DynamicSystem::step(const double dt) {
   );
 
   // --- 2. Update State Variables ---
-  for (auto &[id, body]: m_bodies) {
+  int i = 0;
+  for (auto &[id, body] : m_bodies) {
     if (!body->isFixed()) {
-      body->setVelocity(body->getVelocity() + accelerations.segment<3>(id * 6) * dt);
-      body->setAngularVelocity(body->getAngularVelocity() + accelerations.segment<3>(id * 6 + 3) * dt);
+      body->setVelocity(body->getVelocity() + accelerations.segment<3>(i * 6) * dt);
+      body->setAngularVelocity(body->getAngularVelocity() + accelerations.segment<3>(i * 6 + 3) * dt);
     }
+    ++i; // Track the iteration index
   }
 
   // --- 3. Update Position ---
@@ -136,7 +143,7 @@ void DynamicSystem::step(const double dt) {
       }
     }
   }
-
+/*
   // --- Constraint Stabilization ---
   solvePositionConstraints(
     1e-6,    // epsilon
@@ -154,7 +161,7 @@ void DynamicSystem::step(const double dt) {
     1e-6,    // lambda
     0.5     // maxCorrection
   );
-
+*/
 }
 
 void DynamicSystem::solvePositionConstraints(
@@ -168,7 +175,7 @@ void DynamicSystem::solvePositionConstraints(
 
   std::vector<Body *> bodies;
   for (const auto &[id, body]: m_bodies) {
-    bodies.push_back(body.get());
+    bodies.emplace_back(body.get());
   }
 
   // Smaller value = more stable but slower convergence
@@ -225,7 +232,7 @@ void DynamicSystem::solveVelocityConstraints(
 
   std::vector<Body *> bodies;
   for (const auto &[id, body]: m_bodies) {
-    bodies.push_back(body.get());
+    bodies.emplace_back(body.get());
   }
 
   for (int iter = 0; iter < maxIterations; ++iter) {

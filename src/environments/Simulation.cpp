@@ -23,35 +23,43 @@ using namespace Neutron;
 
 void Simulation::setupDynamics() {
   UniqueID body_1 = m_system.addBody(
-    10.0,
+    30.0,
     Vector3d(10.0, 10.0, 10.0),
     Vector3d(0.0, 0.0, 0.0),
     Quaterniond(1.0, 0.0, 0.0, 0.0)
   );
 
   UniqueID body_2 = m_system.addBody(
-    10.0,
+    30.0,
     Vector3d(10.0, 10.0, 10.0),
     Vector3d(10.0, 0.0, 0.0),
+    Quaterniond(1.0, 0.0, 0.0, 0.0)
+  );
+
+  UniqueID body_3 = m_system.addBody(
+    10.0,
+    Vector3d(10.0, 10.0, 10.0),
+    Vector3d(20.0, 0.0, 0.0),
+    Quaterniond(1.0, 0.0, 1.0, 0.0)
+  );
+
+  UniqueID body_4 = m_system.addBody(
+    10.0,
+    Vector3d(10.0, 10.0, 10.0),
+    Vector3d(30.0, 0.0, 0.0),
     Quaterniond(1.0, 0.0, 0.0, 0.0)
   );
 
   Body *b1 = m_system.getBody(body_1);
   Body *b2 = m_system.getBody(body_2);
 
-  // Add a distance constraint between the particles
-  auto constraint1 = std::make_shared<DistanceConstraint>(b1, b2, 10.0);
+  auto gravityGen1 = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
+  gravityGen1->addBody(b1);
+  m_system.addForceGenerator(gravityGen1);
 
-  m_system.addConstraint(constraint1);
-
-  auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& body : {b1, b2}) {
-    gravityGen->addBody(body);
-  }
-  m_system.addForceGenerator(gravityGen);
-
-  b1->setFixed(true);
-
+  auto gravityGen2 = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -5.0)); // Different gravity for testing
+  gravityGen2->addBody(b2);
+  m_system.addForceGenerator(gravityGen2);
 }
 
 bool Simulation::load() {

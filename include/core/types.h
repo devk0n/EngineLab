@@ -8,7 +8,7 @@
 
 namespace Neutron {
 
-using UniqueID = std::uint8_t;
+using UniqueID = std::uint32_t;
 
 // Common vector/matrix types
 using Vector3d = Eigen::Vector3d;
