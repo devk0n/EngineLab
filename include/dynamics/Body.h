@@ -66,15 +66,15 @@ public:
   }
 
   // Configuration
-  void setFixed(bool fixed);
-  bool isFixed() const;
+  void setFixed(const bool fixed) { m_fixed = fixed; }
+  bool isFixed() const { return m_fixed; }
 
   [[nodiscard]] Matrix3d getInverseInertiaTensor() const { return m_inertia.asDiagonal().inverse(); }
 
 private:
   UniqueID m_ID;
 
-  bool m_fixed = true;
+  bool m_fixed = false;
   // Physical properties
   double m_mass;
   Vector3d m_inertia;

@@ -3,10 +3,10 @@
 #include <imgui.h>
 #include "DynamicSystem.h"
 #include "SphericalJoint.h"
+#include "constraints/DistanceConstraint.h"
 #include "core/InputManager.h"
 #include "core/Time.h"
 #include "core/WindowManager.h"
-#include "constraints/DistanceConstraint.h"
 #include "forces/GravityForceGenerator.h"
 #include "graphics/Renderer.h"
 #include "utils/Logger.h"
@@ -40,15 +40,17 @@ void Simulation::setupDynamics() {
   Body *b2 = m_system.getBody(body_2);
 
   // Add a distance constraint between the particles
-  auto constraint1 = std::make_shared<DistanceConstraint>(b1, b2);
+  auto constraint1 = std::make_shared<DistanceConstraint>(b1, b2, 10.0);
 
   m_system.addConstraint(constraint1);
 
   auto gravityGen = std::make_shared<GravityForceGenerator>(Vector3d(0, 0, -9.81));
-  for (auto& body : {b1}) {
+  for (auto& body : {b1, b2}) {
     gravityGen->addBody(body);
   }
   m_system.addForceGenerator(gravityGen);
+
+  b1->setFixed(true);
 
 }
 

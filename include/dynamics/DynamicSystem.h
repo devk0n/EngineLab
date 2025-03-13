@@ -33,6 +33,12 @@ public:
   // Simulation
   void step(double dt);
 
+  void solvePositionConstraints(double epsilon, int maxIterations, double alpha,
+                                double lambda, double maxCorrection);
+
+  void solveVelocityConstraints(double epsilon, int maxIterations, double alpha,
+                                double lambda, double maxCorrection);
+
   void clearConstraints();
   void addConstraint(const std::shared_ptr<Constraint> &constraint);
 

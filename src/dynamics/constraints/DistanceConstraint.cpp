@@ -4,17 +4,15 @@ namespace Neutron {
 
 DistanceConstraint::DistanceConstraint(
     Body *body1,
-    Body *body2)
+    Body *body2,
+    const double distance)
     : Constraint(1),
       m_body1(body1),
-      m_body2(body2) {
+      m_body2(body2),
+      m_distance(distance){
 
   m_index1 = static_cast<int>(body1->getID());
   m_index2 = static_cast<int>(body2->getID());
-
-  // Compute distance
-  Vector3d d = m_body2->getPosition() - m_body1->getPosition();
-  m_distance = d.norm();
 
 }
 
@@ -45,7 +43,7 @@ void DistanceConstraint::computeGamma(
     VectorXd &gamma,
     const int startRow) {
   Vector3d d = m_body2->getVelocity() - m_body1->getVelocity();
-  const double result = - 2.0 * d.transpose() * d; // Correct sign to positive
+  const double result = - 2.0 * d.transpose() * d;
   gamma[startRow] = result;
 
 }
