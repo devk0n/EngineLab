@@ -56,7 +56,7 @@ void ConstraintSolver::buildJacobian(
   for (const auto& constraint : m_constraints) {
 
     // Compute Jacobian with particle indices
-    constraint->computeJacobian(jacobian, startRow, bodyToIndex);
+    constraint->computeJacobian(jacobian, startRow);
 
     // Compute C_dot = J_block * qdot
     MatrixXd J_block = jacobian.block(startRow, 0, constraint->getDOFs(), jacobian.cols());
@@ -65,7 +65,7 @@ void ConstraintSolver::buildJacobian(
     // Compute Jdot*qdot
     VectorXd gamma(constraint->getDOFs());
     gamma.setZero();
-    constraint->computeJacobianDerivative(gamma, startRow);
+    constraint->computeGamma(gamma, startRow);
 
     // Populate RHS:
     constraintRHS.segment(startRow, constraint->getDOFs()) = gamma;

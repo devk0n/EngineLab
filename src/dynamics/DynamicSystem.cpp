@@ -30,6 +30,17 @@ void DynamicSystem::addForceGenerator(
   m_forceGenerators.push_back(generator);
 }
 
+void DynamicSystem::addConstraint(const std::shared_ptr<Constraint> &constraint) {
+  m_constraints.push_back(constraint);
+  m_solver.addConstraint(constraint);
+}
+
+void DynamicSystem::clearConstraints() {
+  m_constraints.clear();
+  m_solver.clearConstraints();
+}
+
+
 void DynamicSystem::buildMassInertiaTensor() {
   int n = static_cast<int>(m_bodies.size()) * 6; // 6 DOF per body
   m_massInertiaTensor.resize(n);
@@ -68,15 +79,21 @@ void DynamicSystem::step(const double dt) {
   for (auto &generator: m_forceGenerators) { generator->apply(dt); }
   if (m_massInertiaTensor.size() == 0) { buildMassInertiaTensor(); }
 
-  VectorXd forces;
+  VectorXd forces, gamma, accelerations, lambdas;
+  MatrixXd jacobian;
   buildWrench(forces);
-  VectorXd accelerations;
   accelerations.resize(forces.size());
+  lambdas.resize(m_constraints.size());
+
+  m_solver.buildJacobian(jacobian, gamma, m_massInertiaTensor.size());
 
   m_solver.solveSystem(
     m_massInertiaTensor,
     forces,
-    accelerations
+    jacobian,
+    gamma,
+    accelerations,
+    lambdas
   );
 
   // --- 2. Update State Variables ---

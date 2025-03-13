@@ -7,7 +7,6 @@
 #include <vector>
 #include "Body.h"
 #include "Constraint.h"
-#include "ConstraintSolver.h"
 #include "ForceGenerator.h"
 #include "Solver.h"
 #include "core/types.h"
@@ -34,6 +33,9 @@ public:
   // Simulation
   void step(double dt);
 
+  void clearConstraints();
+  void addConstraint(const std::shared_ptr<Constraint> &constraint);
+
   // Utilities
   void buildMassInertiaTensor();
   const auto& getBodies() const { return m_bodies; }
@@ -43,6 +45,7 @@ private:
   void buildWrench(VectorXd &wrench); // Build every step
 
   std::unordered_map<UniqueID, std::unique_ptr<Body>> m_bodies;
+  std::vector<std::shared_ptr<Constraint>> m_constraints;
   std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
   Solver m_solver;
 

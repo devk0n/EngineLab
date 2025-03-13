@@ -13,10 +13,9 @@ public:
       const Vector3d &vector2
   );
 
-  void computeConstraintEquations(VectorXd& c, int startRow) override;
-
-  void computeJacobian(MatrixXd &jacobian, int startRow, const std::map<Body *, int> &bodyToIndex) override;
-  void computeJacobianDerivative(VectorXd &jdotqdot, int startRow) override;
+  void computePhi(VectorXd& c, int startRow) override;
+  void computeJacobian(MatrixXd &jacobian, int startRow) override;
+  void computeGamma(VectorXd &jdotqdot, int startRow) override;
 
 private:
   Body* m_body1;

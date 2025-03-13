@@ -13,7 +13,7 @@ SphericalJoint::SphericalJoint(
         m_vector1(vector1),
         m_vector2(vector2) {}
 
-void SphericalJoint::computeConstraintEquations(VectorXd &c, const int startRow) {
+void SphericalJoint::computePhi(VectorXd &c, const int startRow) {
 
   auto r1 = m_body1->getPosition();
   auto r2 = m_body2->getPosition();
@@ -30,7 +30,7 @@ void SphericalJoint::computeConstraintEquations(VectorXd &c, const int startRow)
   c.segment(startRow, m_DOFs) = Phi;
 }
 
-void SphericalJoint::computeJacobian(MatrixXd& jacobian, const int startRow, const std::map<Body*, int>& bodyToIndex) {
+void SphericalJoint::computeJacobian(MatrixXd& jacobian, const int startRow) {
 
   auto A1 = LMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
   auto A2 = LMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
@@ -40,8 +40,8 @@ void SphericalJoint::computeJacobian(MatrixXd& jacobian, const int startRow, con
 
   auto I3 = Matrix3d::Identity();
 
-  int index1 = bodyToIndex.at(m_body1);
-  int index2 = bodyToIndex.at(m_body2);
+  int index1 = 0;
+  int index2 = 0;
 
   // Fill the Jacobian matrix
   jacobian.block<3, 3>(startRow, 6 * index1)     =  I3;               // Translational part of body 1
@@ -51,7 +51,7 @@ void SphericalJoint::computeJacobian(MatrixXd& jacobian, const int startRow, con
 
 }
 
-void SphericalJoint::computeJacobianDerivative(VectorXd &jdotqdot, int startRow) {
+void SphericalJoint::computeGamma(VectorXd &jdotqdot, int startRow) {
   // Get rotation matrices
   auto A1 = LMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
   auto A2 = LMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();

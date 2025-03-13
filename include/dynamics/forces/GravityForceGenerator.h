@@ -11,6 +11,7 @@ public:
   void apply(double dt) override {
     for (auto& [id, body] : m_bodies) {
       body->addForce(body->getMass() * m_gravity);
+      // body->addTorque(Vector3d(100, 200, 0));
     }
   }
 
