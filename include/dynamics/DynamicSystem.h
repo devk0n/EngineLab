@@ -45,7 +45,10 @@ public:
   // Utilities
   void buildMassInertiaTensor();
   const auto& getBodies() const { return m_bodies; }
+  // In DynamicSystem.h
 
+  const std::vector<std::shared_ptr<ForceGenerator>>& getForceGenerators() const { return m_forceGenerators; }
+  const std::vector<std::shared_ptr<Constraint>>& getConstraints() const { return m_constraints; }
 private:
   // Build system matrices
   void buildWrench(VectorXd &wrench); // Build every step

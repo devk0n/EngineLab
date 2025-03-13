@@ -19,6 +19,10 @@ public:
     m_bodies.emplace(body->getID(), body);
   }
 
+  // In GravityForceGenerator.h
+  const Vector3d& getGravity() const { return m_gravity; }
+  const std::unordered_map<UniqueID, Body*>& getBodies() const { return m_bodies; }
+
 private:
   Vector3d m_gravity;
   std::unordered_map<UniqueID, Body*> m_bodies;

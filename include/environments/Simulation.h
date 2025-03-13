@@ -18,6 +18,9 @@ public:
   void setupDynamics();
 
   bool load() override;
+
+  void showPhysicsDebug() const;
+
   void update(float dt) override;
   void render() override;
   void unload() override;
