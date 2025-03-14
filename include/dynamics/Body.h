@@ -52,10 +52,11 @@ public:
 
   glm::quat getOrientationQuat() const {
     return {
-      static_cast<float>(m_orientation.w()), // Cast w to float
+       // Cast w to float
       static_cast<float>(m_orientation.x()), // Cast x to float
       static_cast<float>(m_orientation.y()), // Cast y to float
-      static_cast<float>(m_orientation.z())  // Cast z to float
+      static_cast<float>(m_orientation.z()),  // Cast z to float
+      static_cast<float>(m_orientation.w())
   };
   }
 

@@ -122,6 +122,8 @@ set(SOURCES
 
         src/dynamics/DynamicSystem.cpp
         src/dynamics/Solver.cpp
+include/dynamics/constraints/SphericalJoint.h
+src/dynamics/constraints/SphericalJoint.cpp
 )
 
 # Add executable

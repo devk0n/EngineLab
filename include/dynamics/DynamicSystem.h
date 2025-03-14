@@ -43,10 +43,8 @@ private:
   void buildMassInertiaTensor();
   void buildWrench(VectorXd& wrench);
   void buildConstraints(
-    MatrixXd& jacobian,
-    VectorXd& gamma,
-    VectorXd& accelerations,
-    VectorXd& lambdas);
+    MatrixXd &jacobian,
+    VectorXd &gamma);
 
   // System state
   std::vector<std::unique_ptr<Body>> m_bodies;

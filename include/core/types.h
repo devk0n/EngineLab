@@ -15,14 +15,13 @@ using Vector3d = Eigen::Vector3d;
 using Vector4d = Eigen::Vector4d;
 
 using Matrix3d = Eigen::Matrix3d;
+using Matrix4d = Eigen::Matrix4d;
 
 using VectorXd = Eigen::VectorXd;
 using MatrixXd = Eigen::MatrixXd;
 
-using Quaterniond = Eigen::Quaterniond;
-using AngleAxisd = Eigen::AngleAxisd;
 
-inline Eigen::Matrix<double, 3, 4> GMatrix(Quaterniond e) {
+inline Eigen::Matrix<double, 3, 4> GMatrix(Vector4d e) {
   Eigen::Matrix<double, 3, 4> G;
   G << -e.x(),  e.w(), -e.z(),  e.y(),
        -e.y(),  e.z(),  e.w(), -e.x(),
@@ -30,7 +29,7 @@ inline Eigen::Matrix<double, 3, 4> GMatrix(Quaterniond e) {
   return G;
 }
 
-inline Eigen::Matrix<double, 3, 4> LMatrix(Quaterniond e) {
+inline Eigen::Matrix<double, 3, 4> LMatrix(Vector4d e) {
   Eigen::Matrix<double, 3, 4> L;
   L << -e.x(),  e.w(),  e.z(), -e.y(),
        -e.y(), -e.z(),  e.w(),  e.x(),
