@@ -8,14 +8,19 @@
 
 namespace Neutron {
 
-using UniqueID = std::uint32_t;
+using UniqueID = std::uint16_t;
 
 // Common vector/matrix types
 using Vector3d = Eigen::Vector3d;
+using Vector4d = Eigen::Vector4d;
+
 using Matrix3d = Eigen::Matrix3d;
+
 using VectorXd = Eigen::VectorXd;
 using MatrixXd = Eigen::MatrixXd;
+
 using Quaterniond = Eigen::Quaterniond;
+using AngleAxisd = Eigen::AngleAxisd;
 
 inline Eigen::Matrix<double, 3, 4> GMatrix(Quaterniond e) {
   Eigen::Matrix<double, 3, 4> G;

@@ -120,12 +120,8 @@ set(SOURCES
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 
-        src/dynamics/Particle.cpp
-        src/dynamics/Body.cpp
         src/dynamics/DynamicSystem.cpp
-        src/dynamics/constraints/SphericalJoint.cpp
         src/dynamics/Solver.cpp
-        src/dynamics/constraints/DistanceConstraint.cpp
 )
 
 # Add executable

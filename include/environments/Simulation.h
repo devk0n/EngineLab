@@ -23,10 +23,6 @@ public:
   void render() override;
   void unload() override;
 
-  void showSolverData() const;
-
-  void showSimulationControls(double dt);
-
 private:
   Camera m_camera;
   SystemVisualizer m_systemVisualizer;
@@ -36,8 +32,6 @@ private:
 
   void handleCameraMovement(float dt);
   void showWindowDebug();
-
-  void showPhysicsDebug() const;
 
   float m_displayedFps = 0.0f;
   float m_fpsUpdateTimer = 0.0f;

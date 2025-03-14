@@ -40,23 +40,23 @@ public:
     m_shaderManager.setUniform("projection", projectionMatrix);
 
     // Render each body
-    for (const auto &body: system.getBodies()) {
+    for (const auto& body: system.getBodies()) {
       auto modelMatrix = glm::mat4(1.0f); // Start with an identity matrix
 
       // Apply translation
-      modelMatrix = glm::translate(modelMatrix, body.second->getPositionVec3());
+      modelMatrix = translate(modelMatrix, body->getPositionVec3());
 
       // Apply orientation (rotation)
-      glm::quat orientation = body.second->getOrientationQuat();
-      modelMatrix = modelMatrix * glm::mat4_cast(orientation);
+      glm::quat orientation = body->getOrientationQuat();
+      modelMatrix = modelMatrix * mat4_cast(orientation);
       // Convert quaternion to matrix and apply
 
-      m_shaderManager.setUniform("objectColor",
-                                 glm::vec4(0.98, 0.98, 0.96, 1.0));
+      m_shaderManager.setUniform("objectColor", glm::vec4(0.98, 0.98, 0.96, 1.0));
       // Set color (white)
       m_shaderManager.setUniform("model", modelMatrix); // Set model matrix
       drawCube();                                       // Render the cube
     }
+
   }
 
 private:

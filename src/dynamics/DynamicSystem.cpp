@@ -1,79 +1,74 @@
-// dynamics/DynamicSystem.cpp
 #include "DynamicSystem.h"
-#include <algorithm>
-#include "utils/Logger.h"
 
 namespace Neutron {
+
 DynamicSystem::DynamicSystem() = default;
 
-UniqueID DynamicSystem::addBody(
-  const double &mass,
-  const Vector3d &inertia,
-  const Vector3d &position,
-  const Quaterniond &orientation
-) {
-  UniqueID ID = m_nextID++;
-  auto body = std::make_unique<Body>(ID, mass, inertia, position, orientation);
-  m_bodies[ID] = std::move(body);
-  m_bodyOrder.push_back(ID);
-  return ID;
-}
-
-Body *DynamicSystem::getBody(const UniqueID ID) {
-  if (auto it = m_bodies.find(ID); it != m_bodies.end()) {
-    return it->second.get();
-  }
-  return nullptr;
-}
-
-void DynamicSystem::addForceGenerator(
-  const std::shared_ptr<ForceGenerator> &generator) {
-  m_forceGenerators.emplace_back(generator);
-}
-
-void DynamicSystem::addConstraint(const std::shared_ptr<Constraint> &constraint) {
-  m_constraints.emplace_back(constraint);
-  m_solver.addConstraint(constraint);
-}
-
-void DynamicSystem::clearConstraints() {
-  m_constraints.clear();
-  m_solver.clearConstraints();
-}
-
-
 void DynamicSystem::buildMassInertiaTensor() {
-  int n = static_cast<int>(m_bodies.size()) * 6; // 6 DOF per body
+  if(!m_dirty) return;
+
+  int n = static_cast<int>(m_bodies.size()) * 6;
   m_massInertiaTensor.resize(n);
   m_massInertiaTensor.setZero();
 
   int i = 0;
-  for (const auto &[id, body]: m_bodies) {
+  for (const auto& body : m_bodies) {
     m_massInertiaTensor.segment<3>(i * 6).setConstant(body->getMass());
     m_massInertiaTensor.segment<3>(i * 6 + 3) = body->getInertia();
     ++i;
   }
+
+  LOG_DEBUG("Tensor: \n", m_massInertiaTensor);
+
+  m_dirty = false;
 }
 
-void DynamicSystem::buildWrench(VectorXd &wrench) {
+void DynamicSystem::buildWrench(VectorXd& wrench) {
   int n = static_cast<int>(m_bodies.size()) * 6; // 6 DOF per body
   wrench.resize(n);
   wrench.setZero();
 
   int i = 0;
-  for (const auto &[id, body]: m_bodies) {
+  for (const auto& body : m_bodies) {
     wrench.segment<3>(i * 6) = body->getForce();
-    wrench.segment<3>(i * 6 + 3) = body->getTorque();
+    wrench.segment<3>(i * 6 + 3) = body->getTorque() -
+      (skew(body->getAngularVelocity()) * body->getInertia().asDiagonal() * body->getAngularVelocity()) ;
     ++i;
   }
 }
 
-void DynamicSystem::step(const double dt) {
-  if (m_bodies.empty()) return;
+void DynamicSystem::buildConstraints(
+    MatrixXd& jacobian,
+    VectorXd& gamma,
+    VectorXd& accelerations,
+    VectorXd& lambdas) {
+  // Resize matrices to accommodate all constraints
+  jacobian.resize(m_numConstraints, m_numBodies * 6);
+  gamma.resize(m_numConstraints);
+  accelerations.resize(m_numBodies * 6);
+  lambdas.resize(m_numConstraints);
 
+  // Zero-initialize the matrices
+  jacobian.setZero();
+  gamma.setZero();
+  accelerations.setZero();
+  lambdas.setZero();
+
+  // Have each constraint fill its portion of the matrices
+  int rowOffset = 0;
+  for (const auto& constraint : m_constraints) {
+    constraint->computeJacobian(jacobian, rowOffset);
+    constraint->computeGamma(gamma, rowOffset);
+    rowOffset += constraint->getDOFs();
+  }
+}
+
+void DynamicSystem::step(double dt) {
+  if (m_bodies.empty()) return;
+  buildMassInertiaTensor();
 
   // --- 1. Clear Forces and Apply External Forces ---
-  for (auto &[id, body]: m_bodies) {
+  for (auto& body : m_bodies) {
     body->clearForces();
     body->clearTorques();
   }
@@ -82,17 +77,11 @@ void DynamicSystem::step(const double dt) {
     generator->apply(dt);
   }
 
-  if (m_massInertiaTensor.size() == 0) {
-    buildMassInertiaTensor();
-  }
-
+  // --- 2. Assemble System and Solve ---
   VectorXd forces, gamma, accelerations, lambdas;
   MatrixXd jacobian;
   buildWrench(forces);
-  accelerations.resize(forces.size());
-  lambdas.resize(m_constraints.size());
-
-  m_solver.buildJacobian(jacobian, gamma, m_massInertiaTensor.size());
+  buildConstraints(jacobian, gamma, accelerations, lambdas);
 
   m_solver.solveSystem(
     m_massInertiaTensor,
@@ -103,191 +92,105 @@ void DynamicSystem::step(const double dt) {
     lambdas
   );
 
-  // --- 2. Update State Variables ---
+  // --- 3. Update State Variables (Semi-Implicit Euler) ---
   int i = 0;
-  for (auto &[id, body] : m_bodies) {
-    if (!body->isFixed()) {
-      body->setVelocity(body->getVelocity() + accelerations.segment<3>(i * 6) * dt);
-      body->setAngularVelocity(body->getAngularVelocity() + accelerations.segment<3>(i * 6 + 3) * dt);
+  for (auto& body : m_bodies) {
+    // Linear motion
+    body->setVelocity(body->getVelocity() + accelerations.segment<3>(i * 6) * dt);
+    body->setPosition(body->getPosition() + body->getVelocity() * dt);
+
+    // Angular motion
+    body->setAngularVelocity(body->getAngularVelocity() + accelerations.segment<3>(i * 6 + 3) * dt);
+
+    // Quaternion orientation update
+    Vector3d omega = body->getAngularVelocity();
+    double angle = omega.norm() * dt;
+
+    Quaterniond deltaQ;
+    if (angle > 1e-8) { // Handle non-zero rotation
+      Vector3d axis = omega.normalized();
+      deltaQ = Quaterniond(AngleAxisd(angle, axis));
+    } else { // Handle zero rotation
+      deltaQ.setIdentity();
     }
-    ++i; // Track the iteration index
+
+    // Get current orientation and apply rotation
+    Vector4d currentOrient = body->getOrientation();
+    Quaterniond q(currentOrient.w(),   // Construct from (w, x, y, z)
+                  currentOrient.x(),
+                  currentOrient.y(),
+                  currentOrient.z());
+
+    q = q * deltaQ;    // Apply rotation (body-frame convention)
+    q.normalize();     // Prevent numerical drift
+
+    // Store updated orientation (convert back to x,y,z,w format)
+    body->setOrientation(Vector4d(q.x(), q.y(), q.z(), q.w()));
+
+    ++i;
   }
-
-  // --- 3. Update Position ---
-  for (auto &[id, body]: m_bodies) {
-    if (!body->isFixed()) {
-      // Update position
-      body->setPosition(body->getPosition() + body->getVelocity() * dt);
-
-      // Update orientation
-      Vector3d angularVelocity = body->getAngularVelocity(); // Angular velocity in body frame
-      Quaterniond currentOrientation = body->getOrientation(); // Current orientation as a quaternion
-
-      // Compute rotation vector
-      Vector3d deltaTheta = angularVelocity * dt; // Rotation vector
-
-      // Convert rotation vector to quaternion (exponential map)
-      double theta = deltaTheta.norm(); // Magnitude of rotation
-      if (theta > 1e-6) { // Avoid division by zero
-        Vector3d axis = deltaTheta / theta; // Normalized rotation axis
-        Quaterniond deltaQ(Eigen::AngleAxisd(theta, axis)); // Quaternion from axis-angle
-        Quaterniond newOrientation = currentOrientation * deltaQ; // Update orientation
-        body->setOrientation(newOrientation);
-      } else {
-        // For small rotations, use first-order approximation
-        Quaterniond omegaQuat(0, angularVelocity.x(), angularVelocity.y(), angularVelocity.z());
-        Quaterniond qDot = currentOrientation * omegaQuat;
-        qDot.coeffs() *= 0.5;
-        Quaterniond newOrientation;
-        newOrientation.coeffs() = currentOrientation.coeffs() + qDot.coeffs() * dt;
-        newOrientation.normalize();
-        body->setOrientation(newOrientation);
-      }
-    }
-  }
-
-  // Store calculation data for debugging
-  m_lastJacobian = jacobian;
-  m_lastGamma = gamma;
-  m_lastForces = forces;
-
-
-  // --- Constraint Stabilization ---
-  solvePositionConstraints(
-    1e-10,    // epsilon
-    100,      // maxIterations
-    0.3,     // alpha
-    1e-6,    // lambda
-    0.05     // maxCorrection
-  );
-
-  solveVelocityConstraints(
-    1e-10,    // epsilon
-    100,      // maxIterations
-    0.3,     // alpha
-    1e-6,    // lambda
-    0.05     // maxCorrection
-  );
 
 }
 
-void DynamicSystem::solvePositionConstraints(
-    const double epsilon,
-    const int maxIterations,
-    const double alpha,
-    const double lambda,
-    const double maxCorrection) {
-  if (m_bodies.empty()) return;
-
-  std::vector<Body *> bodies;
-  for (const auto &[id, body]: m_bodies) {
-    bodies.emplace_back(body.get());
+UniqueID DynamicSystem::addBody(
+    const double& mass,
+    const Vector3d& inertia,
+    const Vector3d& position,
+    const Vector4d& orientation
+) {
+  // Input validation
+  if (mass <= 0) {
+    LOG_ERROR("Mass must be positive");
+    return -1;
+  }
+  if (inertia.x() <= 0 || inertia.y() <= 0 || inertia.z() <= 0) {
+    LOG_ERROR("Inertia components must be positive");
+    return -1;
   }
 
-  for (int iter = 0; iter < maxIterations; ++iter) {
-    // Compute constraint violations
-    VectorXd c(m_constraints.size());
-    int constraintIndex = 0;
-    for (const auto &constraint: m_constraints) {
-      constraint->computePhi(c, constraintIndex);
-      constraintIndex++;
-    }
-
-    // Check convergence
-    double error = c.norm();
-    if (error < epsilon) {
-      break;
-    }
-
-    // Build Jacobian and solve for corrections
-    MatrixXd jacobian;
-    VectorXd dummy;
-    m_solver.buildJacobian(jacobian, dummy, bodies.size() * 6);
-
-    // Use damped least squares to solve for corrections
-    MatrixXd JTJ = jacobian.transpose() * jacobian;
-    MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
-    VectorXd dx = H.ldlt().solve(jacobian.transpose() * (-c));
-
-    // Apply corrections with relaxation and clamping
-    int i = 0;
-    for (auto &body: bodies) {
-      if (!body->isFixed()) {
-        Vector3d correction = alpha * dx.segment<3>(i * 6);
-
-        // Limit correction magnitude
-        if (correction.norm() > maxCorrection) {
-          correction *= maxCorrection / correction.norm();
-        }
-
-        // Apply correction to position
-        body->setPosition(body->getPosition() + correction);
-      }
-      i++;
-    }
-  }
+  UniqueID ID = m_nextID++;
+  m_bodies.emplace_back(std::make_unique<Body>(
+      ID,
+      mass,
+      inertia,
+      position,
+      orientation.normalized()
+  ));
+  m_bodyIndex.try_emplace(ID, m_bodies.size() - 1);
+  m_dirty = true;
+  m_numBodies++;
+  return ID;
 }
 
-void DynamicSystem::solveVelocityConstraints(
-    const double epsilon,
-    const int maxIterations,
-    const double alpha,
-    const double lambda,
-    const double maxCorrection) {
-  if (m_bodies.empty()) return;
-
-  std::vector<Body *> bodies;
-  for (const auto &[id, body]: m_bodies) {
-    bodies.emplace_back(body.get());
-  }
-
-  for (int iter = 0; iter < maxIterations; ++iter) {
-    // Build Jacobian
-    MatrixXd jacobian;
-    VectorXd dummy;
-    m_solver.buildJacobian(jacobian, dummy, bodies.size() * 6);
-
-    // Compute velocity constraint violations
-    VectorXd qdot(bodies.size() * 6);
-    for (int i = 0; i < bodies.size(); ++i) {
-      qdot.segment<3>(i * 6) = bodies[i]->getVelocity();
-      qdot.segment<3>(i * 6 + 3) = bodies[i]->getAngularVelocity();
-    }
-
-    VectorXd cdot = jacobian * qdot;
-
-    // Check convergence
-    if (cdot.norm() < epsilon) {
-      break;
-    }
-
-    // Use damped least squares to solve for velocity corrections
-    MatrixXd JTJ = jacobian.transpose() * jacobian;
-    MatrixXd H = JTJ + lambda * MatrixXd::Identity(JTJ.rows(), JTJ.cols());
-    VectorXd dv = H.ldlt().solve(jacobian.transpose() * (-cdot));
-
-    // Apply corrections with relaxation and clamping
-    int i = 0;
-    for (auto &body: bodies) {
-      if (!body->isFixed()) {
-        Vector3d linearCorrection = alpha * dv.segment<3>(i * 6);
-        Vector3d angularCorrection = alpha * dv.segment<3>(i * 6 + 3);
-
-        // Limit correction magnitude
-        if (linearCorrection.norm() > maxCorrection) {
-          linearCorrection *= maxCorrection / linearCorrection.norm();
-        }
-        if (angularCorrection.norm() > maxCorrection) {
-          angularCorrection *= maxCorrection / angularCorrection.norm();
-        }
-
-        // Apply corrections to velocities
-        body->setVelocity(body->getVelocity() + linearCorrection);
-        body->setAngularVelocity(body->getAngularVelocity() + angularCorrection);
-      }
-      i++;
+Body* DynamicSystem::getBody(UniqueID ID) {
+  auto it = m_bodyIndex.find(ID);
+  if (it != m_bodyIndex.end()) {
+    // Check if the index is valid
+    if (it->second < m_bodies.size()) {
+      return m_bodies[it->second].get();
     }
   }
+  return nullptr; // Return nullptr if the body is not found
+}
+
+const Body* DynamicSystem::getBody(UniqueID ID) const {
+  auto it = m_bodyIndex.find(ID);
+  if (it != m_bodyIndex.end()) {
+    // Check if the index is valid
+    if (it->second < m_bodies.size()) {
+      return m_bodies[it->second].get();
+    }
+  }
+  return nullptr; // Return nullptr if the body is not found
+}
+
+void DynamicSystem::addConstraint(const std::shared_ptr<Constraint>& constraint) {
+  m_constraints.emplace_back(constraint);
+  m_numConstraints++;
+}
+
+const std::vector<std::shared_ptr<Constraint>>& DynamicSystem::getConstraints() const {
+  return m_constraints;
 }
 
 

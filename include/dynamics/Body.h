@@ -6,7 +6,6 @@
 #include "core/types.h"
 
 namespace Neutron {
-
 class Body {
 public:
   Body(
@@ -14,80 +13,69 @@ public:
       double mass,
       const Vector3d &inertia,
       const Vector3d &position,
-      const Quaterniond &orientation
-  );
+      const Vector4d &orientation)
+      : m_ID(ID),
+        m_mass(mass),
+        m_inertia(inertia),
+        m_position(position),
+        m_orientation(orientation) {}
 
-  UniqueID getID() const;
-
-  // Physical properties
-  [[nodiscard]] const double &getMass() const;
-  [[nodiscard]] const Vector3d &getInertia() const;
-
-  // State variables
-  [[nodiscard]] const Vector3d &getPosition() const;
-  [[nodiscard]] const Quaterniond &getOrientation() const;
-  [[nodiscard]] const Vector3d &getVelocity() const;
-  [[nodiscard]] const Vector3d &getAngularVelocity() const;
-
-  void setPosition(const Vector3d &position);
-  void setOrientation(const Quaterniond &orientation);
-  void setVelocity(const Vector3d &velocity);
-  void setAngularVelocity(const Vector3d &angularVelocity);
+  UniqueID getID();
 
   // Force accumulation
-  void addForce(const Vector3d &force);
-  void clearForces();
-  const Vector3d &getForce() const;
+  [[nodiscard]] const Vector3d& getForce() const { return m_force; }
+  void addForce(const Vector3d& force) { m_force += force; }
+  void clearForces() { m_force = Vector3d::Zero(); }
 
-  void addTorque(const Vector3d &torque);
-  void clearTorques();
-  const Vector3d &getTorque() const;
-
-  // Visualization convertion
-  [[nodiscard]] glm::vec3 getPositionVec3() const;
-  [[nodiscard]] glm::quat getOrientationQuat() const;
-
-  [[nodiscard]] double getMassInverse() const {
-    return 1.0 / m_mass;
-  }
-
-  static Matrix3d skewSymmetric(Vector3d vector) {
-    Matrix3d skew;
-    skew <<           0, -vector.z(),  vector.y(),
-             vector.z(),           0, -vector.x(),
-            -vector.y(),  vector.x(),           0;
-    return skew;
-  }
-
-  [[nodiscard]] Vector3d getGyroscopicTorque() const {
-    Vector3d b = skewSymmetric(m_angularVelocity) * m_inertia.asDiagonal() *
-                 m_angularVelocity;
-    return b;
-  }
-
-  // Configuration
-  void setFixed(const bool fixed) { m_fixed = fixed; }
-  bool isFixed() const { return m_fixed; }
-
-  [[nodiscard]] Matrix3d getInverseInertiaTensor() const { return m_inertia.asDiagonal().inverse(); }
-
-private:
-  UniqueID m_ID;
-
-  bool m_fixed = false;
-  // Physical properties
-  double m_mass;
-  Vector3d m_inertia;
+  // Torque accumulation
+  [[nodiscard]] const Vector3d& getTorque() const { return m_torque; }
+  void addTorque(const Vector3d& torque) { m_torque += torque; }
+  void clearTorques() { m_torque = Vector3d::Zero(); }
 
   // State variables
-  Vector3d m_position;
-  Quaterniond m_orientation;
-  Vector3d m_velocity;
-  Vector3d m_angularVelocity;
+  [[nodiscard]] const double& getMass() const { return m_mass; }
+  [[nodiscard]] const Vector3d& getInertia() const { return m_inertia; }
+  [[nodiscard]] const Vector3d& getPosition() const { return m_position; }
+  [[nodiscard]] const Vector4d& getOrientation() const { return m_orientation; }
+  [[nodiscard]] const Vector3d& getVelocity() const { return m_velocity; }
+  [[nodiscard]] const Vector3d& getAngularVelocity() const { return m_angularVelocity; }
+
+  void setPosition(const Vector3d& position) { m_position = position;}
+  void setOrientation(const Vector4d& orientation) { m_orientation = orientation;}
+  void setVelocity(const Vector3d& velocity) { m_velocity = velocity;}
+  void setAngularVelocity(const Vector3d& angularVelocity) { m_angularVelocity = angularVelocity;}
+
+  // Visualization convertion
+  glm::vec3 getPositionVec3() const {
+    return {m_position.x(), m_position.y(), m_position.z()};
+  }
+
+  glm::quat getOrientationQuat() const {
+    return {
+      static_cast<float>(m_orientation.w()), // Cast w to float
+      static_cast<float>(m_orientation.x()), // Cast x to float
+      static_cast<float>(m_orientation.y()), // Cast y to float
+      static_cast<float>(m_orientation.z())  // Cast z to float
+  };
+  }
+
+private:
+  UniqueID m_ID = -1;
+
+  // Physical properties
+  double m_mass = 3;
+  Vector3d m_inertia{Vector3d::Ones()};
+
+  // State variables
+  Vector3d m_position{Vector3d::Zero()};
+  Vector4d m_orientation{Vector4d(1, 0, 0, 0)};
+  Vector3d m_velocity{Vector3d::Zero()};
+  Vector3d m_angularVelocity{Vector3d::Zero()};
 
   // Force accumulators
-  Vector3d m_force;
-  Vector3d m_torque;
+  Vector3d m_force{Vector3d::Zero()};
+  Vector3d m_torque{Vector3d::Zero()};
+
 };
 
 } // namespace Neutron

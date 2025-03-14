@@ -1,0 +1,53 @@
+  // --- 3. Update State Variables (Semi-Implicit Euler) ---
+int i = 0;
+for (auto& body : m_bodies) {
+    // Linear motion
+    body->setVelocity(body->getVelocity() + accelerations.segment<3>(i * 6) * dt);
+    body->setPosition(body->getPosition() + body->getVelocity() * dt);
+
+    // Angular motion
+    body->setAngularVelocity(body->getAngularVelocity() + accelerations.segment<3>(i * 6 + 3) * dt);
+
+    // Quaternion orientation update
+    Vector3d omega = body->getAngularVelocity();
+    double angle = omega.norm() * dt;
+
+    Vector4d deltaQ; // Represents (x, y, z, w)
+    if (angle > 1e-8) { // Handle non-zero rotation
+        Vector3d axis = omega.normalized();
+        double sinHalfAngle = std::sin(angle / 2.0);
+        double cosHalfAngle = std::cos(angle / 2.0);
+
+        deltaQ.x() = axis.x() * sinHalfAngle; // x
+        deltaQ.y() = axis.y() * sinHalfAngle; // y
+        deltaQ.z() = axis.z() * sinHalfAngle; // z
+        deltaQ.w() = cosHalfAngle;            // w
+    } else { // Handle zero rotation
+        deltaQ.x() = 0.0;
+        deltaQ.y() = 0.0;
+        deltaQ.z() = 0.0;
+        deltaQ.w() = 1.0; // Identity quaternion
+    }
+
+    // Get current orientation
+    Vector4d currentOrient = body->getOrientation();
+
+    // Quaternion multiplication: q_new = currentOrient * deltaQ
+    Vector4d q_new;
+    q_new.x() = currentOrient.w() * deltaQ.x() + currentOrient.x() * deltaQ.w() + currentOrient.y() * deltaQ.z() - currentOrient.z() * deltaQ.y();
+    q_new.y() = currentOrient.w() * deltaQ.y() - currentOrient.x() * deltaQ.z() + currentOrient.y() * deltaQ.w() + currentOrient.z() * deltaQ.x();
+    q_new.z() = currentOrient.w() * deltaQ.z() + currentOrient.x() * deltaQ.y() - currentOrient.y() * deltaQ.x() + currentOrient.z() * deltaQ.w();
+    q_new.w() = currentOrient.w() * deltaQ.w() - currentOrient.x() * deltaQ.x() - currentOrient.y() * deltaQ.y() - currentOrient.z() * deltaQ.z();
+
+    // Normalize the quaternion to prevent numerical drift
+    double norm = std::sqrt(q_new.x() * q_new.x() + q_new.y() * q_new.y() + q_new.z() * q_new.z() + q_new.w() * q_new.w());
+    q_new.x() /= norm;
+    q_new.y() /= norm;
+    q_new.z() /= norm;
+    q_new.w() /= norm;
+
+    // Store updated orientation
+    body->setOrientation(q_new);
+
+    ++i;
+}
