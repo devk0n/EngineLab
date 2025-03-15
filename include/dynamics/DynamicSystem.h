@@ -26,6 +26,9 @@ public:
   // Simulation
   void step(double dt);
 
+  void solvePositionConstraints(double epsilon, int maxIterations, double alpha,
+                                double lambda, double maxCorrection);
+
   const Body* getBody(UniqueID ID) const;
 
   void addConstraint(const std::shared_ptr<Constraint> &constraint);
@@ -36,15 +39,25 @@ public:
     m_forceGenerators.emplace_back(generator);
   }
 
+  void projectPositions(VectorXd& q, int maxIterations);
+  void projectVelocities(VectorXd& q, VectorXd& q_dot);
+
+  VectorXd computeAccelerations(const VectorXd& q, const VectorXd& q_dot);
+  void setVelocityState(const VectorXd& velocities) const;
+  void getVelocityState(VectorXd& velocities) const;
+
   const std::vector<std::unique_ptr<Body>>& getBodies() const { return m_bodies; }
 
 private:
+  void getSystemState(VectorXd &state) const;
+  void setSystemState(VectorXd state);
   // Build system matrices
   void buildMassInertiaTensor();
-  void buildWrench(VectorXd& wrench);
+  void buildWrench(VectorXd& wrench) const;
   void buildConstraints(
-    MatrixXd &jacobian,
-    VectorXd &gamma);
+    VectorXd &phi,
+    MatrixXd &jacobian, VectorXd &gamma, VectorXd &accelerations, VectorXd &
+    lambdas);
 
   // System state
   std::vector<std::unique_ptr<Body>> m_bodies;

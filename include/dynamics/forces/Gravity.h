@@ -14,8 +14,8 @@ public:
 
   void apply(double dt) override {
     for (Body* body : m_bodies) {
-      // body->addForce(body->getMass() * m_gravity);
-      body->addTorque(Vector3d(0, 0, 0));
+      body->addForce(body->getMass() * m_gravity);
+      // body->addTorque(Vector3d(0, 0, 0));
     }
   }
 

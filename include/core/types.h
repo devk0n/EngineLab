@@ -20,6 +20,27 @@ using Matrix4d = Eigen::Matrix4d;
 using VectorXd = Eigen::VectorXd;
 using MatrixXd = Eigen::MatrixXd;
 
+using Quaterniond = Eigen::Quaterniond;
+using AngleAxisd = Eigen::AngleAxisd;
+
+inline Matrix4d idk(Vector3d w) {
+  Eigen::Matrix4d W;
+  W <<     0, -w.x(), -w.y(), -w.z(),
+       w.x(),      0,  w.z(), -w.y(),
+       w.y(), -w.z(),      0,  w.x(),
+       w.z(),  w.y(), -w.x(),      0;
+  return W;
+}
+
+// Multiplies two Vector4d quaternions [x, y, z, w]
+inline Vector4d quaternionMultiply(const Vector4d &a, const Vector4d &b) {
+  return Vector4d(
+    a.w() * b.x() + a.x() * b.w() + a.y() * b.z() - a.z() * b.y(),
+    a.w() * b.y() - a.x() * b.z() + a.y() * b.w() + a.z() * b.x(),
+    a.w() * b.z() + a.x() * b.y() - a.y() * b.x() + a.z() * b.w(),
+    a.w() * b.w() - a.x() * b.x() - a.y() * b.y() - a.z() * b.z()
+  );
+}
 
 inline Eigen::Matrix<double, 3, 4> GMatrix(Vector4d e) {
   Eigen::Matrix<double, 3, 4> G;

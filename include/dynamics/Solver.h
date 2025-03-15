@@ -13,10 +13,10 @@ public:
   void solveSystem(
     const VectorXd &M,
     const VectorXd &forces,
-    const MatrixXd& jacobian,
-    const MatrixXd& gamma,
-    VectorXd &accelerations,
-    VectorXd& lambdas
+    const VectorXd &phi,
+    const MatrixXd &jacobian,
+    const MatrixXd &gamma,
+    VectorXd &accelerations, VectorXd &lambdas
   ) const;
 
 };

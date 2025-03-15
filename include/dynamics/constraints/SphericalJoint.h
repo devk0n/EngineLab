@@ -11,8 +11,8 @@ public:
   SphericalJoint(
     Body* body1,
     Body* body2,
-    const Vector3d& vector1,
-    const Vector3d& vector2
+    Vector3d  vector1,
+    Vector3d  vector2
   );
 
   void computePhi(VectorXd& phi, int startRow) override;

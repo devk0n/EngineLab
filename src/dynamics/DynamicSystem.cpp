@@ -20,7 +20,7 @@ void DynamicSystem::buildMassInertiaTensor() {
   m_dirty = false;
 }
 
-void DynamicSystem::buildWrench(VectorXd &wrench) {
+void DynamicSystem::buildWrench(VectorXd &wrench) const {
   int n = static_cast<int>(m_bodies.size()) * 6; // 6 DOF per body
   wrench.resize(n);
   wrench.setZero();
@@ -28,7 +28,7 @@ void DynamicSystem::buildWrench(VectorXd &wrench) {
   int i = 0;
   for (const auto &body: m_bodies) {
     wrench.segment<3>(i * 6) = body->getForce();
-    wrench.segment<3>(i * 6 + 3) = body->getTorque() -
+    wrench.segment<3>(i * 6 + 3) = body->getTorque(); -
                                    (skew(body->getAngularVelocity()) * body->
                                     getInertia().asDiagonal() * body->
                                     getAngularVelocity());
@@ -37,78 +37,128 @@ void DynamicSystem::buildWrench(VectorXd &wrench) {
 }
 
 void DynamicSystem::buildConstraints(
+  VectorXd &phi,
   MatrixXd &jacobian,
-  VectorXd &gamma) {
+  VectorXd &gamma,
+  VectorXd &accelerations,
+  VectorXd &lambdas) {
+
   // Resize matrices to accommodate all constraints
+  phi.resize(m_numConstraints);
   jacobian.resize(m_numConstraints, m_numBodies * 6);
   gamma.resize(m_numConstraints);
+  accelerations.resize(m_numBodies * 6);
+  lambdas.resize(m_numConstraints);
 
   // Zero-initialize the matrices
+  phi.setZero();
   jacobian.setZero();
   gamma.setZero();
+  accelerations.setZero();
+  lambdas.setZero();
 
-  // Have each constraint fill its portion of the matrices
-  int rowOffset = 0;
-  for (const auto &constraint: m_constraints) {
-    constraint->computeJacobian(jacobian, rowOffset);
-    constraint->computeGamma(gamma, rowOffset);
-    rowOffset += constraint->getDOFs();
+  // Collect qdot (velocities)
+  VectorXd qdot(m_bodies.size() * 6);
+  for (int i = 0; i < m_bodies.size(); ++i) {
+    qdot.segment<3>(i * 6) = m_bodies[i]->getVelocity();
   }
 
-  // LOG_DEBUG("Jacobian: \n", jacobian);
+  // Current row in the Jacobian and constraintRHS
+  int startRow = 0;
+  for (const auto& constraint : m_constraints) {
+
+    constraint->computePhi(phi, startRow);
+    constraint->computeJacobian(jacobian, startRow);
+    constraint->computeGamma(gamma, startRow);
+
+    startRow += constraint->getDOFs();
+  }
 }
 
-Matrix4d idk(Vector3d w) {
-  Eigen::Matrix4d W;
-  W <<     0, -w.x(), -w.y(), -w.z(),
-       w.x(),      0,  w.z(), -w.y(),
-       w.y(), -w.z(),      0,  w.x(),
-       w.z(),  w.y(), -w.x(),      0;
-  return W;
-}
-
-void DynamicSystem::step(double dt) {
+void DynamicSystem::step(const double dt) {
   if (m_bodies.empty()) return;
   buildMassInertiaTensor();
 
-  // --- 1. Clear Forces and Apply External Forces ---
-  for (auto &body: m_bodies) {
-    body->clearForces();
-    body->clearTorques();
-  }
+  // --- 1. Save current state ---
+  VectorXd q_prev, q_dot_prev;
+  getSystemState(q_prev);
+  getVelocityState(q_dot_prev);
 
-  for (auto &generator: m_forceGenerators) {
-    generator->apply(dt);
-  }
+  // --- 2. Predict midpoint state ---
+  VectorXd q_mid = q_prev + 0.5 * dt * q_dot_prev;
+  VectorXd q_dot_mid = q_dot_prev + 0.5 * dt * computeAccelerations(q_prev, q_dot_prev);
 
-  // --- 2. Assemble System and Solve ---
-  VectorXd forces, gamma, accelerations, lambdas;
+  // --- 3. Solve at midpoint ---
+  VectorXd forces, phi, gamma, accelerations, lambdas;
   MatrixXd jacobian;
-  buildWrench(forces);
-  buildConstraints(jacobian, gamma);
 
+  // Set system to midpoint state
+  setSystemState(q_mid);
+  setVelocityState(q_dot_mid);
+
+  // Compute forces and constraints at midpoint
+  buildWrench(forces);
+  buildConstraints(phi, jacobian, gamma, accelerations, lambdas);
+
+  // Remove Baumgarte terms from gamma (keep original constraint derivatives)
+  gamma = jacobian * q_dot_mid; // Simplified for illustration
+
+  // Solve augmented system
   m_solver.solveSystem(
     m_massInertiaTensor,
     forces,
+    phi,
     jacobian,
     gamma,
     accelerations,
     lambdas
   );
 
+  // --- 4. Update state with midpoint derivatives ---
+  VectorXd q_new = q_prev + dt * (q_dot_prev + 0.5 * dt * accelerations);
+  VectorXd q_dot_new = q_dot_prev + dt * accelerations;
+
+  // --- 5. Project positions ---
+
+  // --- 6. Project velocities ---
+
+  // --- 7. Update final state ---
+  setSystemState(q_new);
+  setVelocityState(q_dot_new);
+}
+
+void DynamicSystem::getVelocityState(VectorXd& velocities) const {
+  velocities.resize(m_bodies.size() * 6);
+  for (size_t i = 0; i < m_bodies.size(); ++i) {
+    velocities.segment<3>(i*6) = m_bodies[i]->getVelocity();
+    velocities.segment<3>(i*6+3) = m_bodies[i]->getAngularVelocity();
+  }
+}
+
+void DynamicSystem::setVelocityState(const VectorXd& velocities) const {
+  for (size_t i = 0; i < m_bodies.size(); ++i) {
+    m_bodies[i]->setVelocity(velocities.segment<3>(i*6));
+    m_bodies[i]->setAngularVelocity(velocities.segment<3>(i*6+3));
+  }
+}
+
+
+void DynamicSystem::setSystemState(VectorXd state) {
   int i = 0;
   for (auto &body: m_bodies) {
-    // Linear motion
-    body->setVelocity(body->getVelocity() + accelerations.segment<3>(i * 6) * dt);
-    body->setPosition(body->getPosition() + body->getVelocity() * dt);
+    body->setPosition(state.segment<3>(i * 7));
+    body->setOrientation(state.segment<4>(i * 7 + 3));
+    ++i;
+  }
+}
 
-    // Angular motion
-    body->setAngularVelocity(body->getAngularVelocity() + accelerations.segment<3>(i * 6 + 3) * dt);
+void DynamicSystem::getSystemState(VectorXd& state) const {
+  state.resize(m_numBodies * 7);
 
-    auto quatVel = 0.5 * idk(body->getAngularVelocity()) * body->getOrientation();
-
-    body->setOrientation(body->getOrientation() + quatVel * dt);
-
+  int i = 0;
+  for (const auto &body: m_bodies) {
+    state.segment<3>(i * 7) = body->getPosition();
+    state.segment<4>(i * 7 + 3) = body->getOrientation();
     ++i;
   }
 }
@@ -119,19 +169,10 @@ UniqueID DynamicSystem::addBody(
   const Vector3d &position,
   const Vector4d &orientation
 ) {
-  // Input validation
-  if (mass <= 0) {
-    LOG_ERROR("Mass must be positive");
-    return -1;
-  }
-  if (inertia.x() <= 0 || inertia.y() <= 0 || inertia.z() <= 0) {
-    LOG_ERROR("Inertia components must be positive");
-    return -1;
-  }
-
   UniqueID ID = m_nextID++;
   m_bodies.emplace_back(std::make_unique<Body>(
     ID,
+    m_numBodies,
     mass,
     inertia,
     position,
@@ -143,7 +184,7 @@ UniqueID DynamicSystem::addBody(
   return ID;
 }
 
-Body *DynamicSystem::getBody(UniqueID ID) {
+Body *DynamicSystem::getBody(const UniqueID ID) {
   auto it = m_bodyIndex.find(ID);
   if (it != m_bodyIndex.end()) {
     // Check if the index is valid
@@ -154,7 +195,7 @@ Body *DynamicSystem::getBody(UniqueID ID) {
   return nullptr; // Return nullptr if the body is not found
 }
 
-const Body *DynamicSystem::getBody(UniqueID ID) const {
+const Body *DynamicSystem::getBody(const UniqueID ID) const {
   auto it = m_bodyIndex.find(ID);
   if (it != m_bodyIndex.end()) {
     // Check if the index is valid

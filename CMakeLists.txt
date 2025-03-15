@@ -124,6 +124,8 @@ set(SOURCES
         src/dynamics/Solver.cpp
 include/dynamics/constraints/SphericalJoint.h
 src/dynamics/constraints/SphericalJoint.cpp
+include/dynamics/constraints/DistanceConstraint.h
+src/dynamics/constraints/DistanceConstraint.cpp
 )
 
 # Add executable

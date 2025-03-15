@@ -1,24 +1,26 @@
 #include "SphericalJoint.h"
 
+#include <utility>
+
 namespace Neutron {
 
 SphericalJoint::SphericalJoint(
     Body* body1,
     Body* body2,
-    const Vector3d& vector1,
-    const Vector3d& vector2)
+    Vector3d vector1,
+    Vector3d vector2)
     : Constraint(3),
       m_body1(body1),
       m_body2(body2),
-      m_vector1(vector1),
-      m_vector2(vector2) {}
+      m_vector1(std::move(vector1)),
+      m_vector2(std::move(vector2)) {}
 
 void SphericalJoint::computePhi(VectorXd &phi, const int startRow) {
   auto r1 = m_body1->getPosition();
   auto r2 = m_body2->getPosition();
 
-  auto A1 = LMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
-  auto A2 = LMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
+  auto A1 = GMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
+  auto A2 = GMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
 
   auto s1Am = m_vector1;
   auto s2Am = m_vector2;
@@ -28,16 +30,16 @@ void SphericalJoint::computePhi(VectorXd &phi, const int startRow) {
 }
 
 void SphericalJoint::computeJacobian(MatrixXd& jacobian, const int startRow) {
-  auto A1 = LMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
-  auto A2 = LMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
+  auto A1 = GMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
+  auto A2 = GMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
 
   auto s1Am = m_vector1;
   auto s2Am = m_vector2;
 
   auto I3 = Matrix3d::Identity();
 
-  int index1 = 0;
-  int index2 = 1;
+  int index1 = m_body1->getIndex();
+  int index2 = m_body2->getIndex();
 
   // Fill the Jacobian matrix
   jacobian.block<3, 3>(startRow, 6 * index1)     =  I3;                 // Translational part of body 1
@@ -47,8 +49,8 @@ void SphericalJoint::computeJacobian(MatrixXd& jacobian, const int startRow) {
 }
 
 void SphericalJoint::computeGamma(VectorXd& gamma, const int startRow) {
-  auto A1 = LMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
-  auto A2 = LMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
+  auto A1 = GMatrix(m_body1->getOrientation()) * LMatrix(m_body1->getOrientation()).transpose();
+  auto A2 = GMatrix(m_body2->getOrientation()) * LMatrix(m_body2->getOrientation()).transpose();
 
   auto s1Am = m_vector1;
   auto s2Am = m_vector2;

@@ -1,6 +1,7 @@
 #ifndef BODY_H
 #define BODY_H
 
+#include <utility>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include "core/types.h"
@@ -9,18 +10,22 @@ namespace Neutron {
 class Body {
 public:
   Body(
-      UniqueID ID,
-      double mass,
-      const Vector3d &inertia,
-      const Vector3d &position,
-      const Vector4d &orientation)
+      const UniqueID ID,
+      const int index,
+      const double mass,
+      Vector3d inertia,
+      Vector3d position,
+      Vector4d orientation)
       : m_ID(ID),
+        m_index(index),
         m_mass(mass),
-        m_inertia(inertia),
-        m_position(position),
-        m_orientation(orientation) {}
+        m_inertia(std::move(inertia)),
+        m_position(std::move(position)),
+        m_orientation(std::move(orientation)) {}
 
   UniqueID getID();
+
+  [[nodiscard]] int getIndex() const { return m_index; }
 
   // Force accumulation
   [[nodiscard]] const Vector3d& getForce() const { return m_force; }
@@ -46,11 +51,11 @@ public:
   void setAngularVelocity(const Vector3d& angularVelocity) { m_angularVelocity = angularVelocity;}
 
   // Visualization convertion
-  glm::vec3 getPositionVec3() const {
+  [[nodiscard]] glm::vec3 getPositionVec3() const {
     return {m_position.x(), m_position.y(), m_position.z()};
   }
 
-  glm::quat getOrientationQuat() const {
+  [[nodiscard]] glm::quat getOrientationQuat() const {
     return {
        // Cast w to float
       static_cast<float>(m_orientation.x()), // Cast x to float
@@ -60,8 +65,13 @@ public:
   };
   }
 
+  // Configuration
+  void setFixed(const bool fixed) { m_fixed = fixed; }
+  [[nodiscard]] bool isFixed() const { return m_fixed; }
+
 private:
   UniqueID m_ID = -1;
+  int m_index = -1;
 
   // Physical properties
   double m_mass = 3;
@@ -76,6 +86,8 @@ private:
   // Force accumulators
   Vector3d m_force{Vector3d::Zero()};
   Vector3d m_torque{Vector3d::Zero()};
+
+  bool m_fixed = false;
 
 };
 

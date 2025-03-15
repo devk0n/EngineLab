@@ -1,6 +1,8 @@
 #include "environments/Simulation.h"
 
 #include <imgui.h>
+
+#include "DistanceConstraint.h"
 #include "DynamicSystem.h"
 #include "SphericalJoint.h"
 #include "core/InputManager.h"
@@ -24,26 +26,20 @@ void Simulation::setupDynamics() {
   UniqueID body_2 = m_system.addBody(
     30.0,
     Vector3d(10.0, 10.0, 10.0),
-    Vector3d(-10.0, 0.0, 0.0),
+    Vector3d(10.0, 0.0, 0.0),
     Vector4d(1.0, 0.0, 0.0, 0.0)
   );
 
-  Body *b1 = m_system.getBody(body_1);
-  Body *b2 = m_system.getBody(body_2);
+  Body* b1 = m_system.getBody(body_1);
+  Body* b2 = m_system.getBody(body_2);
 
   // Add gravity as force generator
   auto gravityGen = std::make_shared<Gravity>(Vector3d(0, 0, -9.81));
-  for (auto& body : {b1}) {
+  for (auto& body : {b1, b2}) {
     gravityGen->addBody(body);
   }
   m_system.addForceGenerator(gravityGen);
 
-  auto constraint1 = std::make_shared<SphericalJoint>(
-    b1, b2,
-    Vector3d(5, 0, 0),
-    Vector3d(-5, 0, 0));
-
-  m_system.addConstraint(constraint1);
 }
 
 bool Simulation::load() {
