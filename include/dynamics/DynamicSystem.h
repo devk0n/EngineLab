@@ -3,7 +3,6 @@
 #define DYNAMIC_SYSTEM_H
 
 #include "Body.h"
-#include "ForceGenerator.h"
 #include "Solver.h"
 #include "core/types.h"
 
@@ -12,6 +11,9 @@ namespace Neutron {
 class DynamicSystem {
 public:
   DynamicSystem();
+
+  void buildMassTensor();
+
   ~DynamicSystem() = default;
 
   // Body management
@@ -22,57 +24,52 @@ public:
     const Vector4d &orientation
   );
   Body* getBody(UniqueID ID);
+  const Body* getBody(UniqueID ID) const;
+  const std::vector<std::unique_ptr<Body>>& getBodies() const { return m_bodies; }
 
   // Simulation
   void step(double dt);
 
-  void solvePositionConstraints(double epsilon, int maxIterations, double alpha,
-                                double lambda, double maxCorrection);
+  void computeAccelerations(const VectorXd& q, const VectorXd& q_dot);
 
-  const Body* getBody(UniqueID ID) const;
+  const VectorXd& getMassInertiaTensor() const { return m_massInertiaTensor; }
+  const MatrixXd& getJacobian() const { return m_jacobian; }
+  const VectorXd& getPhi() const { return m_phi; }
+  const VectorXd& getGamma() const { return m_gamma; }
+  const VectorXd& getVelocityState() const { return m_velocityState; }
+  const VectorXd& getSystemState() const { return m_systemState; }
 
   void addConstraint(const std::shared_ptr<Constraint> &constraint);
 
-  const std::vector<std::shared_ptr<Constraint>> &getConstraints() const;
-
-  void addForceGenerator(const std::shared_ptr<ForceGenerator>& generator) {
-    m_forceGenerators.emplace_back(generator);
-  }
-
-  void projectPositions(VectorXd& q, int maxIterations);
-  void projectVelocities(VectorXd& q, VectorXd& q_dot);
-
-  VectorXd computeAccelerations(const VectorXd& q, const VectorXd& q_dot);
-  void setVelocityState(const VectorXd& velocities) const;
-  void getVelocityState(VectorXd& velocities) const;
-
-  const std::vector<std::unique_ptr<Body>>& getBodies() const { return m_bodies; }
-
 private:
-  void getSystemState(VectorXd &state) const;
-  void setSystemState(VectorXd state);
   // Build system matrices
   void buildMassInertiaTensor();
-  void buildWrench(VectorXd& wrench) const;
-  void buildConstraints(
-    VectorXd &phi,
-    MatrixXd &jacobian, VectorXd &gamma, VectorXd &accelerations, VectorXd &
-    lambdas);
+
+  void getVelocityState(VectorXd& velocities) const;
+  void setVelocityState(const VectorXd& velocities) const;
+  void getSystemState(VectorXd &state) const;
+  void setSystemState(VectorXd state);
+
 
   // System state
   std::vector<std::unique_ptr<Body>> m_bodies;
   std::unordered_map<UniqueID, size_t> m_bodyIndex;
-  std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
   std::vector<std::shared_ptr<Constraint>> m_constraints;
-  int m_numConstraints = 0;
-  int m_numBodies = 0;
-  VectorXd m_massInertiaTensor;
 
+  VectorXd m_massInertiaTensor = VectorXd::Zero(0);
+  MatrixXd m_jacobian = MatrixXd::Zero(0, 0);
+  VectorXd m_phi = VectorXd::Zero(0);
+  VectorXd m_gamma = VectorXd::Zero(0);
+  VectorXd m_velocityState = VectorXd::Zero(0);
+  VectorXd m_systemState = VectorXd::Zero(0);
+
+  int m_numConstraints = 0;
   // Solver and system matrices
   Solver m_solver;
-  bool m_dirty = true;
 
   UniqueID m_nextID = 0;
+  int m_numBodies = 0;
+  bool m_dirty = true;
 };
 
 } // namespace Neutron

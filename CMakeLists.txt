@@ -117,15 +117,12 @@ set(SOURCES
         src/graphics/Camera.cpp
         src/graphics/ShaderManager.cpp
 
-        src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 
         src/dynamics/DynamicSystem.cpp
         src/dynamics/Solver.cpp
-include/dynamics/constraints/SphericalJoint.h
-src/dynamics/constraints/SphericalJoint.cpp
-include/dynamics/constraints/DistanceConstraint.h
-src/dynamics/constraints/DistanceConstraint.cpp
+
+        src/dynamics/constraints/DistanceConstraint.cpp
 )
 
 # Add executable

@@ -12,23 +12,24 @@ DistanceConstraint::DistanceConstraint(
 
 void DistanceConstraint::computePhi(VectorXd &phi, const int startRow) {
 
-  Vector3d d = m_body1->getPosition() - m_body2->getPosition();
+  Vector3d d = m_body2->getPosition() - m_body1->getPosition();
 
   phi[startRow] = (d.transpose() * d) - (m_distance * m_distance);
 }
 
 void DistanceConstraint::computeJacobian(MatrixXd &jacobian, const int startRow) {
-  Vector3d d = m_body1->getPosition() - m_body2->getPosition();
+  Vector3d d = m_body2->getPosition() - m_body1->getPosition();
 
   const int index1 = m_body1->getIndex();
   const int index2 = m_body2->getIndex();
 
-  jacobian.block<1, 3>(startRow, index1 * 6) = -2 * d.transpose(); // Correct sign for particle 1
-  jacobian.block<1, 3>(startRow, index2 * 6) =  2 * d.transpose(); // Correct sign for particle 2
+  jacobian.block<1, 3>(startRow, index1 * 3) = -2 * d.transpose(); // Correct sign for particle 1
+  jacobian.block<1, 3>(startRow, index2 * 3) =  2 * d.transpose(); // Correct sign for particle 2
 }
 
 void DistanceConstraint::computeGamma(VectorXd &gamma, const int startRow) {
-  Vector3d v = m_body1->getVelocity() - m_body2->getVelocity();
+  Vector3d v = m_body2->getVelocity() - m_body1->getVelocity();
+
   double result = v.transpose() * v; // Correct sign to positive
   gamma[startRow] = - 2 * result;
 }

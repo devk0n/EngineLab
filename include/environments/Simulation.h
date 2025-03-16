@@ -23,6 +23,8 @@ public:
   void render() override;
   void unload() override;
 
+  void showDynamicsData();
+
 private:
   Camera m_camera;
   SystemVisualizer m_systemVisualizer;

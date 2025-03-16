@@ -66,6 +66,10 @@ inline Matrix3d skew(Vector3d v) {
   return skew;
 }
 
+inline void toggle(bool &value) {
+  value = !value;
+}
+
 } // namespace Neutron
 
 #endif // TYPES_H
