@@ -29,25 +29,14 @@ void Simulation::setupDynamics() {
     Vector4d(1.0, 0.0, 0.0, 0.0)
   );
 
-  UniqueID body_3 = m_system.addBody(
-    30.0,
-    Vector3d(10.0, 10.0, 10.0),
-    Vector3d(-5.0, 0.0, 0.0),
-    Vector4d(1.0, 0.0, 0.0, 0.0)
-  );
-
   Body* b1 = m_system.getBody(body_1);
   Body* b2 = m_system.getBody(body_2);
-  Body* b3 = m_system.getBody(body_3);
 
   b1->setFixed(true);
-  b3->setFixed(true);
 
   auto constraint1 = std::make_shared<DistanceConstraint>(b1, b2, sqrt(200));
-  auto constraint2 = std::make_shared<DistanceConstraint>(b2, b3, sqrt(10*10 + 5*5));
 
   m_system.addConstraint(constraint1);
-  m_system.addConstraint(constraint2);
 
 }
 
