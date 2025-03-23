@@ -1,12 +1,9 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <chrono>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <mutex>
-#include <sstream>
 #include <string>
 
 #ifdef _WIN32
@@ -176,9 +173,6 @@ private:
     const std::string fileName = extractFileName(file);
 
     // White timestamp + log level + file:line + message
-    if (m_consoleConfig.showTimestamps) {
-      ss << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S") << "] ";
-    }
     if (m_consoleConfig.showLevel) {
       ss << "[" << levelToString(level) << "] ";
     }

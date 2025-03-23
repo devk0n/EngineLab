@@ -1,7 +1,7 @@
 #include "utils/OpenGLSetup.h"
 
 #include "core/WindowManager.h"
-#include "utils/Logger.h"
+#include "Proton.h"
 
 WindowManager::WindowManager(std::string title) :
     m_window(nullptr, glfwDestroyWindow), m_data{0, 0, std::move(title), nullptr} {}

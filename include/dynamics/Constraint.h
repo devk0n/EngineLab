@@ -1,24 +1,26 @@
 #ifndef CONSTRAINT_H
 #define CONSTRAINT_H
 
-#include "core/types.h"
+#include "Proton.h"
 
-namespace Neutron {
+namespace Proton {
+
 class Constraint {
 public:
-  Constraint(int DOFs) : m_DOFs(DOFs) {}
+  explicit Constraint(const int DOFs) : m_DOFs(DOFs) {}
   virtual ~Constraint() = default;
 
-  virtual void computePhi(VectorXd& phi, int startRow) = 0;
-  virtual void computeJacobian(MatrixXd& jacobian, int startRow) = 0;
-  virtual void computeGamma(VectorXd& gamma, int startRow) = 0;
+  virtual void computePositionError(VectorXd& phi, int startRow) const = 0;
+  virtual void computeJacobian(MatrixXd& jacobian, int startRow) const = 0;
+  virtual void computeAccelerationCorrection(VectorXd& gamma, int startRow) const = 0;
 
-  // Number of constraint equations
   int getDOFs() const { return m_DOFs; }
 
 protected:
-  int m_DOFs; // Degrees of freedom removed by this constraint
+  int m_DOFs;
+
 };
-} // namespace Neutron
+
+} // Proton
 
 #endif // CONSTRAINT_H

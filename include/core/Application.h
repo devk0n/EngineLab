@@ -3,10 +3,10 @@
 
 #include <memory>
 
+#include "DeltaTime.h"
 #include "EnvironmentManager.h"
 #include "ImGuiManager.h"
 #include "InputManager.h"
-#include "Time.h"
 #include "WindowManager.h"
 
 #include "graphics/Renderer.h"
@@ -30,7 +30,7 @@ private:
   std::unique_ptr<ImGuiManager> m_imguiManager;
   std::unique_ptr<EnvironmentManager> m_environmentManager;
   std::unique_ptr<ShaderManager> m_shaderManager;
-  std::unique_ptr<Time> m_time;
+  std::unique_ptr<DeltaTime> m_deltaTime;
 
   double m_lastFrameTime = 0.0;
 };

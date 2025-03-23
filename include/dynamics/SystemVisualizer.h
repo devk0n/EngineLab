@@ -1,7 +1,7 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
 #include <ranges>
-#include "DynamicSystem.h"
+#include "Dynamics.h"
 #include "graphics/ShaderManager.h"
 #include "utils/Logger.h"
 
@@ -22,7 +22,7 @@ public:
   }
 
   void render(
-    const Neutron::DynamicSystem &system,
+    const Proton::Dynamics &system,
     const glm::vec3 &cameraPosition,
     const glm::mat4 &viewMatrix,
     const glm::mat4 &projectionMatrix) const {

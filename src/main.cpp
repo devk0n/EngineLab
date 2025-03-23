@@ -1,5 +1,5 @@
+#include "Proton.h"
 #include "core/Application.h"
-#include "utils/Logger.h"
 
 int main() {
 

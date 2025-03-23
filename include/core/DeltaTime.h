@@ -1,11 +1,11 @@
 #ifndef TIME_H
 #define TIME_H
 
-#include <GLFW/glfw3.h>
+#include "OpenGLSetup.h"
 
-class Time {
+class DeltaTime {
 public:
-  Time() : m_lastFrameTime(0.0), m_deltaTime(0.0), m_elapsedTime(0.0) {}
+  DeltaTime() : m_lastFrameTime(0.0), m_deltaTime(0.0), m_elapsedTime(0.0) {}
 
   void update() {
     const double currentTime = glfwGetTime();

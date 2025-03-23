@@ -120,12 +120,8 @@ set(SOURCES
         src/environments/Dashboard.cpp
         src/environments/Simulation.cpp
 
-        src/dynamics/DynamicSystem.cpp
-        src/dynamics/Solver.cpp
-include/dynamics/constraints/SphericalJoint.h
-src/dynamics/constraints/SphericalJoint.cpp
-include/dynamics/constraints/DistanceConstraint.h
-src/dynamics/constraints/DistanceConstraint.cpp
+        src/dynamics/Dynamics.cpp
+        src/dynamics/DistanceConstraint.cpp
 )
 
 # Add executable
@@ -148,9 +144,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
-        ${imguizmo_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/utils
         ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics
         ${CMAKE_CURRENT_SOURCE_DIR}/include/dynamics/constraints
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+
+        ${glad_SOURCE_DIR}/include  # Explicitly add GLAD headers
+
+        ${imguizmo_SOURCE_DIR}
 )

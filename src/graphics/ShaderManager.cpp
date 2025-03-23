@@ -4,7 +4,7 @@
 #include <ranges>
 #include <sstream>
 
-#include "utils/Logger.h"
+#include "Proton.h"
 
 ShaderManager::~ShaderManager() { cleanup(); }
 

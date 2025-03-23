@@ -1,7 +1,7 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <DynamicSystem.h>
+#include <Dynamics.h>
 #include <graphics/Renderer.h>
 
 #include "environments/Environment.h"
@@ -26,7 +26,7 @@ public:
 private:
   Camera m_camera;
   SystemVisualizer m_systemVisualizer;
-  Neutron::DynamicSystem m_system;
+  Proton::Dynamics m_system;
 
   void showUI() const;
 

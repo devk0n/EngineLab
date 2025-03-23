@@ -1,7 +1,7 @@
 #include "core/InputManager.h"
 
 #include "graphics/Camera.h"
-#include "utils/Logger.h"
+#include "Proton.h"
 
 InputManager::InputManager() : m_window(nullptr) {}
 

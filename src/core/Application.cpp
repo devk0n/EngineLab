@@ -9,7 +9,7 @@ Application::Application() :
     m_ctx(), m_initialized(false), m_windowManager(std::make_unique<WindowManager>("EngineLab")),
     m_inputManager(std::make_unique<InputManager>()), m_renderer(std::make_unique<Renderer>()),
     m_imguiManager(std::make_unique<ImGuiManager>()), m_environmentManager(std::make_unique<EnvironmentManager>()),
-    m_shaderManager(std::make_unique<ShaderManager>()), m_time(std::make_unique<Time>()) {}
+    m_shaderManager(std::make_unique<ShaderManager>()), m_deltaTime(std::make_unique<DeltaTime>()) {}
 
 Application::~Application() {
   m_imguiManager->shutdown();
@@ -50,7 +50,7 @@ bool Application::initialize() {
   m_ctx.renderer = m_renderer.get();
   m_ctx.environments = m_environmentManager.get();
   m_ctx.imgui = m_imguiManager.get();
-  m_ctx.time = m_time.get();
+  m_ctx.time = m_deltaTime.get();
 
   // Push the initial environment using the member context
   m_environmentManager->pushEnvironment(std::make_unique<Simulation>(m_ctx));
@@ -66,16 +66,16 @@ void Application::run() {
   }
 
   LOG_INFO("Application started!");
-  m_time->update();
+  m_deltaTime->update();
 
   while (!m_windowManager->shouldClose()) {
     // Delta Time
-    m_time->update();
+    m_deltaTime->update();
 
     // Update
     WindowManager::pollEvents();
     Renderer::beginFrame();
-    m_environmentManager->update(m_time->getDeltaTime());
+    m_environmentManager->update(m_deltaTime->getDeltaTime());
     m_inputManager->update();
     Renderer::endFrame();
 

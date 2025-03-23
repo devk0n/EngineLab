@@ -2,44 +2,44 @@
 
 #include <imgui.h>
 
+#include "Dynamics.h"
+#include "GravityForce.h"
 #include "DistanceConstraint.h"
-#include "DynamicSystem.h"
-#include "SphericalJoint.h"
 #include "core/InputManager.h"
-#include "core/Time.h"
+#include "core/DeltaTime.h"
 #include "core/WindowManager.h"
-#include "forces/Gravity.h"
 #include "graphics/Renderer.h"
 #include "utils/Logger.h"
 #include "utils/OpenGLSetup.h"
 
-using namespace Neutron;
+using namespace Proton;
 
 void Simulation::setupDynamics() {
-  UniqueID body_1 = m_system.addBody(
-    30.0,
-    Vector3d(10.0, 10.0, 10.0),
-    Vector3d(0.0, 0.0, 0.0),
-    Vector4d(1.0, 0.0, 0.0, 0.0)
-  );
 
-  UniqueID body_2 = m_system.addBody(
-    30.0,
-    Vector3d(10.0, 10.0, 10.0),
-    Vector3d(10.0, 0.0, 0.0),
-    Vector4d(1.0, 0.0, 0.0, 0.0)
-  );
+  UniqueID body_1 = m_system.addBody(10, Vector3d(0, 0, 0));
+  UniqueID body_2 = m_system.addBody(10, Vector3d(10, 0, 0));
+  UniqueID body_3 = m_system.addBody(10, Vector3d(0, 10, 0));
+  UniqueID body_4 = m_system.addBody(10, Vector3d(10, 10, 0));
 
   Body* b1 = m_system.getBody(body_1);
   Body* b2 = m_system.getBody(body_2);
+  Body* b3 = m_system.getBody(body_3);
+  Body* b4 = m_system.getBody(body_4);
 
-  // Add gravity as force generator
-  auto gravityGen = std::make_shared<Gravity>(Vector3d(0, 0, -9.81));
-  for (auto& body : {b1, b2}) {
-    gravityGen->addBody(body);
-  }
-  m_system.addForceGenerator(gravityGen);
+  // Add gravity
+  auto gravity = std::make_shared<GravityForce>();
+  gravity->addBody(b1);
+  gravity->addBody(b2);
+  gravity->addBody(b3);
+  gravity->addBody(b4);
+  m_system.addForceGenerator(gravity);
 
+  m_system.addConstraint(std::make_shared<DistanceConstraint>(b1, b2));
+  m_system.addConstraint(std::make_shared<DistanceConstraint>(b2, b3));
+  m_system.addConstraint(std::make_shared<DistanceConstraint>(b3, b4));
+
+  b1->setFixed(true);
+  b4->setFixed(true);
 }
 
 bool Simulation::load() {
