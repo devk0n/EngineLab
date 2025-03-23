@@ -1,7 +1,6 @@
 #include "core/Application.h"
 
 #include "core/Context.h"
-#include "environments/Dashboard.h"
 #include "environments/Simulation.h"
 #include "utils/Logger.h"
 

@@ -1,9 +1,7 @@
 #ifndef WINDOWMANAGER_H
 #define WINDOWMANAGER_H
 
-#include <memory>
-#include <string>
-#include "utils/OpenGLSetup.h"
+#include "pch.h"
 
 struct WindowData {
   int width = 0;

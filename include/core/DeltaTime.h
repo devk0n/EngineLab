@@ -1,7 +1,7 @@
 #ifndef TIME_H
 #define TIME_H
 
-#include "OpenGLSetup.h"
+#include "pch.h"
 
 class DeltaTime {
 public:

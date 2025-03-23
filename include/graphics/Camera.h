@@ -1,8 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "pch.h"
 
 enum class CameraMovement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 

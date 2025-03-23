@@ -1,5 +1,6 @@
 #ifndef SPRING_FORCE_GENERATOR_H
 #define SPRING_FORCE_GENERATOR_H
+
 #include "ForceGenerator.h"
 
 namespace Proton {

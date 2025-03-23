@@ -1,8 +1,8 @@
 #ifndef GRAVITY_FORCE_GENERATOR_H
 #define GRAVITY_FORCE_GENERATOR_H
 
-#include <Body.h>
-#include <Proton.h>
+#include "Body.h"
+#include "Proton.h"
 
 #include "ForceGenerator.h"
 

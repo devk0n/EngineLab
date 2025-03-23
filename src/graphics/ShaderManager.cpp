@@ -1,8 +1,6 @@
 #include "graphics/ShaderManager.h"
 
-#include <fstream>
-#include <ranges>
-#include <sstream>
+
 
 #include "Proton.h"
 

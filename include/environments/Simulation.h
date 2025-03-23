@@ -1,13 +1,11 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <Dynamics.h>
-#include <graphics/Renderer.h>
-
+#include "Dynamics.h"
+#include "SystemVisualizer.h"
 #include "environments/Environment.h"
 #include "graphics/Camera.h"
-
-#include "SystemVisualizer.h"
+#include "graphics/Renderer.h"
 
 class Simulation final : public Environment {
 public:

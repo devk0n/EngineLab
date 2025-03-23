@@ -1,7 +1,7 @@
 #ifndef IMGUIMANAGER_H
 #define IMGUIMANAGER_H
 
-#include "utils/OpenGLSetup.h"
+#include "pch.h"
 
 class ImGuiManager {
 public:

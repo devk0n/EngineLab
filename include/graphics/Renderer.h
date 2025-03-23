@@ -1,10 +1,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "pch.h"
+
 #include "Camera.h"
 #include "ShaderManager.h"
-
-#include "utils/OpenGLSetup.h"
 
 class Renderer {
 public:

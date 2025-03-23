@@ -1,8 +1,8 @@
 #ifndef DYNAMICS_H
 #define DYNAMICS_H
 
-#include <memory>
-#include <vector>
+#include "pch.h"
+
 #include "Body.h"
 #include "Constraint.h"
 #include "ForceGenerator.h"
@@ -51,7 +51,7 @@ private:
   // Force generators
   std::vector<std::shared_ptr<ForceGenerator>> m_forceGenerators;
 
-  // Constraints
+  // constraints
   std::vector<std::shared_ptr<Constraint>> m_constraints;
   int m_numConstraints = 0;
 

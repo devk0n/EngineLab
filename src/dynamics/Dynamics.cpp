@@ -31,6 +31,12 @@ VectorXd Dynamics::getVelocityState() const {
 }
 
 void Dynamics::step(double dt) {
+
+  if (dt > 0.01) {
+    LOG_WARN("Too large time step: ", dt, " Setting to 0.01 to keep stability.");
+    dt = 0.01;
+  }
+
   const int dof_q = m_numBodies * 7;   // 3 position + 4 quaternion (w, x, y, z)
   const int dof_dq = m_numBodies * 6;  // 3 linear + 3 angular velocity
 
@@ -46,8 +52,8 @@ void Dynamics::step(double dt) {
   VectorXd q_next = q_n;
   VectorXd dq_next = dq_n;
 
-  constexpr int maxIters = 10;
-  constexpr double tol = 1e-8;
+  constexpr int maxIters = 100;
+  constexpr double tol = 1e-12;
 
   for (int iter = 0; iter < maxIters; ++iter) {
     const VectorXd q_mid = 0.5 * (q_n + q_next);
@@ -93,7 +99,7 @@ void Dynamics::step(double dt) {
       M.block<3, 3>(i * 6 + 3, i * 6 + 3) = body->getInertiaWorld();
     }
 
-    // === Constraints
+    // === constraints
     MatrixXd P = MatrixXd::Zero(m_numConstraints, dof_dq);
     VectorXd gamma = VectorXd::Zero(m_numConstraints);
     int row = 0;
@@ -112,7 +118,7 @@ void Dynamics::step(double dt) {
 
     VectorXd rhs(dof_dq + m_numConstraints);
     rhs.head(dof_dq) = F_ext;
-    rhs.tail(m_numConstraints) = -gamma;
+    rhs.tail(m_numConstraints) = gamma;
 
     VectorXd sol = KKT.completeOrthogonalDecomposition().solve(rhs);
     VectorXd ddq_mid = sol.head(dof_dq);
@@ -125,18 +131,12 @@ void Dynamics::step(double dt) {
       // Linear position update
       q_new.segment<3>(i * 7) += dt * 0.5 * (dq_n.segment<3>(i * 6) + dq_new.segment<3>(i * 6));
 
-      // Quaternion update from angular velocity
       Vector4d q = q_n.segment<4>(i * 7 + 3);
       Vector3d omega = 0.5 * (dq_n.segment<3>(i * 6 + 3) + dq_new.segment<3>(i * 6 + 3));
 
-      // dq/dt = 0.5 * Omega(omega) * q
-      Vector4d dqdt;
-      dqdt(0) = -0.5 * (omega.dot(q.segment<3>(1, 3))); // w'
-      dqdt.segment<3>(1) = 0.5 * (q(0) * omega + omega.cross(q.segment<3>(1, 3))); // xyz'
-
-      Vector4d q_updated = q + dt * dqdt;
-      q_updated.normalize();
+      Vector4d q_updated = integrateQuaternion(q, omega, dt);
       q_new.segment<4>(i * 7 + 3) = q_updated;
+
     }
 
     double err = (dq_new - dq_next).norm() + (q_new - q_next).norm();
@@ -198,16 +198,18 @@ void Dynamics::step(double dt) {
   // === ✅ Final write-back
   for (int i = 0; i < m_numBodies; ++i) {
     auto& body = m_bodies[i];
-    if (body->isFixed()) continue;
-
-    body->setPosition(q_next.segment<3>(i * 7));
 
     Vector4d q = q_next.segment<4>(i * 7 + 3);
     q.normalize();
     body->setOrientation(q);
+    body->setAngularVelocity(dq_next.segment<3>(i * 6 + 3));
+
+    if (body->isFixed()) continue;
+
+    body->setPosition(q_next.segment<3>(i * 7));
 
     body->setLinearVelocity(dq_next.segment<3>(i * 6));
-    body->setAngularVelocity(dq_next.segment<3>(i * 6 + 3));
+
   }
 }
 

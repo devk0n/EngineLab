@@ -1,8 +1,8 @@
 #ifndef ENVIRONMENTMANAGER_H
 #define ENVIRONMENTMANAGER_H
 
-#include <memory>
-#include <stack>
+#include "pch.h"
+
 #include "environments/Environment.h"
 
 class EnvironmentManager {

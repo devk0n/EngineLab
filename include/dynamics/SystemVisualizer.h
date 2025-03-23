@@ -1,9 +1,8 @@
 #ifndef SYSTEMVISUALIZER_H
 #define SYSTEMVISUALIZER_H
-#include <ranges>
+
 #include "Dynamics.h"
 #include "graphics/ShaderManager.h"
-#include "utils/Logger.h"
 
 class SystemVisualizer {
 public:

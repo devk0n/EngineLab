@@ -2,8 +2,6 @@
 #define BODY_H
 
 #include "Proton.h"
-#include "glm/glm.hpp"
-#include "glm/detail/type_quat.hpp"
 
 namespace Proton {
 class Body {

@@ -1,9 +1,7 @@
 #ifndef INPUTMANAGER_H
 #define INPUTMANAGER_H
 
-#include <unordered_set>
-
-#include "utils/OpenGLSetup.h"
+#include "pch.h"
 
 class InputManager {
 public:

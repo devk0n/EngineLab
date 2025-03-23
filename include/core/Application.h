@@ -1,8 +1,6 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <memory>
-
 #include "DeltaTime.h"
 #include "EnvironmentManager.h"
 #include "ImGuiManager.h"

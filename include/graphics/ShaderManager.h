@@ -1,12 +1,7 @@
 #ifndef SHADERMANAGER_H
 #define SHADERMANAGER_H
 
-#include <mutex>
-#include <string>
-#include <unordered_map>
-
-#include <glm/glm.hpp>
-#include "utils/OpenGLSetup.h"
+#include "pch.h"
 
 class ShaderManager {
 public:

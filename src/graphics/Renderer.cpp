@@ -1,8 +1,6 @@
 #include "graphics/Renderer.h"
 
-#include "glm/gtc/type_ptr.hpp"
-#include "Proton.h"
-#include "utils/OpenGLSetup.h"
+#include "pch.h"
 
 // Example vertex data for the grid and sky (full-screen quad).
 static float gridVertices[] = {

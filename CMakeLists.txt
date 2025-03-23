@@ -121,7 +121,10 @@ set(SOURCES
         src/environments/Simulation.cpp
 
         src/dynamics/Dynamics.cpp
-        src/dynamics/DistanceConstraint.cpp
+        src/dynamics/constraints/DistanceConstraint.cpp
+include/dynamics/constraints/SphericalJoint.h
+src/dynamics/constraints/SphericalJoint.cpp
+include/utils/pch.h
 )
 
 # Add executable
@@ -155,3 +158,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
         ${imguizmo_SOURCE_DIR}
 )
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE include/utils/pch.h)
