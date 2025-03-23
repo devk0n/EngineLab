@@ -23,11 +23,34 @@ void Simulation::setupDynamics() {
     Vector4d(1, 0, 0, 0)
   );
 
+  UniqueID body_2 = m_system.addBody(
+    20,
+    Vector3d(6, 6, 6),
+    Vector3d(10, 0, 0),
+    Vector4d(1, 0, 0, 0)
+  );
+
+  UniqueID body_3 = m_system.addBody(
+    20,
+    Vector3d(6, 6, 6),
+    Vector3d(10, 10, 0),
+    Vector4d(1, 0, 0, 0)
+  );
+
   Body* b1 = m_system.getBody(body_1);
+  Body* b2 = m_system.getBody(body_2);
+  Body* b3 = m_system.getBody(body_3);
 
   auto gravity = std::make_shared<GravityForce>();
   gravity->addBody(b1);
+  gravity->addBody(b2);
+  gravity->addBody(b3);
   m_system.addForceGenerator(gravity);
+
+  m_system.addConstraint(std::make_shared<DistanceConstraint>(b1, b2));
+  m_system.addConstraint(std::make_shared<DistanceConstraint>(b2, b3));
+
+  b1->setFixed(true);
 
 }
 

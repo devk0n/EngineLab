@@ -18,8 +18,8 @@ public:
   void apply(double dt) override {
     for (const auto& [id, body] : m_targets) {
       if (body->getMass() <= 0.0) continue; // skip static/infinite mass bodies
-      // body->addForce(body->getMass() * m_gravity);
-      body->addTorque(Vector3d(0, 0, 0));
+      body->addForce(body->getMass() * m_gravity);
+      // body->addTorque(Vector3d(10, 2, 1));
     }
   }
 

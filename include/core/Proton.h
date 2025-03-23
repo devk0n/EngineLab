@@ -31,7 +31,7 @@ inline bool initializeLogger() {
   return true;
 }
 
-inline Eigen::Matrix4d omegaToQuatMatrix(const Eigen::Vector3d& w) {
+inline Eigen::Matrix4d omegaMatrix(const Eigen::Vector3d& w) {
   Eigen::Matrix4d Omega;
   Omega <<  0,    -w.x(), -w.y(), -w.z(),
             w.x(),  0,     w.z(), -w.y(),
@@ -39,6 +39,15 @@ inline Eigen::Matrix4d omegaToQuatMatrix(const Eigen::Vector3d& w) {
             w.z(),  w.y(), -w.x(), 0;
   return Omega;
 }
+
+inline Eigen::Vector4d applySmallRotationQuaternion(const Eigen::Vector4d& q, const Eigen::Vector3d& deltaTheta) {
+  Eigen::Matrix4d Omega = omegaMatrix(deltaTheta);
+  Eigen::Vector4d dq = 0.5 * Omega * q;
+  Eigen::Vector4d q_new = q + dq;
+  q_new.normalize();
+  return q_new;
+}
+
 
 } // Proton
 

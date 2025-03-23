@@ -114,7 +114,7 @@ void Dynamics::step(double dt) {
     rhs.head(dof_dq) = F_ext;
     rhs.tail(m_numConstraints) = -gamma;
 
-    VectorXd sol = KKT.ldlt().solve(rhs);
+    VectorXd sol = KKT.completeOrthogonalDecomposition().solve(rhs);
     VectorXd ddq_mid = sol.head(dof_dq);
 
     // === Midpoint integration
@@ -158,8 +158,22 @@ void Dynamics::step(double dt) {
 
     if (m_numConstraints > 0) {
       MatrixXd JJt = J * J.transpose();
-      VectorXd correction = J.transpose() * JJt.ldlt().solve(phi);
-      q_next -= correction;
+      VectorXd correction = J.transpose() * JJt.completeOrthogonalDecomposition().solve(phi);
+      for (int i = 0; i < m_numBodies; ++i) {
+        if (m_bodies[i]->isFixed()) continue;
+
+        // Position correction
+        q_next.segment<3>(i * 7) -= correction.segment<3>(i * 6);
+
+        // Orientation correction from angular component
+        Vector3d deltaTheta = correction.segment<3>(i * 6 + 3);
+        Vector4d q = q_next.segment<4>(i * 7 + 3);
+
+        // Apply small rotation using Omega matrix
+        q_next.segment<4>(i * 7 + 3) = applySmallRotationQuaternion(q, deltaTheta);
+
+      }
+
     }
   }
 
@@ -176,7 +190,7 @@ void Dynamics::step(double dt) {
 
     if (m_numConstraints > 0) {
       MatrixXd JJt = J * J.transpose();
-      VectorXd correction = J.transpose() * JJt.ldlt().solve(Jdq);
+      VectorXd correction = J.transpose() * JJt.completeOrthogonalDecomposition().solve(Jdq);
       dq_next -= correction;
     }
   }
