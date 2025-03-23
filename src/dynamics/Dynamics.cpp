@@ -21,7 +21,7 @@ VectorXd Dynamics::getVelocityState() const {
 
   int i = 0;
   for (const auto &body : m_bodies) {
-    velocityState.segment<3>(i * 3) = body->getVelocity();
+    velocityState.segment<3>(i * 3) = body->getLinearVelocity();
     ++i;
   }
 
@@ -31,58 +31,71 @@ VectorXd Dynamics::getVelocityState() const {
 }
 
 void Dynamics::step(double dt) {
-  const int dof = m_numBodies * 3;
+  const int dof_q = m_numBodies * 7;   // 3 position + 4 quaternion (w, x, y, z)
+  const int dof_dq = m_numBodies * 6;  // 3 linear + 3 angular velocity
 
-  // Gather current state
-  VectorXd q_n(dof);
-  VectorXd dq_n(dof);
+  VectorXd q_n(dof_q), dq_n(dof_dq);
   for (int i = 0; i < m_numBodies; ++i) {
-    q_n.segment<3>(i * 3) = m_bodies[i]->getPosition();
-    dq_n.segment<3>(i * 3) = m_bodies[i]->getVelocity();
+    const auto& body = m_bodies[i];
+    q_n.segment<3>(i * 7) = body->getPosition();
+    q_n.segment<4>(i * 7 + 3) = body->getOrientation(); // (w, x, y, z)
+    dq_n.segment<3>(i * 6) = body->getLinearVelocity();
+    dq_n.segment<3>(i * 6 + 3) = body->getAngularVelocity();
   }
 
-  // Initial guess
-  VectorXd q_next = q_n + dt * dq_n;
+  VectorXd q_next = q_n;
   VectorXd dq_next = dq_n;
 
   constexpr int maxIters = 10;
   constexpr double tol = 1e-8;
 
   for (int iter = 0; iter < maxIters; ++iter) {
-    VectorXd q_mid = 0.5 * (q_n + q_next);
-    VectorXd dq_mid = 0.5 * (dq_n + dq_next);
+    const VectorXd q_mid = 0.5 * (q_n + q_next);
+    const VectorXd dq_mid = 0.5 * (dq_n + dq_next);
 
-    // Update bodies to midpoint state
+    // === Update body states to midpoint
     for (int i = 0; i < m_numBodies; ++i) {
-      m_bodies[i]->clearForces();
-      if (m_bodies[i]->isFixed()) continue;
-      m_bodies[i]->setPosition(q_mid.segment<3>(i * 3));
-      m_bodies[i]->setVelocity(dq_mid.segment<3>(i * 3));
+      auto& body = m_bodies[i];
+      body->clearForces();
+      body->clearTorque();
+
+      if (body->isFixed()) continue;
+
+      body->setPosition(q_mid.segment<3>(i * 7));
+
+      Vector4d q = q_mid.segment<4>(i * 7 + 3);
+      q.normalize();
+      body->setOrientation(q);
+
+      body->setLinearVelocity(dq_mid.segment<3>(i * 6));
+      body->setAngularVelocity(dq_mid.segment<3>(i * 6 + 3));
+      body->updateInertiaWorld();
     }
 
-    // Apply force generators
     for (const auto& fg : m_forceGenerators) {
       fg->apply(dt);
     }
 
-    // Collect external forces
-    VectorXd F_ext = VectorXd::Zero(dof);
+    // === External forces and torques
+    VectorXd F_ext = VectorXd::Zero(dof_dq);
     for (int i = 0; i < m_numBodies; ++i) {
-      F_ext.segment<3>(i * 3) = m_bodies[i]->getForce();
+      const auto& body = m_bodies[i];
+      F_ext.segment<3>(i * 6) = body->getForce();
+      F_ext.segment<3>(i * 6 + 3) = body->getTorque();
     }
 
-    // Build mass matrix (diagonal)
-    MatrixXd M = MatrixXd::Zero(dof, dof);
+    // === Mass and inertia matrix
+    MatrixXd M = MatrixXd::Zero(dof_dq, dof_dq);
     for (int i = 0; i < m_numBodies; ++i) {
-      double m = m_bodies[i]->getMass();
-      if (m > 0.0) {
-        M.block<3, 3>(i * 3, i * 3) = m * Matrix3d::Identity();
-      }
+      const auto& body = m_bodies[i];
+      if (body->isFixed()) continue;
+      M.block<3, 3>(i * 6, i * 6) = body->getMass() * Matrix3d::Identity();
+      M.block<3, 3>(i * 6 + 3, i * 6 + 3) = body->getInertiaWorld();
     }
 
-    MatrixXd P = MatrixXd::Zero(m_numConstraints, dof);
+    // === Constraints
+    MatrixXd P = MatrixXd::Zero(m_numConstraints, dof_dq);
     VectorXd gamma = VectorXd::Zero(m_numConstraints);
-
     int row = 0;
     for (const auto& c : m_constraints) {
       c->computeJacobian(P, row);
@@ -90,40 +103,56 @@ void Dynamics::step(double dt) {
       row += c->getDOFs();
     }
 
-    // Build KKT system
-    MatrixXd KKT(dof + m_numConstraints, dof + m_numConstraints);
+    // === Solve KKT system
+    MatrixXd KKT(dof_dq + m_numConstraints, dof_dq + m_numConstraints);
     KKT.setZero();
-    KKT.topLeftCorner(dof, dof) = M;
-    KKT.topRightCorner(dof, m_numConstraints) = P.transpose();
-    KKT.bottomLeftCorner(m_numConstraints, dof) = P;
+    KKT.topLeftCorner(dof_dq, dof_dq) = M;
+    KKT.topRightCorner(dof_dq, m_numConstraints) = P.transpose();
+    KKT.bottomLeftCorner(m_numConstraints, dof_dq) = P;
 
-    VectorXd rhs(dof + m_numConstraints);
-    rhs.head(dof) = F_ext;
+    VectorXd rhs(dof_dq + m_numConstraints);
+    rhs.head(dof_dq) = F_ext;
     rhs.tail(m_numConstraints) = -gamma;
 
     VectorXd sol = KKT.ldlt().solve(rhs);
-    VectorXd ddq_mid = sol.head(dof);
+    VectorXd ddq_mid = sol.head(dof_dq);
 
-    // Midpoint integration
+    // === Midpoint integration
     VectorXd dq_new = dq_n + dt * ddq_mid;
-    VectorXd q_new = q_n + dt * 0.5 * (dq_n + dq_new);
+    VectorXd q_new = q_n;
 
-    // Check for convergence
+    for (int i = 0; i < m_numBodies; ++i) {
+      // Linear position update
+      q_new.segment<3>(i * 7) += dt * 0.5 * (dq_n.segment<3>(i * 6) + dq_new.segment<3>(i * 6));
+
+      // Quaternion update from angular velocity
+      Vector4d q = q_n.segment<4>(i * 7 + 3);
+      Vector3d omega = 0.5 * (dq_n.segment<3>(i * 6 + 3) + dq_new.segment<3>(i * 6 + 3));
+
+      // dq/dt = 0.5 * Omega(omega) * q
+      Vector4d dqdt;
+      dqdt(0) = -0.5 * (omega.dot(q.segment<3>(1, 3))); // w'
+      dqdt.segment<3>(1) = 0.5 * (q(0) * omega + omega.cross(q.segment<3>(1, 3))); // xyz'
+
+      Vector4d q_updated = q + dt * dqdt;
+      q_updated.normalize();
+      q_new.segment<4>(i * 7 + 3) = q_updated;
+    }
+
     double err = (dq_new - dq_next).norm() + (q_new - q_next).norm();
     dq_next = dq_new;
     q_next = q_new;
     if (err < tol) break;
   }
 
-  // === 🔧 Position projection using orthogonal projection formula
+  // === 🔧 Position projection
   {
     VectorXd phi(m_numConstraints);
-    MatrixXd J(m_numConstraints, dof);
-
+    MatrixXd J(m_numConstraints, dof_dq);
     int row = 0;
     for (const auto& c : m_constraints) {
-      c->computePositionError(phi, row);           // Position-level constraint violation
-      c->computeJacobian(J, row);        // Jacobian w.r.t. position
+      c->computePositionError(phi, row);
+      c->computeJacobian(J, row);
       row += c->getDOFs();
     }
 
@@ -134,15 +163,14 @@ void Dynamics::step(double dt) {
     }
   }
 
-  // === 🔧 Velocity projection using orthogonal projection formula
+  // === 🔧 Velocity projection
   {
-    MatrixXd J(m_numConstraints, dof);
+    MatrixXd J(m_numConstraints, dof_dq);
     VectorXd Jdq(m_numConstraints);
-
     int row = 0;
     for (const auto& c : m_constraints) {
       c->computeJacobian(J, row);
-      Jdq.segment(row, c->getDOFs()) = J.block(row, 0, c->getDOFs(), dof) * dq_next;
+      Jdq.segment(row, c->getDOFs()) = J.block(row, 0, c->getDOFs(), dof_dq) * dq_next;
       row += c->getDOFs();
     }
 
@@ -153,15 +181,21 @@ void Dynamics::step(double dt) {
     }
   }
 
-  // === ✅ Final write-back to bodies
+  // === ✅ Final write-back
   for (int i = 0; i < m_numBodies; ++i) {
-    if (m_bodies[i]->isFixed()) continue;
-    m_bodies[i]->setPosition(q_next.segment<3>(i * 3));
-    m_bodies[i]->setVelocity(dq_next.segment<3>(i * 3));
+    auto& body = m_bodies[i];
+    if (body->isFixed()) continue;
+
+    body->setPosition(q_next.segment<3>(i * 7));
+
+    Vector4d q = q_next.segment<4>(i * 7 + 3);
+    q.normalize();
+    body->setOrientation(q);
+
+    body->setLinearVelocity(dq_next.segment<3>(i * 6));
+    body->setAngularVelocity(dq_next.segment<3>(i * 6 + 3));
   }
 }
-
-
 
 
 UniqueID Dynamics::addBody(

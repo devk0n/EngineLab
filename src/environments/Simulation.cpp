@@ -22,6 +22,13 @@ void Simulation::setupDynamics() {
     Vector3d(0, 0, 0),
     Vector4d(1, 0, 0, 0)
   );
+
+  Body* b1 = m_system.getBody(body_1);
+
+  auto gravity = std::make_shared<GravityForce>();
+  gravity->addBody(b1);
+  m_system.addForceGenerator(gravity);
+
 }
 
 bool Simulation::load() {

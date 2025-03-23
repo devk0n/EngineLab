@@ -34,7 +34,7 @@ void DistanceConstraint::computeJacobian(MatrixXd &jacobian, const int startRow)
 
 void DistanceConstraint::computeAccelerationCorrection(VectorXd &gamma, const int startRow) const {
   // Relative velocity
-  Vector3d v = m_body2->getVelocity() - m_body1->getVelocity();
+  Vector3d v = m_body2->getLinearVelocity() - m_body1->getLinearVelocity();
 
   const double result = 2.0 * v.squaredNorm();
   gamma[startRow] = result;
