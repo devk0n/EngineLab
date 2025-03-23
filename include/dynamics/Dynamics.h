@@ -15,7 +15,9 @@ public:
   // Body management
   UniqueID addBody(
     const double &mass,
-    const Vector3d &position
+    const Vector3d &inertia,
+    const Vector3d &position,
+    const Vector4d &orientation
   );
 
   Body* getBody(UniqueID ID);

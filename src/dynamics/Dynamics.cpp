@@ -166,14 +166,18 @@ void Dynamics::step(double dt) {
 
 UniqueID Dynamics::addBody(
   const double &mass,
-  const Vector3d &position
+  const Vector3d &inertia,
+  const Vector3d &position,
+  const Vector4d &orientation
 ) {
   UniqueID ID = m_nextID++;
   m_bodies.emplace_back(std::make_unique<Body>(
     ID,
     m_numBodies,
     mass,
-    position
+    inertia,
+    position,
+    orientation
   ));
   m_bodyIndex.try_emplace(ID, m_bodies.size() - 1);
   m_numBodies++;

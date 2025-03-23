@@ -64,7 +64,7 @@ private:
 
   unsigned int m_cubeVAO{}, m_cubeVBO{}, m_cubeEBO{};
 
-  GLuint m_lineVAO, m_lineVBO;
+  GLuint m_lineVAO{}, m_lineVBO{};
 
   void initializeLine() {
     glGenVertexArrays(1, &m_lineVAO);

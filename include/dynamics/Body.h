@@ -1,8 +1,6 @@
 #ifndef BODY_H
 #define BODY_H
 
-#include <utility>
-
 #include "Proton.h"
 #include "glm/glm.hpp"
 #include "glm/detail/type_quat.hpp"
@@ -14,12 +12,16 @@ public:
       const UniqueID ID,
       const int index,
       const double mass,
-      Vector3d position)
+      const Vector3d &inertia,
+      const Vector3d &position,
+      const Vector4d &orientation)
       : m_ID(ID),
         m_index(index),
         m_mass(mass),
         m_inverseMass(1/mass),
-        m_position(std::move(position)) {}
+        m_inertia(inertia),
+        m_position(position),
+        m_orientation(orientation) {}
 
   // Getters for state
   UniqueID getID() const { return m_ID; }
@@ -50,10 +52,10 @@ public:
   [[nodiscard]] glm::quat getOrientationQuat() const {
     return {
       // Cast w to float
-      static_cast<float>(0), // Cast x to float
-      static_cast<float>(0), // Cast y to float
-      static_cast<float>(0),  // Cast z to float
-      static_cast<float>(1)
+      static_cast<float>(m_orientation.x()), // Cast x to float
+      static_cast<float>(m_orientation.y()), // Cast y to float
+      static_cast<float>(m_orientation.z()),  // Cast z to float
+      static_cast<float>(m_orientation.w())
   };
   }
 
@@ -64,13 +66,18 @@ private:
   // Physical properties
   double m_mass;
   double m_inverseMass;
+  Vector3d m_inertia;
+  Vector3d m_inverseInertia;
 
   // State variables
   Vector3d m_position{Vector3d::Zero()};
   Vector3d m_velocity{Vector3d::Zero()};
+  Vector4d m_orientation{Vector4d(1, 0, 0, 0)};
+  Vector3d m_angularVelocity{Vector3d::Zero()};
 
   // Force accumulators
   Vector3d m_force{Vector3d::Zero()};
+  Vector3d m_torque{Vector3d::Zero()};
 
   bool m_fixed = false;
 
